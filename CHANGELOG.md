@@ -225,13 +225,15 @@ Total/FCL = Profit/Unit × Load_cartons
 - All prior fixes (cat filter, chip rebuild, Apical/WingAgro layout)
 - PDF save/attachment, quote cart, margin, role visibility, price log
 
-## 2026-05-21 (Rev 4) — KLK Compact List for Single-Name Categories
+## 2026-05-21 (Rev 5) — Critical Fix: calcKlkP missing function
 
-### KLK remaining clutter fixed
-- **JERRY CAN (21 products) and BOTTLE (8 products)**: all products share the same product name (RBD PALM OLEIN CP10 / CP6). Clicking these chips still showed 21/8 rows each with the name repeated.
-- **Fix**: when all filtered products share the same name, the name is shown **once as a compact header bar** (blue-tinted) and hidden from each individual row. The packing description is promoted to bold/highlighted text. Result: JERRY CAN shows 21 packing rows compactly without repeating the oil name 21 times.
-- This logic applies automatically for any supplier where filtered results share a name — works for KLK, Apical, WingAgro alike.
-- Also applies after name sub-chips: e.g. FLEXIBAG → PFAD → shows "PFAD" header + 4 compact packing rows.
+### Bug
+- `calcKlkP is not defined` at line 1819 — crashed the quote cart for ALL suppliers (Apical, KLK, WingAgro) when pressing the quote/PDF button.
+- Function was called in 10 places (rQuote, buildTableHTML, generatePdfHtml, etc.) but never defined. Caused by incomplete earlier refactor.
+
+### Fix
+- Added `function calcKlkP(sku,oilOvr,addOvr,mgnOvr,modeOvr,portOvr)` immediately after `calcP`.
+- KLK items have `pkg:0` (packaging cost already baked into FOB/MT price), so `calcKlkP` correctly delegates to `calcP` which handles the margin, CIF freight, and unit price calculations identically.
 
 ### Preserved
-- All prior fixes (cat filter, chip rebuild, name sub-chips, Apical/WingAgro layout, PDF T&C)
+- All prior fixes (KLK chips, compact list, PDF T&C, Apical/WingAgro layout)
