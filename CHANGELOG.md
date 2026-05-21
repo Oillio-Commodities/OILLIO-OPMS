@@ -1,16 +1,16 @@
 
-## 2026-05-21 (Rev 8) — PDF Save Flow Swapped + Buttons Cleaned
+## 2026-05-22 (Rev 9) — Oillio Branding + Phrases Removed
 
-### PDF Save Flow (swapped as requested)
-- **Before**: Clicking "Save PDF" showed the `openPrintPreview()` modal first (Image 2), then user clicked "SAVE AS PDF" to get the clean PDF (Image 1).
-- **After**: Clicking "Save PDF" now calls `doPrint()` directly → opens the clean `generatePdfHtml()` PDF in a new window immediately (Image 1 first). No intermediate modal step.
-- **Auto-print removed**: The `generatePdfHtml()` output no longer auto-triggers `window.print()` on load. User sees the clean PDF preview first, then clicks "Save as PDF" button when ready.
+### PDF Summary Report — Oillio branding (matching commercial invoice Image 2)
+- **Logo**: Replicated exact Oillio SVG logo — green circle, yellow/gold teardrop leaf on left, "Oillio" in italic bold serif white, "Commodities Sdn. Bhd." and "(1527357-W)" below.
+- **Backdrop watermark**: Large semi-transparent Oillio logo (opacity 0.045) positioned right-side of page as soft backdrop, matching the commercial invoice layout.
+- **Footer**: Updated to match commercial invoice footer exactly — map pin icon + address, phone (O)+603 5888 8339 / (M) +6012 326 3988, email icon, website right-aligned.
+- **Mobile number added**: +6012 326 3988 now included in both header contact line and footer.
 
-### Buttons removed from PDF preview (as requested)
-- **"Try Again" button**: Removed completely.
-- **Bottom "SAVE AS PDF" button**: Removed (duplicate — top bar button remains).
-- **Screenshot tip** (purple box): Removed.
-- **Kept**: Top action bar with single "Save as PDF" button + keyboard shortcut hint. T&C (FOB/CIF terms) remain fully visible at bottom of PDF.
+### Phrases removed (as requested) — all locations
+- **"Validity: 3 working days..."**: Removed from PDF validity box, PDF General clause 2, and Quotation tab T&C panel.
+- **"Prices exclude applicable taxes & duties..."**: Removed from PDF General clause 5 and Quotation tab T&C panel.
+- **"Ctrl+P / Cmd+P → Save as PDF"**: Removed from the PDF top action bar (only the Save as PDF button remains).
 
 ### Preserved
-- All prior fixes intact: calcKlkP, KLK chips/sub-filter/compact list, Apical/WingAgro layout, WhatsApp T&C, PDF logo/header, quotation tab T&C.
+- All prior fixes intact: calcKlkP, KLK chips/filters, Apical/WingAgro, WhatsApp T&C, FOB/CIF terms, PDF save flow.
