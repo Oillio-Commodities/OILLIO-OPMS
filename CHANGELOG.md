@@ -1,13 +1,16 @@
 
-## 2026-05-21 (Rev 7) — WhatsApp T&C Fix + PDF Logo & T&C
+## 2026-05-21 (Rev 8) — PDF Save Flow Swapped + Buttons Cleaned
 
-### WhatsApp text (buildRpt)
-- Fixed FOB/CIF detection to be **case-insensitive**. Old Able Perfect items store `mode:'fob'` (lowercase); new supplier items store `mode:'FOB'` (uppercase). Previous check `x.mode==='FOB'` missed old items. Now uses `x.mode.toUpperCase()==='FOB'` — T&C terms now appear for all FOB quotes regardless of which supplier.
+### PDF Save Flow (swapped as requested)
+- **Before**: Clicking "Save PDF" showed the `openPrintPreview()` modal first (Image 2), then user clicked "SAVE AS PDF" to get the clean PDF (Image 1).
+- **After**: Clicking "Save PDF" now calls `doPrint()` directly → opens the clean `generatePdfHtml()` PDF in a new window immediately (Image 1 first). No intermediate modal step.
+- **Auto-print removed**: The `generatePdfHtml()` output no longer auto-triggers `window.print()` on load. User sees the clean PDF preview first, then clicks "Save as PDF" button when ready.
 
-### PDF Summary Report
-- **Logo**: Replaced placeholder circle with proper Oillio brand SVG — green radial gradient with oil-drop motif, "Oillio" wordmark below icon.
-- **Header proportions**: Company name 15pt bold green, tagline "Your Trusted Partner in Edible Oils & Fats", registration/address 7pt, date + ref number right-aligned. Green gradient rule line below header.
-- **T&C**: Also fixed case-insensitive detection (same fix as WhatsApp). FOB Terms and CIF Terms now reliably appear at bottom of PDF for all quote types.
+### Buttons removed from PDF preview (as requested)
+- **"Try Again" button**: Removed completely.
+- **Bottom "SAVE AS PDF" button**: Removed (duplicate — top bar button remains).
+- **Screenshot tip** (purple box): Removed.
+- **Kept**: Top action bar with single "Save as PDF" button + keyboard shortcut hint. T&C (FOB/CIF terms) remain fully visible at bottom of PDF.
 
 ### Preserved
-- All prior fixes (calcKlkP, KLK chips/sub-filter/compact list, Apical/WingAgro layout, quotation tab T&C)
+- All prior fixes intact: calcKlkP, KLK chips/sub-filter/compact list, Apical/WingAgro layout, WhatsApp T&C, PDF logo/header, quotation tab T&C.
