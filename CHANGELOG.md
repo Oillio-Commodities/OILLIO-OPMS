@@ -1,12 +1,13 @@
 
-## 2026-05-21 (Rev 7) — Logo + Full T&C in PDF; WhatsApp T&C for all suppliers
-
-### PDF (For Reference Only / generatePDF)
-- **Logo**: The `.bar` header containing the SVG logo was hidden in `@media print` (CSS `display:none`). Logo was never visible in saved PDFs. Fix: added `_pdfLogo` SVG to the print-visible `.hdr` section (inside `.wrap`), beside company name. Now renders correctly in print/PDF.
-- **T&C**: Replaced the abbreviated 4-5 line T&C with the full `tcFob()`/`tcCif()` content — same payment terms, shipment, brand clause, all 6 external document items, and CIF Special Clauses 6–9. Consistent across WhatsApp, quotation tab, and all PDF types.
+## 2026-05-21 (Rev 7) — WhatsApp T&C Fix + PDF Logo & T&C
 
 ### WhatsApp text (buildRpt)
-- Fixed `hasFobItems`/`hasCifItems` detection to cover **all supplier types**. Previous check used only `priceMode` field (Able Perfect items only). New supplier items (Apical/KLK/WingAgro) use `mode` field only, so FOB T&C was never appended for them. Fix: checks both `priceMode` and `mode` fields.
+- Fixed FOB/CIF detection to be **case-insensitive**. Old Able Perfect items store `mode:'fob'` (lowercase); new supplier items store `mode:'FOB'` (uppercase). Previous check `x.mode==='FOB'` missed old items. Now uses `x.mode.toUpperCase()==='FOB'` — T&C terms now appear for all FOB quotes regardless of which supplier.
 
-### All prior fixes preserved
-- calcKlkP, KLK chips, compact list, Apical/WingAgro layout unchanged
+### PDF Summary Report
+- **Logo**: Replaced placeholder circle with proper Oillio brand SVG — green radial gradient with oil-drop motif, "Oillio" wordmark below icon.
+- **Header proportions**: Company name 15pt bold green, tagline "Your Trusted Partner in Edible Oils & Fats", registration/address 7pt, date + ref number right-aligned. Green gradient rule line below header.
+- **T&C**: Also fixed case-insensitive detection (same fix as WhatsApp). FOB Terms and CIF Terms now reliably appear at bottom of PDF for all quote types.
+
+### Preserved
+- All prior fixes (calcKlkP, KLK chips/sub-filter/compact list, Apical/WingAgro layout, quotation tab T&C)

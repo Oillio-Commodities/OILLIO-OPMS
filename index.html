@@ -1852,8 +1852,8 @@ function rQuote(){
   var tot=el('qTotals');tot.style.display='flex';
   // Summary bar respects PRICE_MODE
   // Use per-item priceMode for summary bar
-  var hasFobItems=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both'||(!x.priceMode&&(!x.mode||x.mode==='FOB'));});
-  var hasCifItems=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both'||(!x.priceMode&&x.mode==='CIF'))&&(x.port||x.portObj);});
+  var hasFobItems=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both'||(!x.priceMode&&(!x.mode||(x.mode&&x.mode.toUpperCase()==='FOB')));});
+  var hasCifItems=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both'||(!x.priceMode&&x.mode&&x.mode.toUpperCase()==='CIF'))&&(x.port||x.portObj);});
   var totHtml='<div class="qtot-item"><span class="ql">Items</span><span class="qv">'+QITEMS.length+'</span></div>'
     +'<div class="qtot-item"><span class="ql">Total FCL</span><span class="qv">'+gFcl+'</span></div>'
     +'<div class="qtot-item"><span class="ql">Volume</span><span class="qv">'+fmt(gMt,3)+' MT</span></div>';
@@ -2351,8 +2351,8 @@ function buildRpt(){
   r+='- Pricing does not include 3rd party documentation, testing and certification charges.'+NL+NL;
   r+=DIV+NL+'*TERMS & CONDITIONS*'+NL;
   r+='**Price subject to final confirmation'+NL;
-  var hasFobItems=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both';});
-  var hasCifItems=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both')&&x.mode==='CIF'&&x.port;});
+  var hasFobItems=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both'||(!x.priceMode&&(!x.mode||x.mode.toUpperCase()==='FOB'));});
+  var hasCifItems=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both'||(!x.priceMode&&x.mode&&x.mode.toUpperCase()==='CIF'))&&(x.port||x.portObj);});
   if(hasFobItems)r+=tcFob(sd)+NL;
   if(hasFobItems&&hasCifItems)r+=DIV+NL+'[CIF TERMS]'+NL;
   if(hasCifItems)r+=tcCif(sd);
@@ -2574,15 +2574,16 @@ function generatePdfHtml(){
     '*{box-sizing:border-box}',
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}',
     '.page{width:210mm;min-height:297mm;margin:0 auto;padding:0;position:relative}',
-    '.hdr{background:#fff;padding:12px 20px 8px;display:flex;align-items:center;gap:14px;border-bottom:4px solid #1a6b1a}',
-    '.logo{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,#2d7a50,#1a4a30);border:3px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0}',
-    '.logo-text{color:#fff;font-size:8pt;font-weight:900;text-align:center;line-height:1.25}',
+    '.hdr{background:#fff;padding:14px 22px 10px;display:flex;align-items:center;gap:16px;border-bottom:5px solid #1a6b1a}',
+    '.logo-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:2px}',
+    '.logo-sub{font-size:5.5pt;font-weight:800;color:#1a6b1a;letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap}',
     '.hdr-info{flex:1}',
-    '.hdr-name{font-size:14pt;font-weight:900;letter-spacing:.03em;color:#1a6b1a}',
-    '.hdr-reg{font-size:7.5pt;color:#555;margin-top:1px}',
-    '.hdr-contact{font-size:7.5pt;color:#555;margin-top:1px}',
-    '.hdr-date{text-align:right;font-size:8pt;color:#555}',
-    '.hdr-line{height:2px;background:#1a6b1a;margin-bottom:4px}',
+    '.hdr-name{font-size:15pt;font-weight:900;letter-spacing:.04em;color:#1a6b1a;line-height:1.1}',
+    '.hdr-tagline{font-size:7pt;color:#2a8040;font-style:italic;margin-top:1px;margin-bottom:3px}',
+    '.hdr-reg{font-size:7pt;color:#555;margin-top:1px}',
+    '.hdr-contact{font-size:7pt;color:#555;margin-top:1px}',
+    '.hdr-date{text-align:right;font-size:8pt;color:#555;flex-shrink:0}',
+    '.hdr-line{height:2px;background:linear-gradient(to right,#1a6b1a,#88d44c,#1a6b1a);margin-bottom:6px}',
     '.body{padding:16px 22px 80px}',
     '.doc-title{font-size:16pt;font-weight:900;color:#1a6b1a;border-bottom:3px solid #2a6640;padding-bottom:6px;margin-bottom:14px}',
     '.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:16px;font-size:8.5pt}',
@@ -2621,14 +2622,29 @@ function generatePdfHtml(){
   // ── HEADER ──
   var s='';
   s+='<div class="hdr">';
-    var _pdfLogo='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 80" width="95" height="80"><defs><radialGradient id="pGr" cx="35%" cy="28%" r="72%"><stop offset="0%" stop-color="#88d44c"/><stop offset="55%" stop-color="#3a9430"/><stop offset="100%" stop-color="#1a5c18"/></radialGradient><radialGradient id="pOr" cx="38%" cy="32%" r="70%"><stop offset="0%" stop-color="#ffe050"/><stop offset="60%" stop-color="#f5a800"/><stop offset="100%" stop-color="#c86000"/></radialGradient><clipPath id="pCl"><circle cx="40" cy="40" r="36"/></clipPath></defs><circle cx="40" cy="40" r="36" fill="url(#pGr)"/><path clip-path="url(#pCl)" d="M40 8C62 6 76 22 76 40C76 58 62 74 40 75C26 75 15 65 11 52C7 39 14 25 26 19C33 15 35 12 40 8Z" fill="url(#pOr)"/><path clip-path="url(#pCl)" d="M40 15C54 18 62 29 60 40C58 52 50 59 40 60C30 59 23 51 25 41C27 30 31 14 40 15Z" fill="white" opacity="0.9"/><circle cx="40" cy="40" r="14" fill="url(#pGr)"/></svg>';
-  s+='<div class="logo" style="background:none;border:none;padding:0;width:90px;height:78px">'+_pdfLogo+'</div>';
+  // ── Oillio logo SVG — palm/oil leaf motif in brand green ──
+  var _logo='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="72" height="72">'
+    +'<defs>'
+    +'<radialGradient id="gBg" cx="40%" cy="30%" r="65%"><stop offset="0%" stop-color="#5dc640"/><stop offset="60%" stop-color="#2a8c22"/><stop offset="100%" stop-color="#1a5c14"/></radialGradient>'
+    +'<radialGradient id="gDrop" cx="50%" cy="30%" r="60%"><stop offset="0%" stop-color="#fff9c4"/><stop offset="50%" stop-color="#f5c800"/><stop offset="100%" stop-color="#c07000"/></radialGradient>'
+    +'</defs>'
+    +'<circle cx="40" cy="40" r="38" fill="url(#gBg)"/>'
+    +'<circle cx="40" cy="40" r="38" fill="none" stroke="#1a5c14" stroke-width="2"/>'
+    // oil drop
+    +'<path d="M40 18 C40 18 52 30 52 40 C52 50.5 46.6 57 40 57 C33.4 57 28 50.5 28 40 C28 30 40 18 40 18Z" fill="url(#gDrop)"/>'
+    // leaf left
+    +'<path d="M40 38 C34 32 24 34 20 38 C26 34 32 40 40 44Z" fill="#fff" opacity="0.7"/>'
+    // leaf right
+    +'<path d="M40 38 C46 32 56 34 60 38 C54 34 48 40 40 44Z" fill="#fff" opacity="0.7"/>'
+    +'</svg>';
+  s+='<div class="logo-wrap"><div>'+_logo+'</div><div class="logo-sub">Oillio</div></div>';
   s+='<div class="hdr-info">';
   s+='<div class="hdr-name">OILLIO COMMODITIES SDN BHD</div>';
+  s+='<div class="hdr-tagline">Your Trusted Partner in Edible Oils &amp; Fats</div>';
   s+='<div class="hdr-reg">(1527357-W) &nbsp;&bull;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>';
   s+='<div class="hdr-contact">Tel: +603 5888 8339 &nbsp;&bull;&nbsp; export@oillio.com.my &nbsp;&bull;&nbsp; www.oillio.com.my</div>';
   s+='</div>';
-  s+='<div class="hdr-date">'+ds+'<br><span style="opacity:.6">Page 1</span></div>';
+  s+='<div class="hdr-date"><b>'+ds+'</b><br><span style="color:#888;font-size:7pt">Ref: '+ref_+'</span><br><span style="color:#888;font-size:7pt">Page 1</span></div>';
   s+='</div>';
   s+='<div class="hdr-line"></div>';
 
@@ -2731,8 +2747,8 @@ function generatePdfHtml(){
   s+='<div class="section">';
   s+='<div class="section-title">Terms &amp; Conditions</div>';
   // Determine which T&C apply based on items in quote
-  var hasFob=QITEMS.some(function(x){return !x.mode||x.mode==='FOB';});
-  var hasCif=QITEMS.some(function(x){return x.mode==='CIF';});
+  var hasFob=QITEMS.some(function(x){return !x.mode||(x.mode&&x.mode.toUpperCase()==='FOB')||x.priceMode==='fob'||x.priceMode==='both';});
+  var hasCif=QITEMS.some(function(x){return (x.mode&&x.mode.toUpperCase()==='CIF')||(x.priceMode==='cif'||x.priceMode==='both');});
   var sd=document.getElementById('qDel')?document.getElementById('qDel').value||'To be advised':'To be advised';
   var NL='\n';
   // Build T&C lines from tcFob / tcCif (same source as Able Perfect)
