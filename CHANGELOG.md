@@ -225,15 +225,19 @@ Total/FCL = Profit/Unit × Load_cartons
 - All prior fixes (cat filter, chip rebuild, Apical/WingAgro layout)
 - PDF save/attachment, quote cart, margin, role visibility, price log
 
-## 2026-05-21 (Rev 5) — Critical Fix: calcKlkP missing function
+## 2026-05-21 (Rev 6) — FOB/CIF T&C in All 3 Locations
 
-### Bug
-- `calcKlkP is not defined` at line 1819 — crashed the quote cart for ALL suppliers (Apical, KLK, WingAgro) when pressing the quote/PDF button.
-- Function was called in 10 places (rQuote, buildTableHTML, generatePdfHtml, etc.) but never defined. Caused by incomplete earlier refactor.
+### Changes
+- **Quotation tab (on-screen)**: Added `qTcArea` div below the totals bar. `rQuote()` now renders a live T&C panel showing FOB Terms and/or CIF Terms based on which modes are present in the cart. Updates automatically as items are added/removed.
+- **WhatsApp text (buildRpt)**: Fixed item-mode detection. Previous check used `priceMode` field (old Able Perfect only); new supplier items (Apical/KLK/WingAgro) use `mode` field. Now checks both — FOB terms appear for any FOB item, CIF terms for any CIF item with a port.
+- **PDF summary (generatePdfHtml)**: Already correct from Rev 3 — confirmed working.
 
-### Fix
-- Added `function calcKlkP(sku,oilOvr,addOvr,mgnOvr,modeOvr,portOvr)` immediately after `calcP`.
-- KLK items have `pkg:0` (packaging cost already baked into FOB/MT price), so `calcKlkP` correctly delegates to `calcP` which handles the margin, CIF freight, and unit price calculations identically.
+### T&C content (same across all 3 locations, sourced from `tcFob`/`tcCif`)
+- **FOB**: Payment 30% deposit + 70% 15 working days before loading; External docs 1–6 (Health Cert, Phyto Cert, CoA, CoO, CTN/Inspection, buyer doc responsibility)
+- **CIF**: Payment 30% deposit + 70% against copy BL; same external docs; Special Clauses 6–9 (GRI/PSS/PCS, shipper decides liner, BL to order, buyer responsibility)
+
+### KLK calcKlkP (carried forward from Rev 5)
+- `calcKlkP` missing function fix remains in place — quote works for all suppliers.
 
 ### Preserved
-- All prior fixes (KLK chips, compact list, PDF T&C, Apical/WingAgro layout)
+- All prior fixes intact (KLK chips, compact list, Apical/WingAgro layout unchanged)
