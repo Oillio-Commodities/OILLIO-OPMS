@@ -1,8 +1,14 @@
 
-## 2026-05-22 (Rev 24) — Transparent Logo Background (Blends with All Pages)
+## 2026-05-22 (Rev 25) — Auth Page: Emblem + White Wordmark (Presentable on Dark Bg)
+
+### Problem
+- `logo_nobg.svg` has dark green text — invisible/ugly on dark navy (#071c2e) auth background
+- Full SVG logo is only suitable for WHITE backgrounds (PDF)
 
 ### Fix
-- Removed the white background rectangle (#FEFEFE) that was the first <path> in the SVG
-- Created `logo_nobg.svg` and `logo_emblem_nobg.svg` — identical logos with transparent backgrounds
-- All 4 logo references now use the transparent versions
-- Logo blends naturally into: dark auth background, dark green header, white PDF page, watermark backdrop
+- Auth/login page: emblem icon (`logo_emblem_nobg.svg`, 80px) + white HTML wordmark
+  - "Oillio" — Trebuchet MS 32pt 800-weight WHITE
+  - "Commodities Sdn. Bhd." — Arial 11pt 600-weight rgba(255,255,255,0.80)
+  - "(1527357-W)" — Arial 9pt rgba(255,255,255,0.50)
+- Header: unchanged (emblem-only icon, always correct)
+- PDF: unchanged (full `logo_nobg.svg` on white page — dark text looks great)
