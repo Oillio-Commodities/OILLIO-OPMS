@@ -1,12 +1,13 @@
 
-## 2026-05-22 (Rev 19) — Direct Pixel Copy from Zoomed Logo Image
+## 2026-05-22 (Rev 20) — Correct Ring Structure with Tilted Almond
 
-### Logo — measurements taken directly from zoomed screenshot pixels
-- **Construction**: 3 layers only
-  1. Full green circle (cx50,cy50,r47)
-  2. Orange S-curve shape: `M50,3 C90,3 10,97 50,97 A47,47 0 0 1 97,50 A47,47 0 0 1 50,3 Z`
-  3. White almond: `M51,22 C68,30 68,66 46,77 C28,70 28,34 51,22 Z`
-- **Almond measurements from image**: top(51,22), bottom(46,77), right widest x≈62@y48, left widest x≈33@y52
-- **S-curve**: control points C90,3 10,97 — upper boundary at x≈60 (y=23), lower at x≈40 (y=77)
-- **Green gradient**: cx16,cy12 — #9adc38 lime → #60c020 → #1aac44 → #007c32 → #002e10 dark
-- **Orange gradient**: cx78,cy16 — #ffe428 gold → #ffbc00 → #ff9c00 → #ee7400 → #b83400
+### Logo — rebuilt from user's exact verbal description
+- **Structure**: Ring/donut shape using SVG evenodd mask
+  - Outer circle r=47, centre (50,50)
+  - Inner hole = tilted white almond: top-tip at (46,20) = upper-LEFT, bottom-tip at (54,80) = lower-RIGHT
+  - Ring = outer circle area minus the almond hole
+- **Colour split**: Green fills LEFT half (x<50), Orange fills RIGHT half (x>50)
+- **3D depth**: Green top-cap drawn over orange at 12-o'clock junction; Orange bottom-cap drawn over green at 6-o'clock junction
+- **Green gradient**: cx15,cy12 — #a0e030 lime → #08a848 emerald → #002e12 dark
+- **Orange gradient**: cx82,cy14 — #ffe820 gold → #ff9400 amber → #b03200 deep orange
+- Applied to auth(100px), header(44px), PDF(84px), watermark(480px @4%)
