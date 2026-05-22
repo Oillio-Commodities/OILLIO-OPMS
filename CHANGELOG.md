@@ -1,21 +1,15 @@
 
-## 2026-05-23 (Rev 28) — Auth Layout + PDF Logo + Total Cargo Column
+## 2026-05-23 (Rev 30) — Emblem SVG Cleaned + Correct 3-Line Text Layout
 
-### Auth/Login page
-- Logo size: 62px (matches height of text block: "Oillio" ~42px + "Commodities..." ~14px + gap)
-- Layout: `[logo 62px] | Oillio (2.6rem bold white)`
-          `            | Commodities Sdn. Bhd. (1527357-W)` — ALL on ONE line
-- CSS filter: `contrast(1.15) saturate(1.8)` — pushes muted mint edge colours → vivid green, reduces whitish appearance
-- Removed drop-shadow (was creating halo artefacts)
+### Emblem SVG (logo_emblem_nobg.svg) — definitive clean
+- Removed 59 paths at translate x>=560: these were text-adjacent paths causing the stray "O" circle and "Comm 1527357" text to render beside the emblem
+- Removed 5 near-white anti-aliasing paths (lum>0.82, sat<0.3) causing whitish pixel spots
+- Added `<clipPath>` circle (cx=295,cy=307,r=285) as hard boundary — nothing outside the ring can render
+- Kept 290 paths: only the orange/yellow and green ring paths + white almond
 
-### PDF header — reinstated logo + full company details
-- Logo: absolute URL `https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg`
-  (relative URL failed in PDF popup window — this was why logo was missing)
-- Company name: OILLIO COMMODITIES SDN BHD (bold, green)
-- Tagline + address + tel + email + www reinstated
-
-### PDF table — PROFIT/UNIT → TOTAL CARGO AMOUNT
-- Removed: `Profit/Unit` admin-only column
-- Added: `Total Cargo (USD)` column visible to all users
-- Formula: `total_cargo = oillio_fob × load_ctns` (FOB) or `oillio_cif × load_ctns` (CIF)
-- Displayed in bold dark green
+### Auth/Login page text layout — matches Image 4 reference exactly
+- Row 1: "Oillio" — 3rem, font-weight:900 (THICK/BOLD), white
+- Row 2: "Commodities Sdn. Bhd." — 1rem, font-weight:700 (slightly bold), 85% white
+- Row 3: "(1527357-W)" — 0.82rem, font-weight:400 (THIN), 55% white
+- Logo: 95px (matches combined 3-row text block height)
+- CSS filter: contrast(1.3) saturate(2) for vivid ring colours
