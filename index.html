@@ -1946,9 +1946,6 @@ function buildTableHTML(forWindow){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var modeLabel=pm==='cif'?'CIF':pm==='both'?'FOB & CIF':'FOB';
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
 
@@ -2077,9 +2074,6 @@ function renderVTable(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var modeLabel=pm==='cif'?'CIF':pm==='both'?'FOB & CIF':'FOB';
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
   var sub=[];
@@ -2237,9 +2231,6 @@ function buildTxtTable(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var NL=String.fromCharCode(10);
   function pad(s,n,r){s=String(s===null||s===undefined?'':s);if(s.length>n)s=s.slice(0,n);while(s.length<n)s=r?' '+s:s+' ';return s;}
   var cols=[['#',3,true],['Type',12,false],['SKU Name',24,false],['FCL',4,true],['Vol(MT)',8,true]];
@@ -2301,9 +2292,6 @@ function buildRpt(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   if(allSameOil)r+='*Type of Oil:* '+QITEMS[0].oilName.replace(' (USD)','')+NL+NL;
   var pm=PRICE_MODE||'fob';
   var gFob=0,gCif=0,gMt=0;
@@ -2427,9 +2415,6 @@ function renderFm(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var modeLabel=pm==='cif'?'CIF':pm==='both'?'FOB & CIF':'FOB';
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
 
@@ -2551,9 +2536,15 @@ function generatePdfHtml(){
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
   var showFob=(pm==='fob'||pm==='both'||!hasCifItem);
   var showCif=(pm==='cif'||pm==='both')&&hasCifItem;
+  var _today=new Date();
+  var _yyyymmdd=_today.getFullYear()+String(_today.getMonth()+1).padStart(2,'0')+String(_today.getDate()).padStart(2,'0');
+  var _lsKey='oillio_ref_'+_yyyymmdd;
+  var _seq=(parseInt(localStorage.getItem(_lsKey)||'0')+1);
+  localStorage.setItem(_lsKey,_seq);
+  var ref_='Oillio-'+_yyyymmdd+'-'+String(_seq).padStart(2,'0');
   var cust=el('qCust').value||'',
-      shipPeriod=el('qDel')?el('qDel').value||'':'',
-      ref_='QT-'+(new Date().getFullYear())+'-'+String(Date.now()).slice(-5);
+      shipPeriod=el('qDel')?el('qDel').value||'':'';
+
   var d=new Date();
   var ds=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   var modeLabel=!showFob&&showCif?'CIF':showFob&&showCif?'FOB & CIF':'FOB';
@@ -2572,8 +2563,7 @@ function generatePdfHtml(){
     '*{box-sizing:border-box}',
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}',
     '.page{width:210mm;min-height:297mm;margin:0 auto;padding:0;position:relative}',
-    '.hdr{background:#fff;padding:14px 22px 10px;display:flex;align-items:center;gap:16px;border-bottom:5px solid #1a6b1a}',
-    '.logo-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:2px}',
+    '.hdr{background:#fff;padding:14px 22px 10px;display:flex;align-items:center;gap:12px;border-bottom:4px solid #1e6b1e}',    '.logo-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:2px}',
     '.logo-sub{font-size:5.5pt;font-weight:800;color:#1a6b1a;letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap}',
     '.hdr-info{flex:1}',
     '.hdr-name{font-size:15pt;font-weight:900;letter-spacing:.04em;color:#1a6b1a;line-height:1.1}',
@@ -2610,7 +2600,7 @@ function generatePdfHtml(){
     '.sig-title{font-size:7.5pt;color:#555;margin-bottom:28px}',
     '.sig-name{font-weight:700;font-size:9pt;color:#0a2d4a}',
     '.sig-role{font-size:8pt;color:#555}',
-        '.footer{position:fixed;bottom:0;left:0;right:0;background:#1b5e20;color:rgba(255,255,255,.92);padding:7px 18px;font-size:7pt;line-height:1.4}',
+        '.footer{position:fixed;bottom:0;left:0;right:0;background:#1b5e20;color:rgba(255,255,255,.92);padding:8px 18px 8px;font-size:7.2pt;line-height:1.45;display:flex;align-items:center;justify-content:space-between;gap:10px}','.ftr-left{flex:1}','.ftr-right{font-size:8pt;font-weight:800;letter-spacing:.03em;white-space:nowrap}',
     '.footer a{color:rgba(255,255,255,.85)}',
     '.page-num{font-size:7pt;opacity:.7}',
     '.validity{background:#fff8e1;border:1px solid #f9a825;border-radius:6px;padding:8px 12px;font-size:8pt;margin-bottom:12px}',
@@ -2619,53 +2609,56 @@ function generatePdfHtml(){
 
   // ── HEADER ──
   var s='';
-  // ── OILLIO HEADER — exact match to commercial invoice ──
+  // ── OILLIO HEADER — pixel-matched to commercial invoice ──
+  // Logo: green circle, large amber oval right-half, Oillio italic, Commodities below
   var _oillioLogo=
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="88" height="88">'
-    // Outer circle
-    +'<circle cx="60" cy="60" r="58" fill="#2e7d32"/>'
-    +'<circle cx="60" cy="60" r="58" fill="none" stroke="#1b5e20" stroke-width="2"/>'
-    // Inner lighter ring
-    +'<circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>'
-    // Yellow/gold teardrop/leaf shape (left side)
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="90" height="90">'
+    // Shadow/depth ring
+    +'<circle cx="55" cy="55" r="52" fill="rgba(0,0,0,0.12)"/>'
+    // Main circle green bg
+    +'<circle cx="55" cy="55" r="50" fill="#1e6b1e"/>'
+    // Large amber/orange oval — right portion, matching invoice logo
     +'<defs>'
-    +'<radialGradient id="lgld" cx="40%" cy="25%" r="65%">'
-    +'<stop offset="0%" stop-color="#fff176"/>'
-    +'<stop offset="45%" stop-color="#ffc107"/>'
-    +'<stop offset="100%" stop-color="#e65100"/>'
+    +'<radialGradient id="oamb" cx="38%" cy="30%" r="70%">'
+    +'<stop offset="0%" stop-color="#ffe082"/>'
+    +'<stop offset="40%" stop-color="#ffb300"/>'
+    +'<stop offset="100%" stop-color="#e65c00"/>'
     +'</radialGradient>'
+    +'<clipPath id="cCirc"><circle cx="55" cy="55" r="50"/></clipPath>'
     +'</defs>'
-    +'<path d="M42 35 C42 35 24 50 24 62 C24 73 32 80 42 80 C52 80 60 73 60 62 C60 50 42 35 42 35Z" fill="url(#lgld)"/>'
-    // White highlight on teardrop
-    +'<path d="M38 42 C38 42 28 52 28 60 C28 65 31 68 35 67 C30 58 34 46 38 42Z" fill="rgba(255,255,255,0.3)"/>'
-    // "Oillio" text
-    +'<text x="68" y="58" font-family="Georgia,serif" font-size="22" font-weight="bold" font-style="italic" fill="white" text-anchor="middle" letter-spacing="-0.5">Oillio</text>'
-    // "Commodities" text
-    +'<text x="68" y="73" font-family="Arial,sans-serif" font-size="9.5" font-weight="600" fill="rgba(255,255,255,0.92)" text-anchor="middle" letter-spacing="0.3">Commodities</text>'
-    // "Sdn. Bhd." text
-    +'<text x="68" y="84" font-family="Arial,sans-serif" font-size="9" font-weight="600" fill="rgba(255,255,255,0.92)" text-anchor="middle" letter-spacing="0.3">Sdn. Bhd.</text>'
-    // "(1527357-W)" text
-    +'<text x="68" y="94" font-family="Arial,sans-serif" font-size="7" fill="rgba(255,255,255,0.75)" text-anchor="middle">(1527357-W)</text>'
+    // Oval shape: centered slightly right, wide, filling right ~60% of circle
+    +'<ellipse cx="68" cy="55" rx="42" ry="32" fill="url(#oamb)" clip-path="url(#cCirc)" transform="rotate(-12,68,55)"/>'
+    // Subtle highlight on oval
+    +'<ellipse cx="62" cy="44" rx="18" ry="10" fill="rgba(255,255,255,0.18)" clip-path="url(#cCirc)" transform="rotate(-12,62,44)"/>'
+    // White border ring
+    +'<circle cx="55" cy="55" r="50" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>'
+    // "Oillio" text — bold italic, white, centered
+    +'<text x="55" y="60" font-family="Georgia,Times New Roman,serif" font-size="24" font-weight="bold" font-style="italic" fill="white" text-anchor="middle" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4))">Oillio</text>'
     +'</svg>';
 
-  // Watermark backdrop logo (large, semi-transparent, rotated slightly)
-  var _watermark='<div style="position:absolute;top:50%;right:-40px;transform:translateY(-50%);opacity:0.045;pointer-events:none;z-index:0">'
-    +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="420" height="420">'
-    +'<circle cx="60" cy="60" r="58" fill="#2e7d32"/>'
-    +'<defs><radialGradient id="wgld" cx="40%" cy="25%" r="65%"><stop offset="0%" stop-color="#ffc107"/><stop offset="100%" stop-color="#e65100"/></radialGradient></defs>'
-    +'<path d="M42 35 C42 35 24 50 24 62 C24 73 32 80 42 80 C52 80 60 73 60 62 C60 50 42 35 42 35Z" fill="url(#wgld)"/>'
-    +'<text x="68" y="58" font-family="Georgia,serif" font-size="22" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Oillio</text>'
-    +'<text x="68" y="73" font-family="Arial,sans-serif" font-size="9.5" font-weight="600" fill="white" text-anchor="middle">Commodities</text>'
-    +'<text x="68" y="84" font-family="Arial,sans-serif" font-size="9" font-weight="600" fill="white" text-anchor="middle">Sdn. Bhd.</text>'
+  // Wordmark next to logo (matching invoice: "Oillio\nCommodities Sdn. Bhd.\n(1527357-W)")
+  var _wordmark='<div style="display:flex;flex-direction:column;justify-content:center">'
+    +'<div style="font-family:Georgia,serif;font-size:22pt;font-weight:bold;font-style:italic;color:#1e6b1e;line-height:1">Oillio</div>'
+    +'<div style="font-family:Arial,sans-serif;font-size:8.5pt;font-weight:600;color:#1e6b1e;margin-top:1px">Commodities Sdn. Bhd.</div>'
+    +'<div style="font-family:Arial,sans-serif;font-size:7pt;color:#555;margin-top:1px">(1527357-W)</div>'
+    +'</div>';
+
+  // Backdrop watermark — large faded logo center-right of page
+  var _watermark='<div style="position:absolute;top:50%;right:-30px;transform:translateY(-50%);opacity:0.04;pointer-events:none;z-index:0">'
+    +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="400" height="400">'
+    +'<circle cx="55" cy="55" r="50" fill="#1e6b1e"/>'
+    +'<defs><radialGradient id="wamb" cx="38%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffb300"/><stop offset="100%" stop-color="#e65c00"/></radialGradient>'
+    +'<clipPath id="wClip"><circle cx="55" cy="55" r="50"/></clipPath></defs>'
+    +'<ellipse cx="68" cy="55" rx="42" ry="32" fill="url(#wamb)" clip-path="url(#wClip)" transform="rotate(-12,68,55)"/>'
+    +'<text x="55" y="60" font-family="Georgia,serif" font-size="24" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Oillio</text>'
     +'</svg></div>';
 
   s+='<div class="hdr">';
-  s+='<div class="logo-wrap">'+_oillioLogo+'</div>';
+  s+='<div class="logo-wrap" style="flex-shrink:0">'+_oillioLogo+'</div>';
+  s+=_wordmark;
   s+='<div class="hdr-info">';
-  s+='<div class="hdr-name">OILLIO COMMODITIES SDN BHD</div>';
-  s+='<div class="hdr-tagline">Your Trusted Partner in Edible Oils &amp; Fats</div>';
-  s+='<div class="hdr-reg">(1527357-W) &nbsp;&bull;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>';
-  s+='<div class="hdr-contact">Tel: +603 5888 8339 &nbsp;&bull;&nbsp; (M) +6012 326 3988 &nbsp;&bull;&nbsp; export@oillio.com.my &nbsp;&bull;&nbsp; www.oillio.com.my</div>';
+  s+='<div class="hdr-reg">&nbsp;&#183;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>';
+  s+='<div class="hdr-contact">&nbsp;&#183;&nbsp; Tel: +603 5888 8339 &nbsp;&#183;&nbsp; (M) +6012 326 3988 &nbsp;&#183;&nbsp; export@oillio.com.my &nbsp;&#183;&nbsp; www.oillio.com.my</div>';
   s+='</div>';
   s+='<div class="hdr-date"><b>'+ds+'</b><br><span style="color:#666;font-size:7pt">Ref: '+ref_+'</span><br><span style="color:#666;font-size:7pt">Page 1</span></div>';
   s+='</div>';
@@ -2680,7 +2673,6 @@ function generatePdfHtml(){
   s+='<span class="meta-label">Reference No:</span><span class="meta-val">'+ref_+'</span>';
   if(cust){s+='<span class="meta-label">To:</span><span class="meta-val">'+cust+'</span>';}
   if(shipPeriod){s+='<span class="meta-label">Shipment Period:</span><span class="meta-val">'+shipPeriod+'</span>';}
-  s+='<span class="meta-label">Supplier(s):</span><span class="meta-val">'+suppList+'</span>';
   s+='<span class="meta-label">Incoterms:</span><span class="meta-val">'+modeLabel+'</span>';
   s+='</div>';
 
@@ -2794,24 +2786,30 @@ function generatePdfHtml(){
 
   s+='</div>'; // end .body
 
-  // ── FOOTER — exact match to commercial invoice footer ──
+  // ── FOOTER — exact match to commercial invoice ──
   s+='<div class="footer">';
-  s+='<div style="display:flex;align-items:center;gap:5px"><span style="font-size:9pt">&#x1F4CD;</span><span>No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.</span></div>';
-  s+='<div style="display:flex;align-items:center;gap:12px;margin-top:2px">';
-  s+='<span>&#x1F4DE; (O)+603 5888 8339 / (M) +6012 326 3988</span>';
-  s+='<span>&#x2709; export@oillio.com.my</span>';
-  s+='<span style="margin-left:auto;font-weight:700">www.oillio.com.my</span>';
+  // Left section: address + phone + email
+  s+='<div class="ftr-left">';
+  s+='<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px">';
+  s+='<span style="color:#f5a623;font-size:9pt;flex-shrink:0">&#x1F4CD;</span>';
+  s+='<span>No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.</span>';
+  s+='</div>';
+  s+='<div style="display:flex;align-items:center;gap:14px">';
+  s+='<span><span style="color:#f5a623">&#9742;</span> (O)+603 5888 8339 / (M) +6012 326 3988</span>';
+  s+='<span><span style="color:#f5a623">&#9993;</span> export@oillio.com.my</span>';
   s+='</div>';
   s+='</div>';
-
+  // Right: website + orange accent shape
+  s+='<div class="ftr-right"><b>www.oillio.com.my</b></div>';
+  s+='</div>';
 
   // footer is now inline at bottom of body
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>Oillio Price Quotation</title>'
-    +'<style>'+css+'</style>'+'</head><body>'+'<div class="no-print" style="text-align:center;padding:14px;background:#1a6b1a;display:flex;align-items:center;justify-content:center;gap:16px">'+'<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;border-radius:8px;padding:11px 32px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.03em">&#x1F4BE; Save as PDF</button>'+''+'</div>'+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'</body></html>';
+    +'<title>Oillio_Commodities'+( cust ? '-'+cust.replace(/[^a-zA-Z0-9]/g,'_') : '' )+'_'+_yyyymmdd.slice(0,4)+'_'+_yyyymmdd.slice(4,6)+'_'+_yyyymmdd.slice(6,8)+'</title>'
+    +'<style>'+css+'</style>'+'</head><body>'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'</body></html>';
 }
-function doPrint(){logPdfGeneration((el('qCust')||{value:''}).value||'',QITEMS);var html=generatePdfHtml();var w=window.open('','_blank');if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.print();}catch(e){}},600);}else{try{var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.target='_blank';a.download='Oillio_Quotation_'+new Date().toISOString().slice(0,10)+'.html';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);showToast('Quotation saved — open the file and Print → Save as PDF');}catch(e2){alert('Please allow pop-ups for this site to save PDF.');}}}
+function doPrint(){logPdfGeneration((el('qCust')||{value:''}).value||'',QITEMS);var html=generatePdfHtml();var w=window.open('','_blank');if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.print();}catch(e){}},600);}else{try{var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.target='_blank';a.download='Oillio_Commodities'+((el('qCust')||{value:''}).value?'-'+((el('qCust')||{value:''}).value).replace(/[^a-zA-Z0-9]/g,'_'):'')+'_'+new Date().toISOString().slice(0,10).replace(/-/g,'_')+'.html';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);showToast('Quotation saved — open the file and Print → Save as PDF');}catch(e2){alert('Please allow pop-ups for this site to save PDF.');}}}
 
 
 
@@ -2830,9 +2828,6 @@ function openPrintPreview(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var modeLabel=pm==='cif'?'CIF':pm==='both'?'FOB & CIF':'FOB';
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
   var sub2=[];
@@ -3484,9 +3479,6 @@ function copyAsImage(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
 
   // -- Canvas dimensions (portrait, mobile-friendly width) ------------------
@@ -3677,9 +3669,6 @@ function saveAsPDF(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  if(allApical)r+='*Supplier:* Apical'+NL+NL;
-  else if(allKlk)r+='*Supplier:* KLK'+NL+NL;
-  else if(allAble)r+='*Supplier:* For Reference Only'+NL+NL;
       var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
       var W=900,MARG=24,sc=2;
       var CARD_H=function(item){
