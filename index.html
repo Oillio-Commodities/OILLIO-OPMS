@@ -2563,7 +2563,7 @@ function generatePdfHtml(){
     '*{box-sizing:border-box}',
     '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}',
     '.page{width:210mm;min-height:297mm;margin:0 auto;padding:0;position:relative}',
-    '.hdr{background:#fff;padding:14px 22px 10px;display:flex;align-items:center;gap:12px;border-bottom:4px solid #1e6b1e}',    '.logo-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:2px}',
+    '.hdr{background:#fff;padding:16px 24px 12px;display:flex;align-items:center;gap:14px;border-bottom:3px solid #1d6e1d}',    '.logo-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:2px}',
     '.logo-sub{font-size:5.5pt;font-weight:800;color:#1a6b1a;letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap}',
     '.hdr-info{flex:1}',
     '.hdr-name{font-size:15pt;font-weight:900;letter-spacing:.04em;color:#1a6b1a;line-height:1.1}',
@@ -2600,7 +2600,7 @@ function generatePdfHtml(){
     '.sig-title{font-size:7.5pt;color:#555;margin-bottom:28px}',
     '.sig-name{font-weight:700;font-size:9pt;color:#0a2d4a}',
     '.sig-role{font-size:8pt;color:#555}',
-        '.footer{position:fixed;bottom:0;left:0;right:0;background:#1b5e20;color:rgba(255,255,255,.92);padding:8px 18px 8px;font-size:7.2pt;line-height:1.45;display:flex;align-items:center;justify-content:space-between;gap:10px}','.ftr-left{flex:1}','.ftr-right{font-size:8pt;font-weight:800;letter-spacing:.03em;white-space:nowrap}',
+        '.footer{position:fixed;bottom:0;left:0;right:0;background:#1b5e20;color:rgba(255,255,255,.92);padding:8px 18px;font-size:7.2pt;line-height:1.45;display:flex;align-items:center;justify-content:space-between;gap:10px;overflow:hidden}','.ftr-left{flex:1;position:relative;z-index:1}','.ftr-right{font-size:8pt;font-weight:800;letter-spacing:.03em;white-space:nowrap;position:relative;z-index:1}','.ftr-left{flex:1}','.ftr-right{font-size:8pt;font-weight:800;letter-spacing:.03em;white-space:nowrap}',
     '.footer a{color:rgba(255,255,255,.85)}',
     '.page-num{font-size:7pt;opacity:.7}',
     '.validity{background:#fff8e1;border:1px solid #f9a825;border-radius:6px;padding:8px 12px;font-size:8pt;margin-bottom:12px}',
@@ -2609,57 +2609,61 @@ function generatePdfHtml(){
 
   // ── HEADER ──
   var s='';
-  // ── OILLIO HEADER — pixel-matched to commercial invoice ──
-  // Logo: green circle, large amber oval right-half, Oillio italic, Commodities below
+  // ── OILLIO HEADER — 100% match to commercial invoice (Image 2) ──
+  //   Layout: [circle-logo | Oillio wordmark] ............ [date/ref]
+  //   The orange/amber oval fills right-60% of circle, clipped inside
+  //   "Oillio" italic bold centred; wordmark text right of circle
   var _oillioLogo=
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="90" height="90">'
-    // Shadow/depth ring
-    +'<circle cx="55" cy="55" r="52" fill="rgba(0,0,0,0.12)"/>'
-    // Main circle green bg
-    +'<circle cx="55" cy="55" r="50" fill="#1e6b1e"/>'
-    // Large amber/orange oval — right portion, matching invoice logo
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="88" height="88">'
+    // Drop shadow ring
+    +'<circle cx="50" cy="52" r="46" fill="rgba(0,0,0,0.10)"/>'
+    // Main green circle
+    +'<circle cx="50" cy="50" r="46" fill="#1d6e1d"/>'
     +'<defs>'
-    +'<radialGradient id="oamb" cx="38%" cy="30%" r="70%">'
-    +'<stop offset="0%" stop-color="#ffe082"/>'
-    +'<stop offset="40%" stop-color="#ffb300"/>'
-    +'<stop offset="100%" stop-color="#e65c00"/>'
+    // Amber gradient for oval — lighter at top-left, darker orange at bottom-right
+    +'<radialGradient id="gAmb" cx="35%" cy="25%" r="70%">'
+    +'<stop offset="0%" stop-color="#ffe57a"/>'
+    +'<stop offset="35%" stop-color="#ffa726"/>'
+    +'<stop offset="100%" stop-color="#e64a00"/>'
     +'</radialGradient>'
-    +'<clipPath id="cCirc"><circle cx="55" cy="55" r="50"/></clipPath>'
+    // Clip to circle
+    +'<clipPath id="cOil"><circle cx="50" cy="50" r="46"/></clipPath>'
     +'</defs>'
-    // Oval shape: centered slightly right, wide, filling right ~60% of circle
-    +'<ellipse cx="68" cy="55" rx="42" ry="32" fill="url(#oamb)" clip-path="url(#cCirc)" transform="rotate(-12,68,55)"/>'
-    // Subtle highlight on oval
-    +'<ellipse cx="62" cy="44" rx="18" ry="10" fill="rgba(255,255,255,0.18)" clip-path="url(#cCirc)" transform="rotate(-12,62,44)"/>'
-    // White border ring
-    +'<circle cx="55" cy="55" r="50" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>'
-    // "Oillio" text — bold italic, white, centered
-    +'<text x="55" y="60" font-family="Georgia,Times New Roman,serif" font-size="24" font-weight="bold" font-style="italic" fill="white" text-anchor="middle" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4))">Oillio</text>'
+    // Large amber oval — right portion (cx right of centre, wide)
+    +'<ellipse cx="64" cy="50" rx="40" ry="30" fill="url(#gAmb)" clip-path="url(#cOil)" transform="rotate(-8 64 50)"/>'
+    // Subtle specular highlight on amber
+    +'<ellipse cx="58" cy="38" rx="16" ry="9" fill="rgba(255,255,255,0.20)" clip-path="url(#cOil)" transform="rotate(-8 58 38)"/>'
+    // White ring border
+    +'<circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.40)" stroke-width="2.5"/>'
+    // "Oillio" — italic bold Georgia, white, centred
+    +'<text x="50" y="57" font-family="Georgia,Times New Roman,serif" font-size="23" font-weight="bold" font-style="italic" fill="white" text-anchor="middle" letter-spacing="-0.3">Oillio</text>'
     +'</svg>';
 
-  // Wordmark next to logo (matching invoice: "Oillio\nCommodities Sdn. Bhd.\n(1527357-W)")
-  var _wordmark='<div style="display:flex;flex-direction:column;justify-content:center">'
-    +'<div style="font-family:Georgia,serif;font-size:22pt;font-weight:bold;font-style:italic;color:#1e6b1e;line-height:1">Oillio</div>'
-    +'<div style="font-family:Arial,sans-serif;font-size:8.5pt;font-weight:600;color:#1e6b1e;margin-top:1px">Commodities Sdn. Bhd.</div>'
-    +'<div style="font-family:Arial,sans-serif;font-size:7pt;color:#555;margin-top:1px">(1527357-W)</div>'
+  // Wordmark block — exactly as in invoice: Oillio large / Commodities Sdn. Bhd. / (1527357-W)
+  var _wordmark=''
+    +'<div style="display:flex;flex-direction:column;justify-content:center;line-height:1.2">'
+    +'<div style="font-family:Georgia,serif;font-size:20pt;font-weight:bold;font-style:italic;color:#1d6e1d">Oillio</div>'
+    +'<div style="font-family:Arial,sans-serif;font-size:8.5pt;font-weight:600;color:#1d6e1d;margin-top:1px">Commodities Sdn. Bhd.</div>'
+    +'<div style="font-family:Arial,sans-serif;font-size:7pt;color:#666;margin-top:2px">(1527357-W)</div>'
     +'</div>';
 
-  // Backdrop watermark — large faded logo center-right of page
-  var _watermark='<div style="position:absolute;top:50%;right:-30px;transform:translateY(-50%);opacity:0.04;pointer-events:none;z-index:0">'
-    +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="400" height="400">'
-    +'<circle cx="55" cy="55" r="50" fill="#1e6b1e"/>'
-    +'<defs><radialGradient id="wamb" cx="38%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffb300"/><stop offset="100%" stop-color="#e65c00"/></radialGradient>'
-    +'<clipPath id="wClip"><circle cx="55" cy="55" r="50"/></clipPath></defs>'
-    +'<ellipse cx="68" cy="55" rx="42" ry="32" fill="url(#wamb)" clip-path="url(#wClip)" transform="rotate(-12,68,55)"/>'
-    +'<text x="55" y="60" font-family="Georgia,serif" font-size="24" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Oillio</text>'
+  // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
+  var _watermark=''
+    +'<div style="position:absolute;top:40%;right:-60px;transform:translateY(-50%);'
+    +'opacity:0.035;pointer-events:none;z-index:0;overflow:hidden">'
+    +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="440" height="440">'
+    +'<circle cx="50" cy="50" r="46" fill="#1d6e1d"/>'
+    +'<defs><radialGradient id="gW" cx="35%" cy="25%" r="70%"><stop offset="0%" stop-color="#ffa726"/><stop offset="100%" stop-color="#e64a00"/></radialGradient>'
+    +'<clipPath id="cW"><circle cx="50" cy="50" r="46"/></clipPath></defs>'
+    +'<ellipse cx="64" cy="50" rx="40" ry="30" fill="url(#gW)" clip-path="url(#cW)" transform="rotate(-8 64 50)"/>'
+    +'<text x="50" y="57" font-family="Georgia,serif" font-size="23" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Oillio</text>'
     +'</svg></div>';
 
+  // Header HTML — no address here (address is in footer only, exactly like invoice)
   s+='<div class="hdr">';
-  s+='<div class="logo-wrap" style="flex-shrink:0">'+_oillioLogo+'</div>';
+  s+='<div style="flex-shrink:0">'+_oillioLogo+'</div>';
   s+=_wordmark;
-  s+='<div class="hdr-info">';
-  s+='<div class="hdr-reg">&nbsp;&#183;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>';
-  s+='<div class="hdr-contact">&nbsp;&#183;&nbsp; Tel: +603 5888 8339 &nbsp;&#183;&nbsp; (M) +6012 326 3988 &nbsp;&#183;&nbsp; export@oillio.com.my &nbsp;&#183;&nbsp; www.oillio.com.my</div>';
-  s+='</div>';
+  s+='<div style="flex:1"></div>';
   s+='<div class="hdr-date"><b>'+ds+'</b><br><span style="color:#666;font-size:7pt">Ref: '+ref_+'</span><br><span style="color:#666;font-size:7pt">Page 1</span></div>';
   s+='</div>';
   s+='<div class="hdr-line"></div>';
@@ -2786,20 +2790,26 @@ function generatePdfHtml(){
 
   s+='</div>'; // end .body
 
-  // ── FOOTER — exact match to commercial invoice ──
+  // ── FOOTER — exact match to commercial invoice footer ──
+  //   Dark green bar + orange circular accent top-right + icons + text
   s+='<div class="footer">';
-  // Left section: address + phone + email
+  // Orange curved accent shape (top-right of footer — large circle clip)
+  s+='<div style="position:absolute;right:0;top:-28px;width:120px;height:100px;overflow:hidden;pointer-events:none">';
+  s+='<div style="position:absolute;bottom:0;right:-10px;width:110px;height:110px;border-radius:50%;';
+  s+='background:linear-gradient(135deg,#ffb300,#e65c00);opacity:0.92"></div>';
+  s+='</div>';
+  // Left: address + phones + email
   s+='<div class="ftr-left">';
-  s+='<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px">';
-  s+='<span style="color:#f5a623;font-size:9pt;flex-shrink:0">&#x1F4CD;</span>';
+  s+='<div style="display:flex;align-items:flex-start;gap:5px;margin-bottom:3px">';
+  s+='<span style="color:#ffa726;font-size:9pt;flex-shrink:0;margin-top:-1px">&#x1F4CD;</span>';
   s+='<span>No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.</span>';
   s+='</div>';
-  s+='<div style="display:flex;align-items:center;gap:14px">';
-  s+='<span><span style="color:#f5a623">&#9742;</span> (O)+603 5888 8339 / (M) +6012 326 3988</span>';
-  s+='<span><span style="color:#f5a623">&#9993;</span> export@oillio.com.my</span>';
+  s+='<div style="display:flex;align-items:center;gap:16px">';
+  s+='<span><span style="color:#ffa726">&#9742;</span> (O)+603 5888 8339 / (M) +6012 326 3988</span>';
+  s+='<span><span style="color:#ffa726">&#9993;</span> export@oillio.com.my</span>';
   s+='</div>';
   s+='</div>';
-  // Right: website + orange accent shape
+  // Right: website
   s+='<div class="ftr-right"><b>www.oillio.com.my</b></div>';
   s+='</div>';
 
