@@ -1,14 +1,16 @@
 
-## 2026-05-22 (Rev 25) — Auth Page: Emblem + White Wordmark (Presentable on Dark Bg)
+## 2026-05-22 (Rev 26) — Fix Large SVG Ghost + Auth Page Alignment
 
-### Problem
-- `logo_nobg.svg` has dark green text — invisible/ugly on dark navy (#071c2e) auth background
-- Full SVG logo is only suitable for WHITE backgrounds (PDF)
+### Root cause of large hook/loop shape
+- SVG files had explicit `width="620" height="614"` attributes in the `<svg>` tag
+- Mobile browsers prioritise SVG intrinsic dimensions over CSS, so the 80px img rendered at 620px
+- Fix: removed `width` and `height` attributes from all 4 SVG files; now CSS fully controls size
 
-### Fix
-- Auth/login page: emblem icon (`logo_emblem_nobg.svg`, 80px) + white HTML wordmark
-  - "Oillio" — Trebuchet MS 32pt 800-weight WHITE
-  - "Commodities Sdn. Bhd." — Arial 11pt 600-weight rgba(255,255,255,0.80)
-  - "(1527357-W)" — Arial 9pt rgba(255,255,255,0.50)
-- Header: unchanged (emblem-only icon, always correct)
-- PDF: unchanged (full `logo_nobg.svg` on white page — dark text looks great)
+### Auth/login page redesign
+- Single emblem (72px) left-side, with text column right-side
+- All three text lines LEFT-ALIGNED (same x-start): "Oillio" / "Commodities Sdn. Bhd." / "(1527357-W)"
+- Explicit `align-items:flex-start` on text column ensures O, C, ( all start at same edge
+- Uses `display:block` + explicit `width:72px;height:72px` on img to prevent any sizing ambiguity
+
+### Main header
+- Emblem uses `width:40px;height:40px;display:block` — no overflow or double-render
