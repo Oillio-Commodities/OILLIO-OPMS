@@ -1,19 +1,21 @@
 
-## 2026-05-22 (Rev 27) — Remove Line + Fix Logo Size + Clean Edges
+## 2026-05-23 (Rev 28) — Auth Layout + PDF Logo + Total Cargo Column
 
-### Line above logo — root cause found and fixed
-- The VTracer SVG conversion left a 4px-tall, full-width horizontal bar at y=0 (translate 0,0) coloured #7D9485
-- This rendered as a visible gray-green line at the top of the logo on all dark backgrounds
-- Removed from all 4 SVG files (logo.svg, logo_nobg.svg, logo_emblem.svg, logo_emblem_nobg.svg)
+### Auth/Login page
+- Logo size: 62px (matches height of text block: "Oillio" ~42px + "Commodities..." ~14px + gap)
+- Layout: `[logo 62px] | Oillio (2.6rem bold white)`
+          `            | Commodities Sdn. Bhd. (1527357-W)` — ALL on ONE line
+- CSS filter: `contrast(1.15) saturate(1.8)` — pushes muted mint edge colours → vivid green, reduces whitish appearance
+- Removed drop-shadow (was creating halo artefacts)
 
-### Small stray circle — root cause fixed
-- logo_emblem_nobg.svg still contained 215 text-portion paths from original SVG
-- Even with viewBox "0 0 620 614", paths at x=560-619 created stray visual dots near right edge
-- Fixed in Rev 26 by filtering to only emblem paths (x < 620)
-- Now also removed the y=0 line path as the sole remaining artefact
+### PDF header — reinstated logo + full company details
+- Logo: absolute URL `https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg`
+  (relative URL failed in PDF popup window — this was why logo was missing)
+- Company name: OILLIO COMMODITIES SDN BHD (bold, green)
+- Tagline + address + tel + email + www reinstated
 
-### Logo size
-- Auth/login: emblem enlarged from 72px to **110px** — matches reference proportions
-- Removed drop-shadow filter (was creating halo/edge artefacts on dark bg)
-- All text lines (Oillio / Commodities Sdn. Bhd. / 1527357-W) left-aligned with `display:block`
-- Main header icon: 46px (slightly larger for better visibility)
+### PDF table — PROFIT/UNIT → TOTAL CARGO AMOUNT
+- Removed: `Profit/Unit` admin-only column
+- Added: `Total Cargo (USD)` column visible to all users
+- Formula: `total_cargo = oillio_fob × load_ctns` (FOB) or `oillio_cif × load_ctns` (CIF)
+- Displayed in bold dark green

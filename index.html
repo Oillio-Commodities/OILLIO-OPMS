@@ -353,13 +353,17 @@ body.user-mode #userPdfBar { display:flex !important; }
 <body>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
-  <div style="margin-bottom:28px;display:flex;flex-direction:row;align-items:center;gap:18px">
+  <div style="margin-bottom:28px;display:flex;flex-direction:row;align-items:center;gap:16px">
     <img src="logo_emblem_nobg.svg" alt="Oillio"
-         style="width:110px;height:110px;flex-shrink:0;display:block">
-    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0">
-      <span style="font-family:Trebuchet MS,Segoe UI,Arial,sans-serif;font-size:2.8rem;font-weight:800;color:#ffffff;line-height:1;letter-spacing:-0.5px;display:block">Oillio</span>
-      <span style="font-family:Arial,sans-serif;font-size:1rem;font-weight:600;color:rgba(255,255,255,0.82);margin-top:5px;display:block;letter-spacing:0.01em">Commodities Sdn. Bhd.</span>
-      <span style="font-family:Arial,sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.50);margin-top:2px;display:block">(1527357-W)</span>
+         style="width:62px;height:62px;flex-shrink:0;display:block;
+                filter:contrast(1.15) saturate(1.8)">
+    <div style="display:flex;flex-direction:column;align-items:flex-start">
+      <span style="font-family:Trebuchet MS,Segoe UI,Arial,sans-serif;
+                   font-size:2.6rem;font-weight:800;color:#ffffff;
+                   line-height:1;letter-spacing:-0.3px">Oillio</span>
+      <span style="font-family:Arial,sans-serif;font-size:0.85rem;font-weight:500;
+                   color:rgba(255,255,255,0.72);margin-top:5px;white-space:nowrap">
+        Commodities Sdn. Bhd. &nbsp;(1527357-W)</span>
     </div>
   </div>
     <!-- Login Card -->
@@ -2569,7 +2573,7 @@ function generatePdfHtml(){
     'td.name{font-weight:600;color:#0a2d4a}',
     'td.price{font-weight:700;color:#1a5c2a}',
     'td.oillio{font-weight:800;font-size:9pt;color:#0a5478;background:#e8f5ec}',
-    'td.profit{font-weight:700;color:#8e44ad}',
+    
     '.section{margin-bottom:12px}',
     '.section-title{font-weight:700;color:#0a2d4a;font-size:9pt;border-left:4px solid #2a6640;padding-left:8px;margin-bottom:6px}',
     '.note{font-size:7.5pt;color:#666;font-style:italic;margin-bottom:8px}',
@@ -2594,10 +2598,16 @@ function generatePdfHtml(){
   //   Layout: [circle-logo | Oillio wordmark] ............ [date/ref]
   //   The orange/amber oval fills right-60% of circle, clipped inside
   //   "Oillio" italic bold centred; wordmark text right of circle
-  var _oillioLogo='<img src="logo_nobg.svg" alt="Oillio" style="height:84px;width:auto">';
+  var _oillioLogo='<img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg\" alt=\"Oillio\" style=\"height:80px;width:auto;display:block\">';
 
   // Wordmark block — exactly as in invoice: Oillio large / Commodities Sdn. Bhd. / (1527357-W)
-  var _wordmark='';
+  var _wordmark=''
+    +'<div style="display:flex;flex-direction:column;justify-content:center;line-height:1.4">'
+    +'<div style="font-size:11pt;font-weight:800;color:#1a5c14;letter-spacing:0.01em">OILLIO COMMODITIES SDN BHD</div>'
+    +'<div style="font-size:7pt;color:#555;font-style:italic;margin-bottom:2px">Your Trusted Partner in Edible Oils &amp; Fats</div>'
+    +'<div style="font-size:7pt;color:#555">(1527357-W) &nbsp;&bull;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>'
+    +'<div style="font-size:7pt;color:#555">Tel: +603 5888 8339 &nbsp;&bull;&nbsp; (M) +6012 326 3988 &nbsp;&bull;&nbsp; export@oillio.com.my &nbsp;&bull;&nbsp; www.oillio.com.my</div>'
+    +'</div>';
 
   // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
   var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
@@ -2640,7 +2650,7 @@ function generatePdfHtml(){
   s+='<th>No.</th><th>Product Description</th><th>Packing</th><th class="r">Load (ctn)</th><th class="r">Net Wt</th><th>Origin</th>';
   if(showFob)s+='<th class="r">FOB/MT</th><th class="r">FOB Price/Unit</th>';
   if(showCif&&hasCifItem)s+='<th class="r">CIF Price/Unit</th>';
-  if(IS_ADMIN)s+='<th class="r">Profit/Unit</th>';
+  s+='<th class="r">Total Cargo (USD)</th>';
   s+='</tr></thead><tbody>';
 
   QITEMS.forEach(function(item,idx2){
@@ -2675,9 +2685,8 @@ function generatePdfHtml(){
     if(showCif&&hasCifItem){
       s+='<td class="r oillio">USD '+fmt(oillio_cif,4)+'</td>';
     }
-    if(IS_ADMIN){
-      s+='<td class="r profit">+'+ fmt(profit,4)+'</td>';
-    }
+    var total_cargo=(item.mode==='CIF'&&fr>0)?(oillio_cif*lc):(oillio_fob*lc);
+    s+='<td class="r" style="font-weight:700;color:#1a5c14">'+fmt(total_cargo,2)+'</td>';
     s+='</tr>';
     // Freight row if CIF
     if(fr>0&&item.mode==='CIF'){
