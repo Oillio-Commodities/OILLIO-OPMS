@@ -354,7 +354,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:28px;display:flex;flex-direction:row;align-items:center;gap:16px">
-    <img src="logo_emblem_nobg.svg" alt="Oillio"
+    <img src="logo_emblem_nobg.svg?v=28" alt="Oillio"
          style="width:62px;height:62px;flex-shrink:0;display:block;
                 filter:contrast(1.15) saturate(1.8)">
     <div style="display:flex;flex-direction:column;align-items:flex-start">
@@ -460,7 +460,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 ═══════════════════════════════════════════════════ -->
 <header style="display:flex;align-items:center;gap:10px;padding:8px 14px;flex-wrap:nowrap;min-height:56px">
   <!-- Oillio Logo Icon -->
-  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg" alt="Oillio" style="width:46px;height:46px;display:block"></div>
+  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg?v=28" alt="Oillio" style="width:46px;height:46px;display:block"></div>
   <!-- Company name + subtitle -->
   <div style="flex:1;min-width:0;overflow:hidden">
     <div style="font-size:.95rem;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.01em">Oillio Commodities</div>
@@ -2598,7 +2598,7 @@ function generatePdfHtml(){
   //   Layout: [circle-logo | Oillio wordmark] ............ [date/ref]
   //   The orange/amber oval fills right-60% of circle, clipped inside
   //   "Oillio" italic bold centred; wordmark text right of circle
-  var _oillioLogo='<img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg\" alt=\"Oillio\" style=\"height:80px;width:auto;display:block\">';
+  var _oillioLogo='<img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg?v=28\" alt=\"Oillio\" style=\"height:80px;width:auto;display:block\">';
 
   // Wordmark block — exactly as in invoice: Oillio large / Commodities Sdn. Bhd. / (1527357-W)
   var _wordmark=''
@@ -2610,7 +2610,7 @@ function generatePdfHtml(){
     +'</div>';
 
   // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
-  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
+  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=28" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
 
   // Header HTML — no address here (address is in footer only, exactly like invoice)
   s+='<div class="hdr">';
