@@ -1,15 +1,12 @@
 
-## 2026-05-22 (Rev 18) — Cleanest Logo Implementation
+## 2026-05-22 (Rev 19) — Direct Pixel Copy from Zoomed Logo Image
 
-### Logo — 3-layer approach based on actual image analysis
-- **Layer 1**: Full green circle (cx50,cy50,r47) — becomes the green crescent after orange overlays
-- **Layer 2**: Orange S-curve shape: `M50,3 C90,3 10,97 50,97 A47,47 0 0 1 97,50 A47,47 0 0 1 50,3 Z`
-  - S-curve bezier C90,3 10,97: sweeps far right at top (control x=90), far left at bottom (control x=10)
-  - At upper portion (y≈23): orange boundary at x≈60 (green extends 10 units right of centre)
-  - At lower portion (y≈77): orange boundary at x≈40 (orange extends 10 units left of centre)
-  - Creates the "swoop" where orange wraps to lower-left and green to upper-right
-- **Layer 3**: White almond `M53,19 C74,26 74,68 46,81 C22,74 22,32 53,19 Z` (large, prominent)
-  - Top tip (53,19), bottom tip (46,81), right ~x=74, left ~x=22 — height 62%, width 52% of circle
-
-### Green gradient (cx18,cy14,r62): #a8e040→#5cc828→#00a851→#007038→#003014
-### Orange gradient (cx80,cy14,r62): #ffe020→#ffb800→#f7941d→#e87200→#b03800
+### Logo — measurements taken directly from zoomed screenshot pixels
+- **Construction**: 3 layers only
+  1. Full green circle (cx50,cy50,r47)
+  2. Orange S-curve shape: `M50,3 C90,3 10,97 50,97 A47,47 0 0 1 97,50 A47,47 0 0 1 50,3 Z`
+  3. White almond: `M51,22 C68,30 68,66 46,77 C28,70 28,34 51,22 Z`
+- **Almond measurements from image**: top(51,22), bottom(46,77), right widest x≈62@y48, left widest x≈33@y52
+- **S-curve**: control points C90,3 10,97 — upper boundary at x≈60 (y=23), lower at x≈40 (y=77)
+- **Green gradient**: cx16,cy12 — #9adc38 lime → #60c020 → #1aac44 → #007c32 → #002e10 dark
+- **Orange gradient**: cx78,cy16 — #ffe428 gold → #ffbc00 → #ff9c00 → #ee7400 → #b83400
