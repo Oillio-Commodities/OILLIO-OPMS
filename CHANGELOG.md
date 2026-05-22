@@ -1,15 +1,9 @@
 
-## 2026-05-22 (Rev 13) — All 4 Logo Locations Corrected
+## 2026-05-22 (Rev 14) — Correct Torus Logo from Zoomed Reference
 
-### Logo structure — now exactly matches the actual Oillio brand mark
-- **3D sphere** design: bright lime-green outer crescent (radialGradient #a8d84a→#5cb020→#1a5c08) on left, large amber/orange inner area (radialGradient #fff176→#ffb300→#f57c00→#e64a00) on right, white almond/lens shape center-left for depth.
-- **Font fixed**: "Oillio" wordmark changed from italic Georgia serif to **Arial Black bold 900 weight upright** — matches the actual logo font in the screenshot.
-- **Colour**: Dark forest green #1a5c14 for light backgrounds; white for dark backgrounds.
-
-### Updated in all 4 locations:
-1. **Login/Password page**: Large logo (110×110px) + "Oillio" Arial Black 28pt white + "Commodities Sdn. Bhd." + "(1527357-W)" on dark blue background.
-2. **Main app header**: Small icon (44×44px) — same 3D sphere design.
-3. **PDF header**: 80×80px logo + wordmark on white background.
-4. **PDF watermark backdrop**: Same logo scaled to 500px, opacity 4%, centred-right of page.
-
-### All prior changes preserved (calcKlkP, KLK chips, T&C, ref format, filename, supplier hidden).
+### Logo structure — pixel-matched from zoomed screenshot
+- **Structure**: Ring/torus shape. Green base circle (cx50,cy50,r47) with amber circle (cx62,cy52,r42) clipped inside — creates green outer crescent on the left (~17 unit wide, 18% of diameter).
+- **White leaf/almond**: Bezier path `M53,22 C70,30 70,64 46,78 C24,70 24,36 53,22Z` — pointed at top(53,22) and bottom(46,78), widest right at x≈65 and left at x≈30.
+- **Green gradient** (userSpaceOnUse cx18,cy16,r62): vivid lime #a0e030 → #6cc020 → #2a8c10 → #105808 → #073404
+- **Amber gradient** (userSpaceOnUse cx60,cy32,r52): golden #ffe820 → #ffcc00 → #ff9800 → #ff6400 → #e04000
+- All 4 locations use identical SVG (different width/height only): auth(100px), header(44px), PDF(84px), watermark(480px@3.8%opacity).
