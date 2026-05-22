@@ -354,9 +354,9 @@ body.user-mode #userPdfBar { display:flex !important; }
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:32px;display:flex;flex-direction:row;align-items:center;gap:20px">
-    <img src="logo_emblem_nobg.svg?v=29" alt="Oillio"
+    <img src="logo_emblem_nobg.svg?v=30" alt="Oillio"
          style="width:95px;height:95px;flex-shrink:0;display:block;
-                filter:contrast(1.3) saturate(2)">
+                filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))">
     <div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.1">
       <span style="font-family:Trebuchet MS,Segoe UI,Arial,sans-serif;
                    font-size:3rem;font-weight:900;color:#ffffff;
@@ -461,7 +461,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 ═══════════════════════════════════════════════════ -->
 <header style="display:flex;align-items:center;gap:10px;padding:8px 14px;flex-wrap:nowrap;min-height:56px">
   <!-- Oillio Logo Icon -->
-  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg?v=29" alt="Oillio" style="width:46px;height:46px;display:block"></div>
+  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg?v=30" alt="Oillio" style="width:46px;height:46px;display:block"></div>
   <!-- Company name + subtitle -->
   <div style="flex:1;min-width:0;overflow:hidden">
     <div style="font-size:.95rem;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.01em">Oillio Commodities</div>
@@ -2599,19 +2599,12 @@ function generatePdfHtml(){
   //   Layout: [circle-logo | Oillio wordmark] ............ [date/ref]
   //   The orange/amber oval fills right-60% of circle, clipped inside
   //   "Oillio" italic bold centred; wordmark text right of circle
-  var _oillioLogo='<img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_nobg.svg?v=29\" alt=\"Oillio\" style=\"height:80px;width:auto;display:block\">';
+  var _oillioLogo='<div style=\"display:flex;align-items:center;gap:12px\"><img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_emblem_nobg.svg?v=30\" style=\"width:72px;height:72px;display:block\"><div style=\"display:flex;flex-direction:column;justify-content:center\"><div style=\"font-size:1.7rem;font-weight:900;color:#1a5c14;line-height:1;letter-spacing:-0.3px\">Oillio</div><div style=\"font-size:0.62rem;font-weight:700;color:#1a5c14;margin-top:2px\">Commodities Sdn. Bhd.</div><div style=\"font-size:0.55rem;font-weight:400;color:#555;margin-top:1px\">(1527357-W)</div></div></div>';
 
-  // Wordmark block — exactly as in invoice: Oillio large / Commodities Sdn. Bhd. / (1527357-W)
-  var _wordmark=''
-    +'<div style="display:flex;flex-direction:column;justify-content:center;line-height:1.4">'
-    +'<div style="font-size:11pt;font-weight:800;color:#1a5c14;letter-spacing:0.01em">OILLIO COMMODITIES SDN BHD</div>'
-    +'<div style="font-size:7pt;color:#555;font-style:italic;margin-bottom:2px">Your Trusted Partner in Edible Oils &amp; Fats</div>'
-    +'<div style="font-size:7pt;color:#555">(1527357-W) &nbsp;&bull;&nbsp; No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div>'
-    +'<div style="font-size:7pt;color:#555">Tel: +603 5888 8339 &nbsp;&bull;&nbsp; (M) +6012 326 3988 &nbsp;&bull;&nbsp; export@oillio.com.my &nbsp;&bull;&nbsp; www.oillio.com.my</div>'
-    +'</div>';
+  var _wordmark='<div style=\"display:flex;flex-direction:column;justify-content:center;text-align:right\"><div style=\"font-size:7pt;color:#555\">No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div><div style=\"font-size:7pt;color:#555\">Tel: +603 5888 8339 &nbsp;|&nbsp; (M) +6012 326 3988 &nbsp;|&nbsp; export@oillio.com.my &nbsp;|&nbsp; www.oillio.com.my</div></div>';
 
   // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
-  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=29" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
+  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=30" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
 
   // Header HTML — no address here (address is in footer only, exactly like invoice)
   s+='<div class="hdr">';

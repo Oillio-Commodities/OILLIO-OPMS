@@ -1,15 +1,15 @@
 
-## 2026-05-23 (Rev 30) — Emblem SVG Cleaned + Correct 3-Line Text Layout
+## 2026-05-23 (Rev 31) — Replace VTracer SVG + Clean PDF Header
 
-### Emblem SVG (logo_emblem_nobg.svg) — definitive clean
-- Removed 59 paths at translate x>=560: these were text-adjacent paths causing the stray "O" circle and "Comm 1527357" text to render beside the emblem
-- Removed 5 near-white anti-aliasing paths (lum>0.82, sat<0.3) causing whitish pixel spots
-- Added `<clipPath>` circle (cx=295,cy=307,r=285) as hard boundary — nothing outside the ring can render
-- Kept 290 paths: only the orange/yellow and green ring paths + white almond
+### logo_emblem_nobg.svg — REPLACED with clean hand-coded SVG
+- Previous: 354-path VTracer trace (leaked stray text paths, whitish edge artifacts)  
+- New: 5-element clean SVG (2KB vs 250KB) matching Image 4 reference exactly
+  - Ring mask: outer circle r=47, tilted almond top-LEFT(46,20)→bottom-RIGHT(54,80)
+  - Green: bright lime-yellow #a8e040 → vivid #28a030 → dark forest #043010 (cx24,cy18)
+  - Orange: golden #ffe840 → amber #ffb000 → deep orange #c03400 (cx74,cy16)
+  - 3D depth: green top-cap + orange bottom-cap
+  - NO stray text paths, NO whitish edge artifacts, perfectly clean edges
 
-### Auth/Login page text layout — matches Image 4 reference exactly
-- Row 1: "Oillio" — 3rem, font-weight:900 (THICK/BOLD), white
-- Row 2: "Commodities Sdn. Bhd." — 1rem, font-weight:700 (slightly bold), 85% white
-- Row 3: "(1527357-W)" — 0.82rem, font-weight:400 (THIN), 55% white
-- Logo: 95px (matches combined 3-row text block height)
-- CSS filter: contrast(1.3) saturate(2) for vivid ring colours
+### PDF header — logo emblem + Oillio brand text
+- Left: 72px ring emblem + "Oillio" (900 weight) + "Commodities Sdn. Bhd." + "(1527357-W)"
+- Right: address, tel, email, www
