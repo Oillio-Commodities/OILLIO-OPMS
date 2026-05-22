@@ -1,13 +1,10 @@
 
-## 2026-05-22 (Rev 20) — Correct Ring Structure with Tilted Almond
+## 2026-05-22 (Rev 21) — Logo from Detailed XML Description
 
-### Logo — rebuilt from user's exact verbal description
-- **Structure**: Ring/donut shape using SVG evenodd mask
-  - Outer circle r=47, centre (50,50)
-  - Inner hole = tilted white almond: top-tip at (46,20) = upper-LEFT, bottom-tip at (54,80) = lower-RIGHT
-  - Ring = outer circle area minus the almond hole
-- **Colour split**: Green fills LEFT half (x<50), Orange fills RIGHT half (x>50)
-- **3D depth**: Green top-cap drawn over orange at 12-o'clock junction; Orange bottom-cap drawn over green at 6-o'clock junction
-- **Green gradient**: cx15,cy12 — #a0e030 lime → #08a848 emerald → #002e12 dark
-- **Orange gradient**: cx82,cy14 — #ffe820 gold → #ff9400 amber → #b03200 deep orange
-- Applied to auth(100px), header(44px), PDF(84px), watermark(480px @4%)
+### Logo — implemented from XML tag specification
+- **Structure**: Ring/donut, evenodd mask (outer circle r=47 minus tilted almond)
+- **Green left swoosh gradient** (cx38,cy22,r66): #c4ec48 light-yellow-green (upper+inner highlight) → #18a840 → #003014 dark-forest (bottom+outer shadow) — matches XML: "light yellow-green at upper and inner edges → dark forest at bottom and outer"
+- **Orange right swoosh gradient** (cx65,cy10,r72): #fff060 bright-light-yellow (top highlight) → #ffb200 amber → #b83000 deep-orange (bottom+outer) — matches XML: "bright light yellow at top → warm deep orange at bottom and outer"
+- **3D depth**: Green cap at 12 o'clock, Orange cap at 6 o'clock
+- **Font**: Nunito 800 weight (heavy bold rounded sans-serif, distinct circular i-dots per XML)
+- **Wordmark**: "Oillio" Nunito 800 dark forest green #1a5c14; "Commodities Sdn. Bhd." smaller; "(1527357-W)" smallest
