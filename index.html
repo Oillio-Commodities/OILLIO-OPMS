@@ -1,4 +1,32 @@
-<!DOCTYPE html>
+<div style="margin-bottom:28px;filter:drop-shadow(0 6px 20px rgba(0,0,0,.4));display:flex;align-items:center;gap:14px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="110" height="110">
+  <defs>
+    <radialGradient id="gGrauth" cx="28%" cy="22%" r="75%">
+      <stop offset="0%" stop-color="#a8d84a"/>
+      <stop offset="35%" stop-color="#5cb020"/>
+      <stop offset="75%" stop-color="#2a7a10"/>
+      <stop offset="100%" stop-color="#1a5c08"/>
+    </radialGradient>
+    <radialGradient id="gOrauth" cx="40%" cy="35%" r="72%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="30%" stop-color="#ffb300"/>
+      <stop offset="70%" stop-color="#f57c00"/>
+      <stop offset="100%" stop-color="#e64a00"/>
+    </radialGradient>
+    <clipPath id="gClauth"><circle cx="55" cy="55" r="50"/></clipPath>
+  </defs>
+  <circle cx="55" cy="55" r="50" fill="url(#gGrauth)"/>
+  <circle cx="63" cy="57" r="42" fill="url(#gOrauth)" clip-path="url(#gClauth)"/>
+  <ellipse cx="44" cy="55" rx="14" ry="23" fill="rgba(255,255,255,0.90)" clip-path="url(#gClauth)" transform="rotate(-8 44 55)"/>
+  <ellipse cx="34" cy="31" rx="11" ry="7" fill="rgba(190,255,100,0.38)" transform="rotate(-30 34 31)"/>
+  <circle cx="55" cy="55" r="50" fill="none" stroke="rgba(0,80,0,0.18)" stroke-width="1.5"/>
+</svg>
+    <div style="display:flex;flex-direction:column;justify-content:center">
+      <div style="font-family:Arial Black,Arial,sans-serif;font-size:28pt;font-weight:900;color:white;line-height:1">Oillio</div>
+      <div style="font-family:Arial,sans-serif;font-size:11pt;font-weight:700;color:rgba(255,255,255,0.88);margin-top:1px">Commodities Sdn. Bhd.</div>
+      <div style="font-family:Arial,sans-serif;font-size:9pt;color:rgba(255,255,255,0.6);margin-top:2px">(1527357-W)</div>
+    </div>
+  </div><!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -352,22 +380,29 @@ body.user-mode #userPdfBar { display:flex !important; }
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
-  <!-- Oillio Logo - embedded directly, no JS escaping needed -->
-  <div style="margin-bottom:28px;filter:drop-shadow(0 6px 20px rgba(0,0,0,.6))">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 110" width="260" height="102">
-      <defs>
-        <radialGradient id="lGr" cx="35%" cy="28%" r="72%"><stop offset="0%" stop-color="#88d44c"/><stop offset="55%" stop-color="#3a9430"/><stop offset="100%" stop-color="#1a5c18"/></radialGradient>
-        <radialGradient id="lOr" cx="38%" cy="32%" r="70%"><stop offset="0%" stop-color="#ffe050"/><stop offset="60%" stop-color="#f5a800"/><stop offset="100%" stop-color="#c86000"/></radialGradient>
-        <clipPath id="lCl"><circle cx="52" cy="52" r="48"/></clipPath>
-      </defs>
-      <circle cx="52" cy="52" r="48" fill="url(#lGr)"/>
-      <path clip-path="url(#lCl)" d="M52 10C80 8 98 28 98 52C98 76 80 96 52 98C34 98 20 86 15 70C10 54 18 37 33 29C41 25 43 16 52 10Z" fill="url(#lOr)"/>
-      <path clip-path="url(#lCl)" d="M52 18C70 21 81 34 79 52C77 69 66 79 52 80C38 79 28 69 30 53C32 37 37 19 52 18Z" fill="white" opacity="0.9"/>
-      <circle cx="52" cy="52" r="19" fill="url(#lGr)"/>
-      <text x="122" y="46" font-family="Arial Black,Arial,sans-serif" font-size="32" font-weight="900" fill="white">Oillio</text>
-      <text x="122" y="66" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="rgba(255,255,255,.85)">Commodities Sdn. Bhd.</text>
-      <text x="122" y="82" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,.6)">(1527357-W)</text>
-    </svg>
+  <!-- Oillio Logo — exact replica of actual brand mark -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="110" height="110">
+  <defs>
+    <radialGradient id="gGrauth" cx="28%" cy="22%" r="75%">
+      <stop offset="0%" stop-color="#a8d84a"/>
+      <stop offset="35%" stop-color="#5cb020"/>
+      <stop offset="75%" stop-color="#2a7a10"/>
+      <stop offset="100%" stop-color="#1a5c08"/>
+    </radialGradient>
+    <radialGradient id="gOrauth" cx="40%" cy="35%" r="72%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="30%" stop-color="#ffb300"/>
+      <stop offset="70%" stop-color="#f57c00"/>
+      <stop offset="100%" stop-color="#e64a00"/>
+    </radialGradient>
+    <clipPath id="gClauth"><circle cx="55" cy="55" r="50"/></clipPath>
+  </defs>
+  <circle cx="55" cy="55" r="50" fill="url(#gGrauth)"/>
+  <circle cx="63" cy="57" r="42" fill="url(#gOrauth)" clip-path="url(#gClauth)"/>
+  <ellipse cx="44" cy="55" rx="14" ry="23" fill="rgba(255,255,255,0.90)" clip-path="url(#gClauth)" transform="rotate(-8 44 55)"/>
+  <ellipse cx="34" cy="31" rx="11" ry="7" fill="rgba(190,255,100,0.38)" transform="rotate(-30 34 31)"/>
+  <circle cx="55" cy="55" r="50" fill="none" stroke="rgba(0,80,0,0.18)" stroke-width="1.5"/>
+</svg>
   </div>
   <!-- Login Card -->
   <div style="background:rgba(255,255,255,.09);border-radius:18px;padding:30px 34px;width:100%;max-width:400px;text-align:center;border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px)">
@@ -465,16 +500,27 @@ body.user-mode #userPdfBar { display:flex !important; }
   <!-- Oillio Logo Icon -->
   <div style="flex-shrink:0;width:44px;height:44px">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="44" height="44">
-      <defs>
-        <radialGradient id="hGr" cx="35%" cy="28%" r="72%"><stop offset="0%" stop-color="#88d44c"/><stop offset="55%" stop-color="#3a9430"/><stop offset="100%" stop-color="#1a5c18"/></radialGradient>
-        <radialGradient id="hOr" cx="38%" cy="32%" r="70%"><stop offset="0%" stop-color="#ffe050"/><stop offset="60%" stop-color="#f5a800"/><stop offset="100%" stop-color="#c86000"/></radialGradient>
-        <clipPath id="hCl"><circle cx="28" cy="28" r="26"/></clipPath>
-      </defs>
-      <circle cx="28" cy="28" r="26" fill="url(#hGr)"/>
-      <path clip-path="url(#hCl)" d="M28 5C43 4 53 14 53 28C53 42 43 52 28 53C18 53 10 46 8 37C5 28 10 19 19 15C23 12 24 9 28 5Z" fill="url(#hOr)"/>
-      <path clip-path="url(#hCl)" d="M28 11C38 13 44 21 43 28C42 36 35 42 28 43C21 42 16 35 18 28C19 20 22 11 28 11Z" fill="white" opacity="0.9"/>
-      <circle cx="28" cy="28" r="10" fill="url(#hGr)"/>
-    </svg>
+  <defs>
+    <radialGradient id="gGrhdr" cx="28%" cy="22%" r="75%">
+      <stop offset="0%" stop-color="#a8d84a"/>
+      <stop offset="35%" stop-color="#5cb020"/>
+      <stop offset="75%" stop-color="#2a7a10"/>
+      <stop offset="100%" stop-color="#1a5c08"/>
+    </radialGradient>
+    <radialGradient id="gOrhdr" cx="40%" cy="35%" r="72%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="30%" stop-color="#ffb300"/>
+      <stop offset="70%" stop-color="#f57c00"/>
+      <stop offset="100%" stop-color="#e64a00"/>
+    </radialGradient>
+    <clipPath id="gClhdr"><circle cx="28" cy="28" r="25"/></clipPath>
+  </defs>
+  <circle cx="28" cy="28" r="25" fill="url(#gGrhdr)"/>
+  <circle cx="32" cy="29" r="21" fill="url(#gOrhdr)" clip-path="url(#gClhdr)"/>
+  <ellipse cx="22" cy="28" rx="7" ry="11" fill="rgba(255,255,255,0.90)" clip-path="url(#gClhdr)" transform="rotate(-8 22 28)"/>
+  <ellipse cx="17" cy="16" rx="5" ry="3" fill="rgba(190,255,100,0.38)" transform="rotate(-30 17 16)"/>
+  <circle cx="28" cy="28" r="25" fill="none" stroke="rgba(0,80,0,0.18)" stroke-width="1.5"/>
+</svg>
   </div>
   <!-- Company name + subtitle -->
   <div style="flex:1;min-width:0;overflow:hidden">
@@ -2614,31 +2660,36 @@ function generatePdfHtml(){
   //   The orange/amber oval fills right-60% of circle, clipped inside
   //   "Oillio" italic bold centred; wordmark text right of circle
   // ── Logo: green circle + amber oval only (NO text inside) — exact Image 2 ──
+  // ── Oillio logo — exact brand mark (3D sphere, green crescent, amber inner, white lens)
   var _oillioLogo=
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">'
-    // Green circle background
-    +'<circle cx="50" cy="50" r="48" fill="#1c6e20"/>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">'
     +'<defs>'
-    +'<radialGradient id="gAmb" cx="42%" cy="32%" r="68%">'
-    +'<stop offset="0%" stop-color="#ffe57a"/>'
-    +'<stop offset="38%" stop-color="#ffa726"/>'
-    +'<stop offset="100%" stop-color="#e65000"/>'
+    +'<radialGradient id="gGrpdf" cx="28%" cy="22%" r="75%">'
+    +'<stop offset="0%" stop-color="#a8d84a"/>'
+    +'<stop offset="35%" stop-color="#5cb020"/>'
+    +'<stop offset="75%" stop-color="#2a7a10"/>'
+    +'<stop offset="100%" stop-color="#1a5c08"/>'
     +'</radialGradient>'
-    +'<clipPath id="cOil"><circle cx="50" cy="50" r="48"/></clipPath>'
+    +'<radialGradient id="gOrpdf" cx="40%" cy="35%" r="72%">'
+    +'<stop offset="0%" stop-color="#fff176"/>'
+    +'<stop offset="30%" stop-color="#ffb300"/>'
+    +'<stop offset="70%" stop-color="#f57c00"/>'
+    +'<stop offset="100%" stop-color="#e64a00"/>'
+    +'</radialGradient>'
+    +'<clipPath id="gClpdf"><circle cx="50" cy="50" r="46"/></clipPath>'
     +'</defs>'
-    // Amber/orange oval — fills right 70% of circle, no rotation, as per Image 2
-    +'<ellipse cx="60" cy="50" rx="40" ry="34" fill="url(#gAmb)" clip-path="url(#cOil)"/>'
-    // Subtle specular on amber
-    +'<ellipse cx="55" cy="37" rx="18" ry="10" fill="rgba(255,255,255,0.18)" clip-path="url(#cOil)"/>'
-    // White ring border
-    +'<circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>'
+    +'<circle cx="50" cy="50" r="46" fill="url(#gGrpdf)"/>'
+    +'<circle cx="57" cy="52" r="39" fill="url(#gOrpdf)" clip-path="url(#gClpdf)"/>'
+    +'<ellipse cx="40" cy="50" rx="12" ry="21" fill="rgba(255,255,255,0.90)" clip-path="url(#gClpdf)" transform="rotate(-8 40 50)"/>'
+    +'<ellipse cx="31" cy="28" rx="10" ry="6" fill="rgba(190,255,100,0.38)" transform="rotate(-30 31 28)"/>'
+    +'<circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,80,0,0.18)" stroke-width="1.5"/>'
     +'</svg>';
+
 
   // Wordmark — "Oillio" + "Commodities Sdn. Bhd." + (1527357-W)  SEPARATE from circle (as per Image 2)
   var _wordmark=''
     +'<div style="display:flex;flex-direction:column;justify-content:flex-start;line-height:1.15;padding-top:4px">'
-    +'<div style="font-family:Georgia,Times New Roman,serif;font-size:22pt;font-weight:bold;'
-    +'font-style:italic;color:#1c6e20;letter-spacing:-0.5px">Oillio</div>'
+    +'<div style="font-family:Arial Black,Arial,sans-serif;font-size:22pt;font-weight:900;color:#1a5c14;letter-spacing:-0.3px">Oillio</div>'
     +'<div style="font-family:Arial,sans-serif;font-size:9pt;font-weight:600;color:#1c6e20;margin-top:0px">Commodities Sdn. Bhd.</div>'
     +'<div style="font-family:Arial,sans-serif;font-size:7pt;color:#555;margin-top:2px">(1527357-W)</div>'
     +'</div>';
@@ -2646,25 +2697,31 @@ function generatePdfHtml(){
   // Watermark — faded logo backdrop, right-centre
   var _watermark=''
     +'<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);'
-    +'opacity:0.038;pointer-events:none;z-index:0">'
+    +'opacity:0.04;pointer-events:none;z-index:0">'
     +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="500" height="500">'
-    +'<circle cx="50" cy="50" r="48" fill="#1c6e20"/>'
-    +'<defs><radialGradient id="gW"><stop offset="0%" stop-color="#ffa726"/><stop offset="100%" stop-color="#e65000"/></radialGradient>'
-    +'<clipPath id="cW"><circle cx="50" cy="50" r="48"/></clipPath></defs>'
-    +'<ellipse cx="60" cy="50" rx="40" ry="34" fill="url(#gW)" clip-path="url(#cW)"/>'
-    +'</svg></div>';
+    +'<defs>'
+    +'<radialGradient id="gGrwm" cx="28%" cy="22%" r="75%">'
+    +'<stop offset="0%" stop-color="#a8d84a"/>'
+    +'<stop offset="35%" stop-color="#5cb020"/>'
+    +'<stop offset="75%" stop-color="#2a7a10"/>'
+    +'<stop offset="100%" stop-color="#1a5c08"/>'
+    +'</radialGradient>'
+    +'<radialGradient id="gOrwm" cx="40%" cy="35%" r="72%">'
+    +'<stop offset="0%" stop-color="#fff176"/>'
+    +'<stop offset="30%" stop-color="#ffb300"/>'
+    +'<stop offset="70%" stop-color="#f57c00"/>'
+    +'<stop offset="100%" stop-color="#e64a00"/>'
+    +'</radialGradient>'
+    +'<clipPath id="gClwm"><circle cx="50" cy="50" r="46"/></clipPath>'
+    +'</defs>'
+    +'<circle cx="50" cy="50" r="46" fill="url(#gGrwm)"/>'
+    +'<circle cx="57" cy="52" r="39" fill="url(#gOrwm)" clip-path="url(#gClwm)"/>'
+    +'<ellipse cx="40" cy="50" rx="12" ry="21" fill="rgba(255,255,255,0.90)" clip-path="url(#gClwm)" transform="rotate(-8 40 50)"/>'
+    +'<ellipse cx="31" cy="28" rx="10" ry="6" fill="rgba(190,255,100,0.38)" transform="rotate(-30 31 28)"/>'
+    +'<circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,80,0,0.18)" stroke-width="1.5"/>'
+    +'</svg>'
+    +'</div>';
 
-  // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
-  var _watermark=''
-    +'<div style="position:absolute;top:40%;right:-60px;transform:translateY(-50%);'
-    +'opacity:0.035;pointer-events:none;z-index:0;overflow:hidden">'
-    +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="440" height="440">'
-    +'<circle cx="50" cy="50" r="46" fill="#1d6e1d"/>'
-    +'<defs><radialGradient id="gW" cx="35%" cy="25%" r="70%"><stop offset="0%" stop-color="#ffa726"/><stop offset="100%" stop-color="#e64a00"/></radialGradient>'
-    +'<clipPath id="cW"><circle cx="50" cy="50" r="46"/></clipPath></defs>'
-    +'<ellipse cx="64" cy="50" rx="40" ry="30" fill="url(#gW)" clip-path="url(#cW)" transform="rotate(-8 64 50)"/>'
-    +'<text x="50" y="57" font-family="Georgia,serif" font-size="23" font-weight="bold" font-style="italic" fill="white" text-anchor="middle">Oillio</text>'
-    +'</svg></div>';
 
   // Header HTML — exact Image 2: [circle] [Oillio wordmark] [spacer] [date/ref]
   s+='<div class="hdr">';

@@ -1,15 +1,15 @@
 
-## 2026-05-22 (Rev 12) — Logo Correct: No Text Inside Circle + Large Orange Footer
+## 2026-05-22 (Rev 13) — All 4 Logo Locations Corrected
 
-### Logo — now correctly replicates Image 2
-- **Key fix**: Removed "Oillio" text from INSIDE the SVG circle. The actual Oillio logo has NO text inside the circle — it's purely a graphic (green circle + amber oval).
-- Circle: #1c6e20 green background, amber/orange oval (radialGradient cream→#ffa726→#e65000) fills right 70% of circle (cx=60, rx=40, ry=34, no rotation). Subtle specular highlight.
-- "Oillio" italic bold Georgia 22pt + "Commodities Sdn. Bhd." + "(1527357-W)" displayed as SEPARATE wordmark HTML to the right of the circle — exactly as in Image 2.
+### Logo structure — now exactly matches the actual Oillio brand mark
+- **3D sphere** design: bright lime-green outer crescent (radialGradient #a8d84a→#5cb020→#1a5c08) on left, large amber/orange inner area (radialGradient #fff176→#ffb300→#f57c00→#e64a00) on right, white almond/lens shape center-left for depth.
+- **Font fixed**: "Oillio" wordmark changed from italic Georgia serif to **Arial Black bold 900 weight upright** — matches the actual logo font in the screenshot.
+- **Colour**: Dark forest green #1a5c14 for light backgrounds; white for dark backgrounds.
 
-### Footer — large orange circle (matches Image 2)
-- Replaced small accent with a 130×130px orange circle (gradient #ffb300→#e65000) centered at the right edge of the footer — creates the large curved orange element visible in Image 2.
-- Dark green (#1a5c20) background, overflow:hidden clips circle to bar height.
-- Address/phone/email with orange icons on left. www.oillio.com.my bold white on right over orange.
+### Updated in all 4 locations:
+1. **Login/Password page**: Large logo (110×110px) + "Oillio" Arial Black 28pt white + "Commodities Sdn. Bhd." + "(1527357-W)" on dark blue background.
+2. **Main app header**: Small icon (44×44px) — same 3D sphere design.
+3. **PDF header**: 80×80px logo + wordmark on white background.
+4. **PDF watermark backdrop**: Same logo scaled to 500px, opacity 4%, centred-right of page.
 
-### All prior changes preserved
-- No Save as PDF bar, no supplier names, Oillio-YYYYMMDD-NN ref, Oillio_Commodities filename, T&C, KLK chips, calcKlkP.
+### All prior changes preserved (calcKlkP, KLK chips, T&C, ref format, filename, supplier hidden).
