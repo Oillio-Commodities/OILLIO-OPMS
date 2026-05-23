@@ -5368,19 +5368,80 @@ function viewPdfLog(){
     html+='</div>';
   });
   html+='<div style="margin-top:10px;display:flex;gap:8px">';
-  html+='<button onclick="exportPdfLog()" style="background:var(--olv);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Export JSON</button>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px">';
+  html+='<button onclick="exportPdfLog()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer">&#x2B07; Download PDF Log (CSV)</button>';
+  html+='<button onclick="exportRefLog()" style="background:#b45309;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer">&#x2B07; Download Ref Price Log (CSV)</button>';
+  html+='<button onclick="clearLogs()" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.8rem;cursor:pointer">&#x1F5D1; Clear All Logs</button>';
+  html+='</div>';
   html+='</div></div>';
   var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(modal&&body&&title){title.textContent='PDF Activity Log';body.innerHTML=html;modal.className='open';}
 }
 function exportPdfLog(){
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_pdf_log')||'[]');}catch(e){}
-  var blob=new Blob([JSON.stringify(log,null,2)],{type:'application/json'});
+  if(!log.length){showToast('No PDF log entries yet');return;}
+  // Flatten: one row per product line
+  var rows=[['Date','Time','User','Customer','Product','Mode','FCL','FOB/MT (USD)','Oillio MT (USD)','Oillio Unit (USD)']];
+  log.forEach(function(e){
+    if(e.items&&e.items.length){
+      e.items.forEach(function(it){
+        rows.push([
+          e.date||'',
+          e.time||'',
+          e.user||'',
+          '"'+(e.customer||'').replace(/"/g,'""')+'"',
+          '"'+(it.product||'').replace(/"/g,'""')+'"',
+          it.mode||'FOB',
+          it.fcl||1,
+          it.fob_mt||'',
+          it.oillio_mt||'',
+          it.oillio_unit||''
+        ]);
+      });
+    } else {
+      rows.push([e.date||'',e.time||'',e.user||'','"'+(e.customer||'')+'"','','','','','','']);
+    }
+  });
+  var csv=rows.map(function(r){return r.join(',');}).join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;
-  a.download='oillio_pdf_log_'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();URL.revokeObjectURL(url);
+  a.download='Oillio_PDF_Log_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Downloaded: Oillio_PDF_Log_'+new Date().toISOString().slice(0,10)+'.csv');
 }
+
+function exportRefLog(){
+  var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
+  if(!log.length){showToast('No reference log entries yet');return;}
+  // Build header from first entry's ref keys
+  var refKeys=Object.keys(log[0].ref||{});
+  var header=['Date','Time','Supplier','User'].concat(refKeys);
+  var rows=[header];
+  log.forEach(function(e){
+    var ts=e.ts?new Date(e.ts).toTimeString().slice(0,8):'';
+    var row=[e.date||'',ts,e.supplier||'',e.user||''];
+    refKeys.forEach(function(k){row.push((e.ref||{})[k]||'');});
+    rows.push(row);
+  });
+  var csv=rows.map(function(r){return r.join(',');}).join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  a.download='Oillio_RefPrice_Log_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Downloaded: Oillio_RefPrice_Log_'+new Date().toISOString().slice(0,10)+'.csv');
+}
+
+function clearLogs(){
+  if(!confirm('Clear ALL logs permanently? This cannot be undone.'))return;
+  localStorage.removeItem('oillio_pdf_log');
+  localStorage.removeItem('oillio_ref_log');
+  showToast('All logs cleared');
+}
+
 window.addEventListener('beforeunload',function(){sessionStorage.removeItem('oillio_level');});
 // ─── APP INIT ───
 (function(){
