@@ -1,32 +1,36 @@
 
 ---
 
-## Rev 32 — CSV Export for Logs (User 0)
+## Rev 33 — CSV Export Fixed (Price History Log)
 
-### New functions added
-- `exportPdfLog()` — **REPLACED** (was JSON export, now proper CSV)
-- `exportRefLog()` — **NEW** — exports reference price change history as CSV
-- `clearLogs()` — **NEW** — clears both logs after confirmation prompt
+### Problem
+- `svExportLog()` in Price History Log was exporting raw JSON — unreadable in Excel
+- User saw "Export All History (JSON)" button downloading `.json` file
 
-### How CSV export works
-1. User 0 opens the PDF Activity Log modal (from Oil Price Manager)
-2. Three buttons shown at top:
-   - 🟢 **Download PDF Log (CSV)** — all quotations ever generated
-   - 🟠 **Download Ref Price Log (CSV)** — all reference price saves
-   - 🔴 **Clear All Logs** — permanent delete (confirm dialog shown)
-3. Browser downloads file to device Downloads folder
+### Fix
+- Replaced `svExportLog()` with proper Excel-ready CSV export
+- Button renamed: "Download Report (CSV — opens in Excel)"
+- File: `Oillio_PriceLog_YYYY-MM-DD.csv`
 
-### PDF Log CSV columns
-Date | Time | User | Customer | Product | Mode | FCL | FOB/MT (USD) | Oillio MT (USD) | Oillio Unit (USD)
-- One row per product line item (entries with multiple products = multiple rows)
-- Up to 2000 entries stored in localStorage key `oillio_pdf_log`
+### CSV file structure (two sections in one file)
+```
+OILLIO COMMODITIES SDN BHD — PRICE & ACTIVITY REPORT
+Generated: 23/05/2026, 09:05:00
 
-### Ref Price Log CSV columns
-Date | Time | Supplier | User | [all reference price fields dynamically]
-- Up to 500 entries stored in localStorage key `oillio_ref_log`
-- Records every time User 0 clicks "Save & Log Reference"
+=== REFERENCE PRICE LOG (N entries) ===
+Date | Time | Supplier | User | Malaysia CP10 | Indonesia CP10 | PK Olein | PK Oil | PK Stearin | Coconut | Stearin | Oillio Margin %
 
-### Storage reminder
-- All data stored in browser localStorage on the device
-- Export CSV regularly to preserve records across device changes
-- Clearing browser data will erase logs — export first
+=== QUOTATION ACTIVITY LOG (N entries) ===
+Date | Time | User | Customer | Product | Supplier | Mode | FCL | FOB/MT | Oillio Price/MT | Oillio Unit Price
+```
+
+### How to open in Excel on Android
+1. Press the button — file downloads to Downloads folder automatically
+2. Open Files app → Downloads → tap the .csv file
+3. Choose "Excel" or "Google Sheets" to open
+4. Data appears in columns, fully readable
+
+### Technical note
+- Added `\uFEFF` BOM prefix so Excel auto-detects UTF-8 encoding
+- Numbers are plain (no quotes) so Excel treats them as numbers, not text
+- Text fields with commas are wrapped in double quotes
