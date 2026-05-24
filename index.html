@@ -5368,60 +5368,65 @@ function svRenderProdRef(s){
   var wrap=document.getElementById('svProdRefWrap');if(!wrap)return;
   var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:s==='klk'?KLK_DATA:null;
   if(!data){wrap.style.display='none';return;}
-  var ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;
   var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);
   var canEdit=(lvl===0);
   var total=data.length;
-  // Build collapsible table
   var refLabels=window._svLabs||{};
-  var fcpoRefLabel=function(k){return refLabels[k]||k;};
-  var html='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer" onclick="var w=document.getElementById(\'svProdRefTbl\');w.style.display=w.style.display===\'none\'?\'\':\' none\';">'
-    +'<span style="font-size:.77rem;font-weight:800;color:#b45309">&#x1F4E6; Per-Product: Premium/Discount &amp; Packaging Cost</span>'
-    +'<span style="font-size:.69rem;color:#b45309;opacity:.7">('+total+' products — click to expand/collapse)</span>'
-    +(canEdit?'<span style="background:#f9a825;color:#fff;padding:1px 7px;border-radius:8px;font-size:.62rem;font-weight:700">Editable</span>'
-             :'<span style="background:#6c757d;color:#fff;padding:1px 7px;border-radius:8px;font-size:.62rem;font-weight:700">View Only</span>')
+  var fcpoRefLabel=function(k){return(refLabels[k]||k||'').split('(')[0].replace('malaysia_cp10','MY CP10').replace('indonesia_cp10','ID CP10').replace('pk_olein','PBK Olein').replace('pk_oil','PBK Oil').replace('pk_stearin','PBK Stearin').replace('fixed','Fixed').replace('coconut','Coconut').replace('stearin','Stearin').trim();};
+
+  // Collapsible header
+  var html='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;flex-wrap:wrap" onclick="var w=document.getElementById(\'svProdRefTbl\');var a=document.getElementById(\'svProdRefArrow\');w.style.display=w.style.display===\'none\'?\'\':\'none\';a.textContent=w.style.display===\'none\'?\'▶\':\'▼\';">'
+    +'<span id="svProdRefArrow" style="color:#b45309;font-size:.7rem">▶</span>'
+    +'<span style="font-size:.77rem;font-weight:800;color:#b45309">&#x1F4E6; Per-Product Premium &amp; Packaging Cost</span>'
+    +'<span style="font-size:.67rem;color:#b45309;opacity:.65">'+total+' products — tap to expand</span>'
+    +(canEdit?'<span style="background:#f9a825;color:#fff;padding:1px 7px;border-radius:8px;font-size:.61rem;font-weight:700">Editable</span>':'<span style="background:#888;color:#fff;padding:1px 7px;border-radius:8px;font-size:.61rem;font-weight:700">View Only</span>')
     +'</div>';
-  html+='<div id="svProdRefTbl" style="overflow-x:auto;max-height:400px;overflow-y:auto;display:none">';
-  html+='<table style="width:100%;border-collapse:collapse;font-size:.74rem">';
-  html+='<thead><tr style="background:#f9a825;color:#fff;position:sticky;top:0">'
-    +'<th style="padding:6px 9px;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase">Product</th>'
-    +'<th style="padding:6px 9px;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap">FCPO Base</th>'
-    +(s==='apical'?'<th style="padding:6px 9px;text-align:center;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap">Port</th>':'')
-    +'<th style="padding:6px 9px;text-align:right;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap">Premium/<br>Discount<br>USD/MT</th>'
-    +'<th style="padding:6px 9px;text-align:right;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap">Pkg Cost<br>USD/MT</th>'
-    +'<th style="padding:6px 9px;text-align:right;font-size:.63rem;font-weight:700;text-transform:uppercase;white-space:nowrap">Live FOB<br>USD/MT</th>'
-    +'</tr></thead><tbody>';
+
+  // Vertical card list — NO horizontal overflow
+  html+='<div id="svProdRefTbl" style="display:none;max-height:420px;overflow-y:auto;border-radius:8px;border:1px solid #f0d870">';
   var lastCat='';
   data.forEach(function(p,i){
+    // Category separator
     if(p.cat&&p.cat!==lastCat){
       lastCat=p.cat;
-      html+='<tr><td colspan="'+(s==='apical'?6:5)+'" style="background:#0a2d4a;color:#fff;padding:4px 9px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em">'+p.cat+'</td></tr>';
+      html+='<div style="background:#0a2d4a;color:#fff;padding:4px 10px;font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;position:sticky;top:0;z-index:1">'+p.cat+'</div>';
     }
     var fob=getLiveFob(p,s);
     var fobStr=fob?'USD '+fob.toFixed(2):'—';
-    var bgAlt=i%2===0?'#fff':'#fafbff';
-    var portCell=s==='apical'?('<td style="padding:5px 8px;text-align:center;font-size:.67rem;color:#555">'+(p.fob_jkt&&p.fob_kl?'JKT+KL':p.fob_jkt?'JKT':'KL')+'</td>'):'';
+    var fobColor=fob&&fob>0?'#0a3d62':'#c0392b';
+    var bg=i%2===0?'#fff':'#fffef5';
+    var portTag=s==='apical'?'<span style="background:#e8f0fa;color:#0a3d62;padding:1px 6px;border-radius:8px;font-size:.6rem;font-weight:700;margin-left:4px">'+(p.fob_jkt&&p.fob_kl?'JKT+KL':p.fob_jkt?'JKT':'KL')+'</span>':'';
+    var fcpoTag='<span style="font-size:.62rem;color:#888">'+fcpoRefLabel(p.fcpo_ref||'')+'</span>';
+
+    html+='<div style="background:'+bg+';padding:7px 10px;border-bottom:1px solid #f0e8c8">';
+    // Row 1: product name + port tag + fob
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
+      +'<div style="font-size:.76rem;font-weight:700;color:#0a2d4a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+portTag+'</div>'
+      +'<div class="svLiveFob_'+i+'" style="font-size:.76rem;font-weight:800;color:'+fobColor+';white-space:nowrap;flex-shrink:0">'+fobStr+'</div>'
+      +'</div>';
+    // Row 2: FCPO base + editable/readonly premium + pkg
     if(canEdit){
-      html+='<tr style="background:'+bgAlt+';border-bottom:1px solid #f0e8c8">'
-        +'<td style="padding:5px 8px;font-weight:600;color:#0a2d4a">'+p.name+'</td>'
-        +'<td style="padding:5px 8px;font-size:.67rem;color:#888">'+fcpoRefLabel(p.fcpo_ref||'')+'</td>'
-        +portCell
-        +'<td style="padding:4px 6px;text-align:right"><input type="number" step="0.01" value="'+p.premium+'" data-pi="'+i+'" data-pf="premium" data-ps="'+s+'" oninput="svOnProdRefChange(this)" style="width:72px;padding:3px 5px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.8rem"></td>'
-        +'<td style="padding:4px 6px;text-align:right"><input type="number" step="0.01" value="'+p.pkg_cost+'" data-pi="'+i+'" data-pf="pkg_cost" data-ps="'+s+'" oninput="svOnProdRefChange(this)" style="width:72px;padding:3px 5px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.8rem"></td>'
-        +'<td class="svLiveFob_'+i+'" style="padding:5px 8px;text-align:right;font-weight:800;color:#0a2d4a">'+fobStr+'</td>'
-        +'</tr>';
+      html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">'
+        +fcpoTag
+        +'<div style="display:flex;align-items:center;gap:4px;margin-left:auto">'
+          +'<label style="font-size:.6rem;color:#b45309;font-weight:700;white-space:nowrap">Prem</label>'
+          +'<input type="number" step="0.01" value="'+p.premium+'" data-pi="'+i+'" data-pf="premium" data-ps="'+s+'" oninput="svOnProdRefChange(this)"'
+            +' style="width:62px;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.78rem">'
+          +'<label style="font-size:.6rem;color:#b45309;font-weight:700;white-space:nowrap">Pkg</label>'
+          +'<input type="number" step="0.01" value="'+p.pkg_cost+'" data-pi="'+i+'" data-pf="pkg_cost" data-ps="'+s+'" oninput="svOnProdRefChange(this)"'
+            +' style="width:62px;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.78rem">'
+        +'</div></div>';
     }else{
-      html+='<tr style="background:'+bgAlt+';border-bottom:1px solid #f0e8c8">'
-        +'<td style="padding:5px 8px;font-weight:600;color:#0a2d4a">'+p.name+'</td>'
-        +'<td style="padding:5px 8px;font-size:.67rem;color:#888">'+fcpoRefLabel(p.fcpo_ref||'')+'</td>'
-        +portCell
-        +'<td style="padding:5px 8px;text-align:right;font-weight:700;color:#b45309">'+(p.premium>=0?'+':'')+p.premium+'</td>'
-        +'<td style="padding:5px 8px;text-align:right;font-weight:700;color:#b45309">'+p.pkg_cost+'</td>'
-        +'<td style="padding:5px 8px;text-align:right;font-weight:800;color:#0a2d4a">'+fobStr+'</td>'
-        +'</tr>';
+      html+='<div style="display:flex;align-items:center;gap:8px">'
+        +fcpoTag
+        +'<div style="margin-left:auto;display:flex;gap:10px">'
+          +'<span style="font-size:.7rem;color:#888">Prem: <b style="color:#b45309">'+(p.premium>=0?'+':'')+p.premium+'</b></span>'
+          +'<span style="font-size:.7rem;color:#888">Pkg: <b style="color:#b45309">'+p.pkg_cost+'</b></span>'
+        +'</div></div>';
     }
+    html+='</div>';
   });
-  html+='</tbody></table></div>';
+  html+='</div>';
   wrap.innerHTML=html;
   wrap.style.display='';
 }
