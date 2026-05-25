@@ -5326,15 +5326,6 @@ function getPkgArr(supplier){
   return [];
 }
 
-var WA_PKG=loadPkgRef(WA_PKG_KEY,JSON.parse(JSON.stringify(WA_PKG_DEF)));
-var KLK_PKG=loadPkgRef(KLK_PKG_KEY,JSON.parse(JSON.stringify(KLK_PKG_DEF)));
-
-function getPkgRef(supplier){
-  if(supplier==='apical')return APC_PKG;
-  if(supplier==='wingagro')return WA_PKG;
-  if(supplier==='klk')return KLK_PKG;
-  return {};
-}
 ;
 var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
 var SV_CFG=(function(){try{var d=JSON.parse(localStorage.getItem('oillio_supp'));if(d&&d.margin!=null)return d;}catch(e){}return {margin:2.5};}());var SV_APC_KEY="oillio_apc_fob";var SV_WA_KEY="oillio_wa_fob";var SV_KLK_KEY="oillio_klk_fob";
