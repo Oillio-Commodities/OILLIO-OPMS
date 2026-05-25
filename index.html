@@ -498,9 +498,6 @@ body.user-mode #userPdfBar { display:flex !important; }
 <button onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button>
 <button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
 <span id="svRefNote" style="font-size:.71rem;color:var(--mut)">FCPO column updates automatically.</span>
-</div>
-<!-- Per-product premium/discount & packaging cost table — User 0 editable, User 1 view-only, User 2 hidden (u2-hide on parent) -->
-<div id="svProdRefWrap" style="margin-top:12px;border-top:1.5px solid #f9a825;padding-top:10px;display:none"></div>
 </div></div>
 <div style="background:var(--card);border-radius:var(--rad);box-shadow:var(--shd);padding:12px 14px;margin-bottom:12px">
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px">
@@ -5173,8 +5170,6 @@ function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF);
 var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
-// Apply any saved product premium/pkg_cost overrides on startup
-setTimeout(function(){loadProdOverrides();},50);
 var SV_CFG=(function(){try{var d=JSON.parse(localStorage.getItem('oillio_supp'));if(d&&d.margin!=null)return d;}catch(e){}return {margin:2.5};}());var SV_APC_KEY="oillio_apc_fob";var SV_WA_KEY="oillio_wa_fob";var SV_KLK_KEY="oillio_klk_fob";
 var APICAL_DATA=[
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336.0,net_wt:18.0,fob_jkt:1374.8691,fob_kl:null,fcpo_default:1175.0,premium:0.0,pkg_cost:138.0,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta_jkt:61.8691,fob_delta_kl:null,fob_delta:61.8691},
@@ -5330,120 +5325,7 @@ function svFobInput(inp,i){var val=parseFloat(inp.value)||0,s=SV_SUP;if(s==='api
 function svSavePrices(){SV_CFG.margin=parseFloat((document.getElementById('suppMargin')||{}).value)||2.5;localStorage.setItem('oillio_supp',JSON.stringify(SV_CFG));var saved={},s=SV_SUP,today=new Date().toISOString().slice(0,10);if(s==='apical'){APICAL_DATA.forEach(function(p){if(p.fob_jkt!=null)saved[p.name]=p.fob_jkt;if(p.fob_kl!=null)saved[p.name+'_kl']=p.fob_kl;});localStorage.setItem(SV_APC_KEY,JSON.stringify(saved));}else if(s==='wingagro'){WA_DATA.forEach(function(p){if(p.fob_sua!=null)saved[p.name]=p.fob_sua;});localStorage.setItem(SV_WA_KEY,JSON.stringify(saved));}else if(s==='klk'){KLK_DATA.forEach(function(p){if(p.fob_mt!=null)saved[p.name]=p.fob_mt;});localStorage.setItem(SV_KLK_KEY,JSON.stringify(saved));}var log=[];try{log=JSON.parse(localStorage.getItem('oillio_fob_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,margin:SV_CFG.margin,fob:JSON.parse(JSON.stringify(saved))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_fob_log',JSON.stringify(log));showToast('FOB prices saved to this device (' + today + ') ✓');}function svAddRow(i,s){if(QITEMS.length>=50){alert("Max 50 items.");return;}var p=s==="apical"?APICAL_DATA[i]:s==="wingagro"?WA_DATA[i]:KLK_DATA[i];var fob=getLiveFob(p,s);if(!fob)return;var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(fob,nw,lc);QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:p.name,type:p.packing||"",net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:1,add:0,additiveType:"",mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==="fob"?"FOB":"CIF",port:SV_FR.port||null});rQuote();showToast(p.name+" added!");}
 function svPopulateCmp(){var sel=document.getElementById("cmpSel");if(!sel)return;var pkgs={};APICAL_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});WA_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});KLK_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});sel.innerHTML='<option value="">-- Select packaging type --</option>'+Object.keys(pkgs).sort().map(function(k){return"<option>"+k+"</option>";}).join("");}function svRenderCmp(){var packing=(document.getElementById("cmpSel")||{}).value||"";var q=((document.getElementById("cmpQ")||{}).value||"").toLowerCase();var out=document.getElementById("cmpOut");if(!out)return;if(!packing&&!q){out.innerHTML='<div style="text-align:center;padding:36px;color:var(--mut)">Select a packaging type above to compare prices</div>';return;}var rows=[];function addR(data,sup,getFob){data.forEach(function(p){if(packing&&p.packing!==packing)return;if(q&&(p.name||"").toLowerCase().indexOf(q)<0)return;var fob=getFob(p);if(!fob)return;var c=svCalc(fob,p.net_wt||20,p.load_ctn||1);rows.push({sup:sup,name:p.name,packing:p.packing,nw:p.net_wt,lc:p.load_ctn,fob:fob,os:c.os,ps:c.ps});});}addR(APICAL_DATA,"Apical",function(p){return SV_ORIGIN==="JKT"?(p.fob_jkt!=null?p.fob_jkt:p.fob_kl):(p.fob_kl!=null?p.fob_kl:p.fob_jkt);});addR(WA_DATA,"Wing Agro",function(p){return p.fob_sua;});addR(KLK_DATA,"KLK",function(p){return p.fob_mt;});if(!rows.length){out.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut)">No products found</div>';return;}rows.sort(function(a,b){return a.os-b.os;});var best=rows[0].os;var SC={Apical:"#e8f4ff",KLK:"#fff8e1","Wing Agro":"#e8f5ec"};var TC={Apical:"#0a3d8a",KLK:"#6a3800","Wing Agro":"#0a5c2a"};var html='<table style="width:100%;border-collapse:collapse;font-size:.77rem;background:var(--card)">'+'<thead><tr style="background:#4a1a7a;color:#fff">'+'<th style="padding:9px 12px;text-align:left">Supplier</th>'+'<th style="padding:9px 12px;text-align:left">Product</th>'+'<th style="padding:9px 12px;text-align:left">Packing</th>'+'<th style="padding:9px 12px;text-align:right">Net Wt</th>'+'<th style="padding:9px 12px;text-align:right">Load</th>'+'<th style="padding:9px 12px;text-align:right">FOB/MT</th>'+'<th style="padding:9px 12px;text-align:right;background:#1a5c2a">Oillio/Unit</th>'+(IS_ADMIN?'<th style="padding:9px 12px;text-align:right">Profit/Unit</th>':"")+'<th style="padding:9px 12px;text-align:right">vs Best</th></tr></thead><tbody>';rows.forEach(function(r){var iB=Math.abs(r.os-best)<0.001,diff=r.os-best;html+='<tr style="border-bottom:1px solid #eee;background:'+(iB?"#edfaf1":"#fff")+'">';html+='<td style="padding:8px 12px"><span style="background:'+(SC[r.sup]||"#eee")+';color:'+(TC[r.sup]||"#333")+';padding:3px 8px;border-radius:10px;font-size:.71rem;font-weight:700">'+r.sup+'</span></td>';html+='<td style="padding:8px 12px;font-weight:600;color:var(--brand)">'+r.name+'</td>';html+='<td style="padding:8px 12px;color:var(--mut);font-size:.71rem">'+r.packing+'</td>';html+='<td style="padding:8px 12px;text-align:right">'+fmt(r.nw,1)+' kg</td>';html+='<td style="padding:8px 12px;text-align:right">'+fmt(r.lc,0)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:600">USD '+fmt(r.fob,2)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:800;color:'+(iB?"#1a7a4a":"#1a5c2a")+';background:'+(iB?"#edfaf1":"#e8f5ec")+'">USD '+fmt(r.os,4)+'</td>';if(IS_ADMIN)html+='<td style="padding:8px 12px;text-align:right;font-weight:700;color:#1a7a4a">+'+fmt(r.ps,4)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:700;color:'+(iB?"#1a7a4a":diff>0?"#c0392b":"#555")+'">'+(iB?"⭐ Best":(diff>0?"+":"")+fmt(diff,4)+"/unit")+'</td>';html+="</tr>";});out.innerHTML=html+"</tbody></table>";}
 var _svLabs={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)',supplier_margin:'Supplier Margin (%)'};
-function svRenderRefPanel(){var s=SV_SUP,ref,def;if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}else return;var fields=document.getElementById('svRefFields');if(!fields){console.warn('svRefFields not found');return;}var html='';Object.keys(def).forEach(function(k){if(k==='oillio_margin')return;var label=_svLabs[k]||k;var val=ref[k]!=null?ref[k]:def[k];var step=k==='supplier_margin'?'0.1':'1';html+='<div style="background:#fff;border:1.5px solid #f9a825;border-radius:7px;padding:7px 10px">';html+='<label style="font-size:.64rem;font-weight:700;color:#b45309;display:block;margin-bottom:3px">'+label+'</label>';html+='<input type="number" data-ref="'+k+'" value="'+val+'" step="'+step+'" min="0"';var isEditable=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;html+=isEditable?' style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem"'   +' oninput="svOnRefChange(this)">'   :' style="width:100%;padding:5px;border:2px solid #ccc;background:#f5f5f5;border-radius:5px;font-weight:700;color:#888;font-size:.85rem"'   +' readonly disabled title="View only for your role">';html+='</div>';});fields.innerHTML=html;console.log('svRenderRefPanel: rendered '+Object.keys(def).length+' fields for '+s);svRenderProdRef(s);}function svOnRefChange(inp){var k=inp.getAttribute('data-ref');var val=parseFloat(inp.value)||0;var s=SV_SUP;if(s==='apical')APC_REF[k]=val;else if(s==='wingagro')WA_REF[k]=val;else if(s==='klk')KLK_REF[k]=val;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}}function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);localStorage.setItem(key,JSON.stringify(ref));var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));svSaveProdOverrides(s);if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);}
-
-// ── Also save any product premium/pkg_cost changes when svSaveRef is called ──
-function svSaveProdOverrides(s){
-  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:s==='klk'?KLK_DATA:null;
-  var key=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
-  if(!data||!key)return;
-  // Read current values from inputs if table is rendered
-  var tbl=document.getElementById('svProdRefTbl');
-  if(tbl){tbl.querySelectorAll('[data-pi]').forEach(function(inp){var i=parseInt(inp.getAttribute('data-pi')),f=inp.getAttribute('data-pf'),v=parseFloat(inp.value);if(!isNaN(v)&&data[i])data[i][f]=v;});}
-  var saved={};
-  data.forEach(function(p){saved[p.name]={premium:p.premium,pkg_cost:p.pkg_cost};});
-  localStorage.setItem(key,JSON.stringify(saved));
-  // Log the save
-  var log=[];try{log=JSON.parse(localStorage.getItem('oillio_pkg_log')||'[]');}catch(e){}
-  log.push({ts:new Date().toISOString(),supplier:s,user:'User 0',overrides:JSON.parse(JSON.stringify(saved))});
-  if(log.length>200)log=log.slice(-200);
-  localStorage.setItem('oillio_pkg_log',JSON.stringify(log));
-}function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
-
-// ── PER-PRODUCT PREMIUM/DISCOUNT & PACKAGING COST ──────────────────────────
-// User 0: editable. User 1: view-only. User 2: hidden (parent has u2-hide).
-var APC_PKG_KEY='oillio_apc_pkg', WA_PKG_KEY='oillio_wa_pkg', KLK_PKG_KEY='oillio_klk_pkg';
-
-function loadProdOverrides(){
-  function apply(data,key){
-    var saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
-    data.forEach(function(p){var ov=saved[p.name];if(ov){if(ov.premium!=null)p.premium=ov.premium;if(ov.pkg_cost!=null)p.pkg_cost=ov.pkg_cost;}});
-  }
-  if(typeof APICAL_DATA!=='undefined')apply(APICAL_DATA,APC_PKG_KEY);
-  if(typeof WA_DATA!=='undefined')apply(WA_DATA,WA_PKG_KEY);
-  if(typeof KLK_DATA!=='undefined')apply(KLK_DATA,KLK_PKG_KEY);
-}
-
-function svRenderProdRef(s){
-  var wrap=document.getElementById('svProdRefWrap');if(!wrap)return;
-  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:s==='klk'?KLK_DATA:null;
-  if(!data){wrap.style.display='none';return;}
-  var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);
-  var canEdit=(lvl===0);
-  var total=data.length;
-  var refLabels=window._svLabs||{};
-  var fcpoRefLabel=function(k){return(refLabels[k]||k||'').split('(')[0].replace('malaysia_cp10','MY CP10').replace('indonesia_cp10','ID CP10').replace('pk_olein','PBK Olein').replace('pk_oil','PBK Oil').replace('pk_stearin','PBK Stearin').replace('fixed','Fixed').replace('coconut','Coconut').replace('stearin','Stearin').trim();};
-
-  // Collapsible header
-  var html='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;flex-wrap:wrap" onclick="var w=document.getElementById(\'svProdRefTbl\');var a=document.getElementById(\'svProdRefArrow\');w.style.display=w.style.display===\'none\'?\'\':\'none\';a.textContent=w.style.display===\'none\'?\'▶\':\'▼\';">'
-    +'<span id="svProdRefArrow" style="color:#b45309;font-size:.7rem">▶</span>'
-    +'<span style="font-size:.77rem;font-weight:800;color:#b45309">&#x1F4E6; Per-Product Premium &amp; Packaging Cost</span>'
-    +'<span style="font-size:.67rem;color:#b45309;opacity:.65">'+total+' products — tap to expand</span>'
-    +(canEdit?'<span style="background:#f9a825;color:#fff;padding:1px 7px;border-radius:8px;font-size:.61rem;font-weight:700">Editable</span>':'<span style="background:#888;color:#fff;padding:1px 7px;border-radius:8px;font-size:.61rem;font-weight:700">View Only</span>')
-    +'</div>';
-
-  // Vertical card list — NO horizontal overflow
-  html+='<div id="svProdRefTbl" style="display:none;max-height:420px;overflow-y:auto;border-radius:8px;border:1px solid #f0d870">';
-  var lastCat='';
-  data.forEach(function(p,i){
-    // Category separator
-    if(p.cat&&p.cat!==lastCat){
-      lastCat=p.cat;
-      html+='<div style="background:#0a2d4a;color:#fff;padding:4px 10px;font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;position:sticky;top:0;z-index:1">'+p.cat+'</div>';
-    }
-    var fob=getLiveFob(p,s);
-    var fobStr=fob?'USD '+fob.toFixed(2):'—';
-    var fobColor=fob&&fob>0?'#0a3d62':'#c0392b';
-    var bg=i%2===0?'#fff':'#fffef5';
-    var portTag=s==='apical'?'<span style="background:#e8f0fa;color:#0a3d62;padding:1px 6px;border-radius:8px;font-size:.6rem;font-weight:700;margin-left:4px">'+(p.fob_jkt&&p.fob_kl?'JKT+KL':p.fob_jkt?'JKT':'KL')+'</span>':'';
-    var fcpoTag='<span style="font-size:.62rem;color:#888">'+fcpoRefLabel(p.fcpo_ref||'')+'</span>';
-
-    html+='<div style="background:'+bg+';padding:7px 10px;border-bottom:1px solid #f0e8c8">';
-    // Row 1: product name + port tag + fob
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
-      +'<div style="font-size:.76rem;font-weight:700;color:#0a2d4a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+portTag+'</div>'
-      +'<div class="svLiveFob_'+i+'" style="font-size:.76rem;font-weight:800;color:'+fobColor+';white-space:nowrap;flex-shrink:0">'+fobStr+'</div>'
-      +'</div>';
-    // Row 2: FCPO base + editable/readonly premium + pkg
-    if(canEdit){
-      html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">'
-        +fcpoTag
-        +'<div style="display:flex;align-items:center;gap:4px;margin-left:auto">'
-          +'<label style="font-size:.6rem;color:#b45309;font-weight:700;white-space:nowrap">Prem</label>'
-          +'<input type="number" step="0.01" value="'+p.premium+'" data-pi="'+i+'" data-pf="premium" data-ps="'+s+'" oninput="svOnProdRefChange(this)"'
-            +' style="width:62px;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.78rem">'
-          +'<label style="font-size:.6rem;color:#b45309;font-weight:700;white-space:nowrap">Pkg</label>'
-          +'<input type="number" step="0.01" value="'+p.pkg_cost+'" data-pi="'+i+'" data-pf="pkg_cost" data-ps="'+s+'" oninput="svOnProdRefChange(this)"'
-            +' style="width:62px;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-weight:700;color:#b45309;background:#fffde0;text-align:right;font-size:.78rem">'
-        +'</div></div>';
-    }else{
-      html+='<div style="display:flex;align-items:center;gap:8px">'
-        +fcpoTag
-        +'<div style="margin-left:auto;display:flex;gap:10px">'
-          +'<span style="font-size:.7rem;color:#888">Prem: <b style="color:#b45309">'+(p.premium>=0?'+':'')+p.premium+'</b></span>'
-          +'<span style="font-size:.7rem;color:#888">Pkg: <b style="color:#b45309">'+p.pkg_cost+'</b></span>'
-        +'</div></div>';
-    }
-    html+='</div>';
-  });
-  html+='</div>';
-  wrap.innerHTML=html;
-  wrap.style.display='';
-}
-
-function svOnProdRefChange(inp){
-  var i=parseInt(inp.getAttribute('data-pi')),f=inp.getAttribute('data-pf'),s=inp.getAttribute('data-ps');
-  var val=parseFloat(inp.value);if(isNaN(val))return;
-  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:KLK_DATA;
-  if(data&&data[i]){data[i][f]=val;}
-  // Update the live FOB cell for this row
-  var fobCell=document.querySelector('.svLiveFob_'+i);
-  if(fobCell&&data&&data[i]){
-    var fob=getLiveFob(data[i],s);
-    fobCell.textContent=fob?'USD '+fob.toFixed(2):'—';
-  }
-  svRenderTable();
-}
+function svRenderRefPanel(){var s=SV_SUP,ref,def;if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}else return;var fields=document.getElementById('svRefFields');if(!fields){console.warn('svRefFields not found');return;}var html='';Object.keys(def).forEach(function(k){if(k==='oillio_margin')return;var label=_svLabs[k]||k;var val=ref[k]!=null?ref[k]:def[k];var step=k==='supplier_margin'?'0.1':'1';html+='<div style="background:#fff;border:1.5px solid #f9a825;border-radius:7px;padding:7px 10px">';html+='<label style="font-size:.64rem;font-weight:700;color:#b45309;display:block;margin-bottom:3px">'+label+'</label>';html+='<input type="number" data-ref="'+k+'" value="'+val+'" step="'+step+'" min="0"';var isEditable=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;html+=isEditable?' style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem"'   +' oninput="svOnRefChange(this)">'   :' style="width:100%;padding:5px;border:2px solid #ccc;background:#f5f5f5;border-radius:5px;font-weight:700;color:#888;font-size:.85rem"'   +' readonly disabled title="View only for your role">';html+='</div>';});fields.innerHTML=html;console.log('svRenderRefPanel: rendered '+Object.keys(def).length+' fields for '+s);}function svOnRefChange(inp){var k=inp.getAttribute('data-ref');var val=parseFloat(inp.value)||0;var s=SV_SUP;if(s==='apical')APC_REF[k]=val;else if(s==='wingagro')WA_REF[k]=val;else if(s==='klk')KLK_REF[k]=val;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}}function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);localStorage.setItem(key,JSON.stringify(ref));var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);}function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){var fobLog=[],refLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}try{refLog=JSON.parse(localStorage.getItem("oillio_ref_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog.filter(function(e){return e.date>=cutoffStr;});var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History — Last 30 Working Days</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>From "+cutoffStr+" to today. Saved on this device.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices ("+refF.length+" entries)</div>";[].concat(refF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#fffde7;border-radius:7px;border-left:3px solid #f9a825'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#fff8dc;color:#b45309;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";var ref=e.ref||{},parts=[];for(var k in ref)if(k!=="oillio_margin")parts.push(k.replace(/_/g," ").toUpperCase()+": "+ref[k]);html+="<div style='color:var(--mut);margin-top:2px;font-size:.72rem'>"+parts.slice(0,4).join(" | ")+"</div>";html+="</div>";});}html+="<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-wrap:wrap'>";html+="<button onclick='svExportLog()' style='background:var(--olv);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x2B07; Download Report (CSV — opens in Excel)</button>";html+="<button onclick='svClearLog()' style='background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x1F5D1; Clear All</button>";html+="</div>";html+="<div style='margin-top:8px;font-size:.69rem;color:var(--mut);font-style:italic'>ὍD Draft version. Official recording starts when confirmed. Export = full unlimited history.</div>";html+="</div>";var modal=document.getElementById("fullModal"),body=document.getElementById("fmBody"),title=document.getElementById("fmTitle");if(modal&&body&&title){title.textContent="Price History Log";body.innerHTML=html;modal.className="open";}else showToast("FOB: "+fobLog.length+" | Ref: "+refLog.length+" entries");}function svExportLog(){
   // ── REF LOG (Reference Price Changes) ──────────────────────────
