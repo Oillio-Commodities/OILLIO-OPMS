@@ -1,51 +1,44 @@
 
 ---
 
-## Rev 34 — Packaging Cost & Premium in Yellow Reference Panel
+## Rev 35 — Packaging Panel: Complete Per-Product Table (All 110 Products)
 
-### What was added
-Under the Yellow Reference panel (🟡), a new section "📦 Packaging Costs & Premiums/Discounts" now appears for all 3 suppliers.
+### Problem with Rev 34
+- Grouped by packing TYPE only → multiple products with same packing were collapsed into one row
+- Apical "20L Jerry Can" had 4 variants (Yellow/White × CP10/CP8) — only 1 shown
+- Apical "20kg carton" had 17 products with widely different premiums — only 1 shown
+- KLK missing many entries
 
-### Access control (CRITICAL — do not change)
-- **User 0** (Joelishandsome1234): CAN EDIT pkg cost and premium/discount
-- **User 1** (Ysw1708kluang): CAN VIEW only (read-only, greyed inputs)
-- **User 2** (Oilliouser1): COMPLETELY HIDDEN (u2-hide class)
+### Fix
+- Now shows EVERY product individually (one row per product)
+- Grouped by CATEGORY for readability with category header labels
+- Total products shown: Apical 26 | WingAgro 4 | KLK 80
 
-### New variables
-- `APC_PKG_DEF` / `APC_PKG` — Apical packaging defaults (5 types)
-- `WA_PKG_DEF` / `WA_PKG` — WingAgro packaging defaults (2 types)
-- `KLK_PKG_DEF` / `KLK_PKG` — KLK packaging defaults (57 types)
-- Storage keys: `oillio_apc_pkg`, `oillio_wa_pkg`, `oillio_klk_pkg`
+### Apical (26 products) — packaging costs & premiums
+| Product | Packing | Pkg Cost | Premium |
+| 20L Yellow Jerry Can CP10 | 20L Jerry Can | 138 | 0 |
+| 20L Yellow Jerry Can CP8 | 20L Jerry Can | 138 | +10 |
+| 20L White Jerry Can CP10 | 20L Jerry Can | 148 | 0 |
+| 20L White Jerry Can CP8 | 20L Jerry Can | 147 | +10 |
+| 20kg Shortening 36/39 | 20kg carton | 82 | -5 |
+| 20kg Shortening 38/40 | 20kg carton | 82 | -5 |
+| 20kg Shortening 43/47 | 20kg carton | 82 | -7 |
+| 20kg Shortening 46/48 | 20kg carton | 82 | -3 |
+| 20kg Shortening 48/52 | 20kg carton | 82 | -14.5 |
+| 20kg BIB Spread Fat | 20kg BIB | 100 | +115 |
+| 20kg CBR 37/40 | 20kg carton | 82 | +500 |
+| ... (all 26 products stored in APC_PKG_DEF)
 
-### Apical packaging types & defaults
-- 20L Jerry Can: pkg_cost=138, premium=0
-- 20kg carton: pkg_cost=82, premium=-5
-- 20kg BIB: pkg_cost=100, premium=-10
-- Flexibag: pkg_cost=52, premium=-120
-- 25kg polywoven bag: pkg_cost=10, premium=-15
+### WingAgro (4 products)
+| 20L/25L Jerry Can CP10 | 20L Jerry Can | 138 | -13 |
+| 20L Jerry Can CP8 | 20L Jerry Can | 138 | -32.4 |
+| 20kg HPKS | 20kg carton | 82 | -217 |
+| 20kg HPKO | 20kg carton | 82 | -223 |
 
-### WingAgro packaging types & defaults
-- 20L Jerry Can: pkg_cost=138, premium=-13
-- 20kg carton: pkg_cost=82, premium=-37
+### KLK (80 products)
+All 80 KLK products stored with individual pkg_cost and premium/fcpo_delta
+Categories: BOTTLE, JERRY CAN, TIN, BIB, DRUM, CARTON, FLEXIBAG
 
-### KLK: 57 packaging types
-All KLK packaging types stored with their pkg_cost and fcpo_delta as premium
-(See KLK_PKG_DEF in code for full list)
-
-### getLiveFob() formula (CRITICAL — do not revert)
-```
-FOB = oil_reference + fcpo_delta + premium + pkg_cost + fob_delta
-```
-Where:
-- oil_reference = from APC_REF/WA_REF/KLK_REF (adjustable via yellow panel top section)
-- premium = from PKG_REF[packing].premium (adjustable via yellow panel bottom section)
-- pkg_cost = from PKG_REF[packing].pkg_cost (adjustable via yellow panel bottom section)
-- fob_delta = fixed per-product delta (hardcoded from Excel data, not adjustable)
-
-### Save & Log
-- "Save & Log Reference" now also saves packaging costs/premiums to localStorage
-- pkg data included in ref_log entries as `pkg` field
-- CSV export includes "Packaging Costs & Premiums" column
-
-### CSV log format (Ref Price Log)
-Date | Time | Supplier | User | Malaysia CP10 | ... | Oillio Margin | Packaging Costs & Premiums
+### getLiveFob formula
+Matches each product by exact (name + packing) to find its adjustable pkg_cost/premium
+Storage keys: oillio_apc_pkg, oillio_wa_pkg, oillio_klk_pkg

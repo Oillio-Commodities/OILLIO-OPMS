@@ -5174,96 +5174,158 @@ function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
 
-// ─── PACKAGING COST & PREMIUM REFERENCES (User 0 editable, User 1 viewable, User 2 hidden) ───
+// ─── PACKAGING COST & PREMIUM REFERENCES ───
 var APC_PKG_KEY='oillio_apc_pkg';
 var WA_PKG_KEY='oillio_wa_pkg';
 var KLK_PKG_KEY='oillio_klk_pkg';
 
-var APC_PKG_DEF={
-  "20l_jerry_can":{"label":"20L Jerry Can","pkg_cost":138.0,"premium":0.0},
-  "20kg_carton":{"label":"20kg carton","pkg_cost":82.0,"premium":-5.0},
-  "20kg_bib":{"label":"20kg BIB","pkg_cost":100.0,"premium":-10.0},
-  "flexibag":{"label":"Flexibag","pkg_cost":52.0,"premium":-120.0},
-  "25kg_polywoven_bag":{"label":"25kg polywoven bag","pkg_cost":10.0,"premium":-15.0}
-};
-var WA_PKG_DEF={
-  "20l_jerry_can":{"label":"20L Jerry Can","pkg_cost":138.0,"premium":-13.0},
-  "20kg_carton":{"label":"20kg carton","pkg_cost":82.0,"premium":-37.0}
-};
-var KLK_PKG_DEF={
-  "900ml_x_12_pet_bottles_per_carton":{"label":"900ML X 12 PET BOTTLES PER CARTON","pkg_cost":218.7932,"premium":60.0},
-  "1_5l_x_12_pet_bottles_per_carton":{"label":"1.5L X 12 PET BOTTLES PER CARTON","pkg_cost":199.6833,"premium":60.0},
-  "1_5l_x_6_pet_bottles_per_carton":{"label":"1.5L X 6 PET BOTTLES PER CARTON","pkg_cost":259.597,"premium":60.0},
-  "2l_x_6_pet_bottles_per_carton":{"label":"2L X 6 PET BOTTLES PER CARTON","pkg_cost":206.2352,"premium":60.0},
-  "4_5l_x_6_pet_bottles_per_carton":{"label":"4.5L X 6 PET BOTTLES PER CARTON","pkg_cost":182.845,"premium":60.0},
-  "4l_x_4_pet_bottles_per_carton":{"label":"4L X 4 PET BOTTLES PER CARTON","pkg_cost":157.0855,"premium":60.0},
-  "5l_x_4_pet_bottles_per_carton":{"label":"5L X 4 PET BOTTLES PER CARTON","pkg_cost":133.5393,"premium":60.0},
-  "4l_x_4_yellow_jerry_cans_per_carton":{"label":"4L X 4 YELLOW JERRY CANS PER CARTON","pkg_cost":186.2463,"premium":0.0},
-  "4_5l_x_4_yellow_jerry_cans_per_carton":{"label":"4.5L X 4 YELLOW JERRY CANS PER CARTON","pkg_cost":178.3585,"premium":0.0},
-  "5l_x_4_transparent_jerry_cans_per_carton":{"label":"5L X 4 TRANSPARENT JERRY CANS PER CARTON","pkg_cost":197.449,"premium":0.0},
-  "8l_yellow_jerry_can":{"label":"8L YELLOW JERRY CAN","pkg_cost":182.4047,"premium":0.0},
-  "8l_x_2_yellow_jerry_cans_per_carton":{"label":"8L X 2 YELLOW JERRY CANS PER CARTON","pkg_cost":193.7245,"premium":0.0},
-  "9l_yellow_jerry_can":{"label":"9L YELLOW JERRY CAN","pkg_cost":165.313,"premium":0.0},
-  "10l_yellow_jerry_can":{"label":"10L YELLOW JERRY CAN","pkg_cost":160.5355,"premium":0.0},
-  "10l_bm_yellow_jerry_can":{"label":"10L BM YELLOW JERRY CAN","pkg_cost":176.3305,"premium":0.0},
-  "16l_yellow_jerry_can":{"label":"16L YELLOW JERRY CAN","pkg_cost":147.0025,"premium":0.0},
-  "16l_bm_yellow_jerry_can":{"label":"16L BM YELLOW JERRY CAN","pkg_cost":155.602,"premium":0.0},
-  "16l__18__bm_yellow_jerry_can":{"label":"16L (18) BM YELLOW JERRY CAN","pkg_cost":160.36,"premium":0.0},
-  "18l_bm_yellow_jerry_can":{"label":"18L BM YELLOW JERRY CAN","pkg_cost":151.195,"premium":0.0},
-  "20l_transparent_jerry_can":{"label":"20L TRANSPARENT JERRY CAN","pkg_cost":147.9678,"premium":0.0},
-  "20l_yellow_jerry_can":{"label":"20L YELLOW JERRY CAN","pkg_cost":142.1275,"premium":0.0},
-  "20l_white_jerry_can":{"label":"20L WHITE JERRY CAN","pkg_cost":134.893,"premium":0.0},
-  "16l_tin_small_lid":{"label":"16L TIN SMALL LID","pkg_cost":206.9162,"premium":0.0},
-  "16l_tin_big_lid":{"label":"16L TIN BIG LID","pkg_cost":225.841,"premium":0.0},
-  "17l_tin_flexspot":{"label":"17L TIN FLEXSPOT","pkg_cost":201.7585,"premium":0.0},
-  "18l_tin_flexspot":{"label":"18L TIN FLEXSPOT","pkg_cost":192.7105,"premium":0.0},
-  "20l_tin_flexspot":{"label":"20L TIN FLEXSPOT","pkg_cost":191.404,"premium":0.0},
-  "10kg_bib":{"label":"10KG BIB","pkg_cost":133.2647,"premium":0.0},
-  "16l_bib":{"label":"16L BIB","pkg_cost":119.5367,"premium":0.0},
-  "20kg_bib":{"label":"20KG BIB","pkg_cost":109.7477,"premium":0.0},
-  "210l_tight_head_steel_drum___blue":{"label":"210L TIGHT HEAD STEEL DRUM - BLUE","pkg_cost":242.299,"premium":0.0},
-  "220l_hdpe_plastic_drum___blue":{"label":"220L HDPE PLASTIC DRUM - BLUE","pkg_cost":157.981,"premium":0.0},
-  "16kg_pe_liners_in_carton":{"label":"16KG PE LINERS IN CARTON","pkg_cost":116.899,"premium":-15.0},
-  "20kg_pe_liners_in_carton":{"label":"20KG PE LINERS IN CARTON","pkg_cost":113.311,"premium":-15.0},
-  "25kg_pe_liners_in_carton":{"label":"25KG PE LINERS IN CARTON","pkg_cost":130.1625,"premium":-5.0},
-  "1l_x_12_rou_tin_w_lid":{"label":"1L X 12 ROU-TIN W/LID","pkg_cost":578.6127,"premium":20.0},
-  "2l_x_6_rec_tin_w_lid":{"label":"2L X 6 REC-TIN W/LID","pkg_cost":659.4987,"premium":20.0},
-  "4l_x_6_rec_tin_w_lid":{"label":"4L X 6 REC-TIN W/LID","pkg_cost":441.6935,"premium":20.0},
-  "5l_x_4_rec_tin_w_lid":{"label":"5L X 4 REC-TIN W/LID","pkg_cost":371.7957,"premium":20.0},
-  "6l_x_2_rec_tin_w_lid":{"label":"6L X 2 REC-TIN W/LID","pkg_cost":338.675,"premium":20.0},
-  "8l_x_2_rec_tin_w_lid":{"label":"8L X 2 REC-TIN W/LID","pkg_cost":340.1375,"premium":20.0},
-  "8kg_x_2_rec_tin_w_lid":{"label":"8KG X 2 REC-TIN W/LID","pkg_cost":310.7803,"premium":20.0},
-  "12l_rec_tin_w_lid":{"label":"12L REC-TIN W/LID","pkg_cost":243.554,"premium":20.0},
-  "14l_rec_tin_w_lid":{"label":"14L REC-TIN W/LID","pkg_cost":243.554,"premium":20.0},
-  "16l_rec_tin_w_lid":{"label":"16L REC-TIN W/LID","pkg_cost":218.8865,"premium":20.0},
-  "16kg_rec_tin_w_lid":{"label":"16KG REC-TIN W/LID","pkg_cost":205.5095,"premium":20.0},
-  "15kg_rec_tin_w_lid":{"label":"15KG REC-TIN W/LID","pkg_cost":210.0042,"premium":20.0},
-  "20kg_rec_tin_w_lid":{"label":"20KG REC-TIN W/LID","pkg_cost":194.4725,"premium":20.0},
-  "3l_x_6_yellow_jerry_cans_per_carton":{"label":"3L X 6 YELLOW JERRY CANS PER CARTON","pkg_cost":192.4082,"premium":0.0},
-  "5l_x_4_yellow_jerry_cans_per_carton":{"label":"5L X 4 YELLOW JERRY CANS PER CARTON","pkg_cost":168.433,"premium":0.0},
-  "17l_yellow_jerry_can_with_double_sided_st":{"label":"17L YELLOW JERRY CAN WITH DOUBLE SIDED ST","pkg_cost":150.9513,"premium":0.0},
-  "18l_yellow_jerry_can":{"label":"18L YELLOW JERRY CAN","pkg_cost":143.0732,"premium":0.0},
-  "25l_yellow_jerry_can":{"label":"25L YELLOW JERRY CAN","pkg_cost":127.3563,"premium":0.0},
-  "flexibag":{"label":"FLEXIBAG","pkg_cost":40.9713,"premium":0.0},
-  "flexibag_with_heating_pad":{"label":"FLEXIBAG WITH HEATING PAD","pkg_cost":47.3478,"premium":0.0},
-  "flexibag_with_heating_rail":{"label":"FLEXIBAG WITH HEATING RAIL","pkg_cost":49.6585,"premium":0.0},
-  "flexibag_with_double_heating_pad":{"label":"FLEXIBAG WITH DOUBLE HEATING PAD","pkg_cost":54.865,"premium":0.0}
-};
+var APC_PKG_DEF=[
+{id:0,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:138.0,premium:0.0},
+{id:1,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:138.0,premium:10.0},
+{id:2,cat:"JERRY CANS",name:"20L White Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:148.0,premium:0.0},
+{id:3,cat:"JERRY CANS",name:"20L White Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:147.0,premium:10.0},
+{id:4,cat:"SHORTENING",name:"20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:-5.0},
+{id:5,cat:"SHORTENING",name:"20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:-5.0},
+{id:6,cat:"SHORTENING",name:"20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:-7.0},
+{id:7,cat:"SHORTENING",name:"20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:-3.0},
+{id:8,cat:"SHORTENING",name:"20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:-14.5},
+{id:9,cat:"BIB",name:"20kg BIB Spread Fat",packing:"20kg BIB",pkg_cost:100.0,premium:115.0},
+{id:10,cat:"SPECIALTY — KL Only",name:"20kg CBR 37/40",packing:"20kg carton",pkg_cost:82.0,premium:500.0},
+{id:11,cat:"SPECIALTY — KL Only",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-121.0},
+{id:12,cat:"SPECIALTY — KL Only",name:"20kg Hpko 35/37",packing:"20kg carton",pkg_cost:82.0,premium:-199.0},
+{id:13,cat:"SPECIALTY — KL Only",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:190.0},
+{id:14,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/44",packing:"20kg carton",pkg_cost:82.0,premium:-155.0},
+{id:15,cat:"SPECIALTY — JKT Only",name:"20kg RCNO",packing:"20kg BIB",pkg_cost:100.0,premium:-174.0},
+{id:16,cat:"SPECIALTY — JKT Only",name:"20kg HCNO",packing:"20kg carton",pkg_cost:82.0,premium:-99.0},
+{id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:-26.0},
+{id:18,cat:"SPECIALTY — JKT Only",name:"RCNO Flexibag",packing:"Flexibag",pkg_cost:52.0,premium:-160.0},
+{id:19,cat:"SPECIALTY — JKT Only",name:"HPS Flakes",packing:"25kg polywoven bag",pkg_cost:10.0,premium:25.0},
+{id:20,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:33.0},
+{id:21,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:38.0},
+{id:22,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:45.0},
+{id:23,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:42.0},
+{id:24,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:76.0},
+{id:25,cat:"SPECIALTY — KL Only (cont.)",name:"Apifil 7011 XC",packing:"20kg carton",pkg_cost:82.0,premium:-97.4}
+];
+var WA_PKG_DEF=[
+{id:0,cat:"JERRY CANS",name:"20L/ 25l Yellow Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:138.0,premium:-13.0},
+{id:1,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:138.0,premium:-32.4},
+{id:2,cat:"SPECIALTY",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-217.0},
+{id:3,cat:"SPECIALTY",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:-223.0}
+];
+var KLK_PKG_DEF=[
+{id:0,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"900ML X 12 PET BOTTLES PER CARTON",pkg_cost:218.7932,premium:60.0},
+{id:1,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"1.5L X 12 PET BOTTLES PER CARTON",pkg_cost:199.6833,premium:60.0},
+{id:2,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"1.5L X 6 PET BOTTLES PER CARTON",pkg_cost:259.597,premium:60.0},
+{id:3,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"1.5L X 6 PET BOTTLES PER CARTON",pkg_cost:221.3478,premium:60.0},
+{id:4,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"2L X 6 PET BOTTLES PER CARTON",pkg_cost:206.2352,premium:60.0},
+{id:5,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"4.5L X 6 PET BOTTLES PER CARTON",pkg_cost:182.845,premium:60.0},
+{id:6,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"4L X 4 PET BOTTLES PER CARTON",pkg_cost:157.0855,premium:60.0},
+{id:7,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"5L X 4 PET BOTTLES PER CARTON",pkg_cost:133.5393,premium:60.0},
+{id:8,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"4L X 4 YELLOW JERRY CANS PER CARTON",pkg_cost:186.2463,premium:0.0},
+{id:9,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"4.5L X 4 YELLOW JERRY CANS PER CARTON",pkg_cost:178.3585,premium:0.0},
+{id:10,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"5L X 4 TRANSPARENT JERRY CANS PER CARTON",pkg_cost:197.449,premium:0.0},
+{id:11,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"8L YELLOW JERRY CAN",pkg_cost:182.4047,premium:0.0},
+{id:12,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"8L X 2 YELLOW JERRY CANS PER CARTON",pkg_cost:193.7245,premium:0.0},
+{id:13,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"9L YELLOW JERRY CAN",pkg_cost:165.313,premium:0.0},
+{id:14,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"10L YELLOW JERRY CAN",pkg_cost:160.5355,premium:0.0},
+{id:15,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"10L BM YELLOW JERRY CAN",pkg_cost:176.3305,premium:0.0},
+{id:16,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"16L YELLOW JERRY CAN",pkg_cost:147.0025,premium:0.0},
+{id:17,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"16L BM YELLOW JERRY CAN",pkg_cost:155.602,premium:0.0},
+{id:18,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"16L (18) BM YELLOW JERRY CAN",pkg_cost:160.36,premium:0.0},
+{id:19,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"18L BM YELLOW JERRY CAN",pkg_cost:151.195,premium:0.0},
+{id:20,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L TRANSPARENT JERRY CAN",pkg_cost:147.9678,premium:0.0},
+{id:21,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L YELLOW JERRY CAN",pkg_cost:142.1275,premium:0.0},
+{id:22,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L WHITE JERRY CAN",pkg_cost:134.893,premium:0.0},
+{id:23,cat:"TIN",name:"RBD PALM OLEIN CP10",packing:"16L TIN SMALL LID",pkg_cost:206.9162,premium:0.0},
+{id:24,cat:"TIN",name:"RBD PALM OLEIN CP10",packing:"16L TIN BIG LID",pkg_cost:225.841,premium:0.0},
+{id:25,cat:"TIN",name:"RBD PALM OLEIN CP10",packing:"17L TIN FLEXSPOT",pkg_cost:201.7585,premium:0.0},
+{id:26,cat:"TIN",name:"RBD PALM OLEIN CP10",packing:"18L TIN FLEXSPOT",pkg_cost:192.7105,premium:0.0},
+{id:27,cat:"TIN",name:"RBD PALM OLEIN CP10",packing:"20L TIN FLEXSPOT",pkg_cost:191.404,premium:0.0},
+{id:28,cat:"BIB",name:"RBD PALM OLEIN CP10",packing:"10KG BIB",pkg_cost:133.2647,premium:0.0},
+{id:29,cat:"BIB",name:"RBD PALM OLEIN CP10",packing:"16L BIB",pkg_cost:119.5367,premium:0.0},
+{id:30,cat:"BIB",name:"RBD PALM OLEIN CP10",packing:"20KG BIB",pkg_cost:109.7477,premium:0.0},
+{id:31,cat:"DRUM",name:"RBD PALM OLEIN CP10",packing:"210L TIGHT HEAD STEEL DRUM - BLUE",pkg_cost:242.299,premium:0.0},
+{id:32,cat:"DRUM",name:"RBD PALM OLEIN CP10",packing:"220L HDPE PLASTIC DRUM - BLUE",pkg_cost:157.981,premium:0.0},
+{id:33,cat:"CARTON BOX",name:"SHORTENING 48-52",packing:"16KG PE LINERS IN CARTON",pkg_cost:116.899,premium:-15.0},
+{id:34,cat:"CARTON BOX",name:"SHORTENING 48-52",packing:"20KG PE LINERS IN CARTON",pkg_cost:113.311,premium:-15.0},
+{id:35,cat:"CARTON BOX",name:"SHORTENING 46-48",packing:"20KG PE LINERS IN CARTON",pkg_cost:178.086,premium:-12.5},
+{id:36,cat:"CARTON BOX",name:"SHORTENING 42-46",packing:"20KG PE LINERS IN CARTON",pkg_cost:173.636,premium:-10.0},
+{id:37,cat:"CARTON BOX",name:"SHORTENING 40-42",packing:"20KG PE LINERS IN CARTON",pkg_cost:130.6735,premium:-7.5},
+{id:38,cat:"CARTON BOX",name:"SHORTENING 36-39",packing:"20KG PE LINERS IN CARTON",pkg_cost:136.461,premium:-5.0},
+{id:39,cat:"CARTON BOX",name:"SHORTENING 36-39",packing:"25KG PE LINERS IN CARTON",pkg_cost:130.1625,premium:-5.0},
+{id:40,cat:"CARTON BOX",name:"SHORTENING 33-36",packing:"20KG PE LINERS IN CARTON",pkg_cost:184.461,premium:25.0},
+{id:41,cat:"CARTON BOX",name:"MARGARINE ALL PURPOSE",packing:"20KG PE LINERS IN CARTON",pkg_cost:83.7807,premium:20.0},
+{id:42,cat:"CARTON BOX",name:"MARGARINE PASTRY",packing:"20KG PE LINERS IN CARTON",pkg_cost:8.8228,premium:20.0},
+{id:43,cat:"CARTON BOX",name:"BUTTER OIL SUBSTITUTE",packing:"20KG PE LINERS IN CARTON",pkg_cost:123.785,premium:20.0},
+{id:44,cat:"TIN",name:"VEGETABLE GHEE",packing:"1L X 12 ROU-TIN W/LID",pkg_cost:578.6127,premium:20.0},
+{id:45,cat:"TIN",name:"VEGETABLE GHEE",packing:"2L X 6 REC-TIN W/LID",pkg_cost:659.4987,premium:20.0},
+{id:46,cat:"TIN",name:"VEGETABLE GHEE",packing:"4L X 6 REC-TIN W/LID",pkg_cost:441.6935,premium:20.0},
+{id:47,cat:"TIN",name:"VEGETABLE GHEE",packing:"5L X 4 REC-TIN W/LID",pkg_cost:371.7957,premium:20.0},
+{id:48,cat:"TIN",name:"VEGETABLE GHEE",packing:"6L X 2 REC-TIN W/LID",pkg_cost:338.675,premium:20.0},
+{id:49,cat:"TIN",name:"VEGETABLE GHEE",packing:"8L X 2 REC-TIN W/LID",pkg_cost:340.1375,premium:20.0},
+{id:50,cat:"TIN",name:"VEGETABLE GHEE",packing:"8KG X 2 REC-TIN W/LID",pkg_cost:310.7803,premium:20.0},
+{id:51,cat:"TIN",name:"VEGETABLE GHEE",packing:"12L REC-TIN W/LID",pkg_cost:243.554,premium:20.0},
+{id:52,cat:"TIN",name:"VEGETABLE GHEE",packing:"14L REC-TIN W/LID",pkg_cost:243.554,premium:20.0},
+{id:53,cat:"TIN",name:"VEGETABLE GHEE",packing:"16L REC-TIN W/LID",pkg_cost:218.8865,premium:20.0},
+{id:54,cat:"TIN",name:"VEGETABLE GHEE",packing:"16KG REC-TIN W/LID",pkg_cost:205.5095,premium:20.0},
+{id:55,cat:"TIN",name:"VEGETABLE GHEE",packing:"15KG REC-TIN W/LID",pkg_cost:210.0042,premium:20.0},
+{id:56,cat:"TIN",name:"VEGETABLE GHEE",packing:"20KG REC-TIN W/LID",pkg_cost:194.4725,premium:20.0},
+{id:57,cat:"DRUM",name:"VEGETABLE GHEE",packing:"220L HDPE PLASTIC DRUM - BLUE",pkg_cost:152.9278,premium:20.0},
+{id:58,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"3L X 6 YELLOW JERRY CANS PER CARTON",pkg_cost:192.4082,premium:0.0},
+{id:59,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"5L X 4 YELLOW JERRY CANS PER CARTON",pkg_cost:168.433,premium:0.0},
+{id:60,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"17L YELLOW JERRY CAN WITH DOUBLE SIDED ST",pkg_cost:150.9513,premium:0.0},
+{id:61,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"18L YELLOW JERRY CAN",pkg_cost:143.0732,premium:0.0},
+{id:62,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L YELLOW JERRY CAN",pkg_cost:134.776,premium:0.0},
+{id:63,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"25L YELLOW JERRY CAN",pkg_cost:127.3563,premium:0.0},
+{id:64,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG",pkg_cost:40.9713,premium:0.0},
+{id:65,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:47.3478,premium:0.0},
+{id:66,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:49.6585,premium:0.0},
+{id:67,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:54.865,premium:0.0},
+{id:68,cat:"FLEXIBAG",name:"RBD PALM OIL 36-39",packing:"FLEXIBAG",pkg_cost:41.0963,premium:-5.0},
+{id:69,cat:"FLEXIBAG",name:"RBD PALM OIL 36-39",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:47.4728,premium:-5.0},
+{id:70,cat:"FLEXIBAG",name:"RBD PALM OIL 36-39",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:49.7835,premium:-5.0},
+{id:71,cat:"FLEXIBAG",name:"RBD PALM OIL 36-39",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:54.99,premium:-5.0},
+{id:72,cat:"FLEXIBAG",name:"RBD PALM STEARIN",packing:"FLEXIBAG",pkg_cost:7.8463,premium:-40.0},
+{id:73,cat:"FLEXIBAG",name:"RBD PALM STEARIN",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:14.2228,premium:-40.0},
+{id:74,cat:"FLEXIBAG",name:"RBD PALM STEARIN",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:16.5335,premium:-40.0},
+{id:75,cat:"FLEXIBAG",name:"RBD PALM STEARIN",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:21.74,premium:-40.0},
+{id:76,cat:"FLEXIBAG",name:"PFAD",packing:"FLEXIBAG",pkg_cost:10.0528,premium:-115.0},
+{id:77,cat:"FLEXIBAG",name:"PFAD",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:16.4195,premium:-115.0},
+{id:78,cat:"FLEXIBAG",name:"PFAD",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:18.7303,premium:-115.0},
+{id:79,cat:"FLEXIBAG",name:"PFAD",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:23.9368,premium:-115.0}
+];
 
-function loadPkgRef(key,def){
-  try{var d=JSON.parse(localStorage.getItem(key)||'{}');
-    if(d&&Object.keys(d).length){
-      Object.keys(def).forEach(function(k){
-        if(d[k]&&d[k].pkg_cost!=null){
-          def[k].pkg_cost=d[k].pkg_cost;
-          if(d[k].premium!=null)def[k].premium=d[k].premium;
-        }
-      });
-    }
+function loadPkgArr(key,def){
+  try{var saved=JSON.parse(localStorage.getItem(key)||'[]');
+    if(saved&&saved.length===def.length)return def.map(function(d,i){
+      var s=saved[i]||{};
+      return {id:d.id,cat:d.cat,name:d.name,packing:d.packing,
+        pkg_cost:s.pkg_cost!=null?s.pkg_cost:d.pkg_cost,
+        premium:s.premium!=null?s.premium:d.premium};
+    });
   }catch(e){}
-  return def;
+  return def.map(function(d){return Object.assign({},d);});
 }
-var APC_PKG=loadPkgRef(APC_PKG_KEY,JSON.parse(JSON.stringify(APC_PKG_DEF)));
+var APC_PKG=loadPkgArr(APC_PKG_KEY,APC_PKG_DEF.map(function(d){return Object.assign({},d);}));
+var WA_PKG=loadPkgArr(WA_PKG_KEY,WA_PKG_DEF.map(function(d){return Object.assign({},d);}));
+var KLK_PKG=loadPkgArr(KLK_PKG_KEY,KLK_PKG_DEF.map(function(d){return Object.assign({},d);}));
+
+function getPkgArr(s){
+  if(s==='apical')return APC_PKG;
+  if(s==='wingagro')return WA_PKG;
+  if(s==='klk')return KLK_PKG;
+  return [];
+}
+
+
+function getPkgArr(supplier){
+  if(supplier==='apical')return APC_PKG;
+  if(supplier==='wingagro')return WA_PKG;
+  if(supplier==='klk')return KLK_PKG;
+  return [];
+}
+
 var WA_PKG=loadPkgRef(WA_PKG_KEY,JSON.parse(JSON.stringify(WA_PKG_DEF)));
 var KLK_PKG=loadPkgRef(KLK_PKG_KEY,JSON.parse(JSON.stringify(KLK_PKG_DEF)));
 
@@ -5441,48 +5503,57 @@ function svRenderRefPanel(){var s=SV_SUP,ref,def;if(s==='apical'){ref=APC_REF;de
   // ── Packaging Costs & Premiums section (User 0 editable, User 1 viewable, User 2 hidden) ──
   var pkgDiv=document.getElementById('svPkgFields');
   if(!pkgDiv)return;
-  var pkgRef=getPkgRef(s);
+  var pkgArr=getPkgArr(s);
   var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);
-  if(lvl>=2){pkgDiv.innerHTML='<div style="color:#999;font-size:.75rem">Packaging data not available for your access level.</div>';return;}
+  if(lvl>=2){pkgDiv.innerHTML='';return;}
+  if(!pkgArr||!pkgArr.length){pkgDiv.innerHTML='<div style="color:#999;font-size:.75rem">No packaging data.</div>';return;}
+  var edBg=lvl===0?'background:#fffde7;border:1.5px solid #f9a825':'background:#f5f5f5;border:1.5px solid #ddd';
+  var rdAttr=lvl===0?'':'readonly disabled';
   var phtml='';
-  phtml+='<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:4px;margin-bottom:4px;background:#f5f5f5;padding:5px 8px;border-radius:5px">';
-  phtml+='<span style="font-size:.67rem;font-weight:700;color:#555">PACKAGING TYPE</span>';
-  phtml+='<span style="font-size:.67rem;font-weight:700;color:#555;text-align:right">PKG COST (USD/MT)</span>';
-  phtml+='<span style="font-size:.67rem;font-weight:700;color:#555;text-align:right">PREMIUM/DISC (USD/MT)</span>';
-  phtml+='</div>';
-  Object.keys(pkgRef).forEach(function(k){
-    var row=pkgRef[k];
-    var edBg=lvl===0?'background:#fffde7;border:1.5px solid #f9a825':'background:#f5f5f5;border:1.5px solid #ddd';
-    var rdAttr=lvl===0?'':'readonly disabled';
-    phtml+='<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:4px;align-items:center;padding:4px 6px;border-radius:5px;margin-bottom:3px;background:#fff;border:1px solid #f0f0f0">';
-    phtml+='<span style="font-size:.7rem;color:#444;font-weight:600">'+row.label+'</span>';
-    phtml+='<input type="number" step="0.01" value="'+row.pkg_cost+'" '+rdAttr+' data-pkg="'+k+'" data-field="pkg_cost"'
-      +' style="'+edBg+';padding:4px;border-radius:4px;font-size:.78rem;font-weight:700;color:#b45309;text-align:right;width:100%"'
-      +(lvl===0?' oninput="svOnPkgChange(this)"':'')+'>';
-    phtml+='<input type="number" step="0.01" value="'+row.premium+'" '+rdAttr+' data-pkg="'+k+'" data-field="premium"'
-      +' style="'+edBg+';padding:4px;border-radius:4px;font-size:.78rem;font-weight:700;color:#1a6040;text-align:right;width:100%"'
-      +(lvl===0?' oninput="svOnPkgChange(this)"':'')+'>';
+  // Group by category for readability
+  var cats={};
+  pkgArr.forEach(function(row){if(!cats[row.cat])cats[row.cat]=[];cats[row.cat].push(row);});
+  Object.keys(cats).forEach(function(cat){
+    phtml+='<div style="font-size:.67rem;font-weight:700;color:#b45309;background:#fff8e1;padding:3px 8px;border-radius:4px;margin:6px 0 3px">'+cat+'</div>';
+    phtml+='<div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:3px;background:#f5f5f5;padding:3px 6px;border-radius:4px;margin-bottom:2px">';
+    phtml+='<span style="font-size:.62rem;font-weight:700;color:#777">PRODUCT / PACKING</span>';
+    phtml+='<span style="font-size:.62rem;font-weight:700;color:#777;text-align:right">PKG COST</span>';
+    phtml+='<span style="font-size:.62rem;font-weight:700;color:#777;text-align:right">PREMIUM/DISC</span>';
     phtml+='</div>';
+    cats[cat].forEach(function(row){
+      phtml+='<div style="display:grid;grid-template-columns:3fr 1fr 1fr;gap:3px;align-items:center;padding:3px 5px;margin-bottom:2px;background:#fff;border:1px solid #f0f0f0;border-radius:4px">';
+      phtml+='<div><div style="font-size:.68rem;font-weight:600;color:#333">'+row.name+'</div>'
+            +'<div style="font-size:.6rem;color:#999">'+row.packing+'</div></div>';
+      phtml+='<input type="number" step="0.01" value="'+row.pkg_cost+'" '+rdAttr
+            +' data-pkgid="'+row.id+'" data-field="pkg_cost"'
+            +' style="'+edBg+';padding:3px;border-radius:4px;font-size:.75rem;font-weight:700;color:#b45309;text-align:right;width:100%"'
+            +(lvl===0?' oninput="svOnPkgChange(this)"':'')+' title="Packaging cost USD/MT">';
+      var premColor=row.premium>0?'#1a6040':row.premium<0?'#c0392b':'#888';
+      phtml+='<input type="number" step="0.01" value="'+row.premium+'" '+rdAttr
+            +' data-pkgid="'+row.id+'" data-field="premium"'
+            +' style="'+edBg+';padding:3px;border-radius:4px;font-size:.75rem;font-weight:700;color:'+premColor+';text-align:right;width:100%"'
+            +(lvl===0?' oninput="svOnPkgChange(this)"':'')+' title="Premium/Discount USD/MT">';
+      phtml+='</div>';
+    });
   });
   pkgDiv.innerHTML=phtml;console.log('svRenderRefPanel: rendered '+Object.keys(def).length+' fields for '+s);}function svOnRefChange(inp){var k=inp.getAttribute('data-ref');var val=parseFloat(inp.value)||0;var s=SV_SUP;if(s==='apical')APC_REF[k]=val;else if(s==='wingagro')WA_REF[k]=val;else if(s==='klk')KLK_REF[k]=val;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}}
 function svOnPkgChange(inp){
-  var k=inp.getAttribute('data-pkg');
+  var id=parseInt(inp.getAttribute('data-pkgid'));
   var field=inp.getAttribute('data-field');
-  var val=parseFloat(inp.value)||0;
-  var s=SV_SUP;
-  var pkgRef=getPkgRef(s);
-  if(pkgRef[k]){pkgRef[k][field]=val;}
+  var val=parseFloat(inp.value);
+  if(isNaN(val))return;
+  var pkgArr=getPkgArr(SV_SUP);
+  var row=pkgArr.filter(function(r){return r.id===id;})[0];
+  if(row)row[field]=val;
   svRenderTable();
 }
 function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);localStorage.setItem(key,JSON.stringify(ref));
   // Also save packaging costs/premiums
-  var pkgRef=getPkgRef(s);
+  var pkgArr=getPkgArr(s);
   var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
-  var pkgSave={};
-  Object.keys(pkgRef).forEach(function(k){pkgSave[k]={pkg_cost:pkgRef[k].pkg_cost,premium:pkgRef[k].premium};});
-  localStorage.setItem(pkgKey,JSON.stringify(pkgSave));
+  localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
-  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:JSON.parse(JSON.stringify(pkgSave))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);}function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
+  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);}function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){var fobLog=[],refLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}try{refLog=JSON.parse(localStorage.getItem("oillio_ref_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog.filter(function(e){return e.date>=cutoffStr;});var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History — Last 30 Working Days</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>From "+cutoffStr+" to today. Saved on this device.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices ("+refF.length+" entries)</div>";[].concat(refF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#fffde7;border-radius:7px;border-left:3px solid #f9a825'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#fff8dc;color:#b45309;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";var ref=e.ref||{},parts=[];for(var k in ref)if(k!=="oillio_margin")parts.push(k.replace(/_/g," ").toUpperCase()+": "+ref[k]);html+="<div style='color:var(--mut);margin-top:2px;font-size:.72rem'>"+parts.slice(0,4).join(" | ")+"</div>";html+="</div>";});}html+="<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-wrap:wrap'>";html+="<button onclick='svExportLog()' style='background:var(--olv);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x2B07; Download Report (CSV — opens in Excel)</button>";html+="<button onclick='svClearLog()' style='background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x1F5D1; Clear All</button>";html+="</div>";html+="<div style='margin-top:8px;font-size:.69rem;color:var(--mut);font-style:italic'>ὍD Draft version. Official recording starts when confirmed. Export = full unlimited history.</div>";html+="</div>";var modal=document.getElementById("fullModal"),body=document.getElementById("fmBody"),title=document.getElementById("fmTitle");if(modal&&body&&title){title.textContent="Price History Log";body.innerHTML=html;modal.className="open";}else showToast("FOB: "+fobLog.length+" | Ref: "+refLog.length+" entries");}function svExportLog(){
   // ── REF LOG (Reference Price Changes) ──────────────────────────
@@ -5567,12 +5638,14 @@ function getLiveFob(p, s){
   var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;
   var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)
     ?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);
-  // Use adjustable pkg_cost from PKG_REF if available, else fall back to product default
-  var pkgRef=getPkgRef(s);
-  var pkgKey=p.packing?p.packing.toLowerCase().replace(/[^a-z0-9]/g,'_'):null;
-  var pkg_cost=pkgKey&&pkgRef[pkgKey]?pkgRef[pkgKey].pkg_cost:(p.pkg_cost||0);
-  var premium=pkgKey&&pkgRef[pkgKey]!=null&&pkgRef[pkgKey].premium!=null
-    ?pkgRef[pkgKey].premium:(p.premium||0);
+  // Look up this specific product's adjustable pkg_cost and premium by name+packing
+  var pkgArr=getPkgArr(s);
+  var match=null;
+  for(var _i=0;_i<pkgArr.length;_i++){
+    if(pkgArr[_i].name===p.name&&pkgArr[_i].packing===p.packing){match=pkgArr[_i];break;}
+  }
+  var pkg_cost=match?match.pkg_cost:(p.pkg_cost||0);
+  var premium=match?match.premium:(p.premium||0);
   var est=fcpo+premium+pkg_cost;
   return round4(est+(p.fob_delta||0));
 }function round4(v){return Math.round(v*10000)/10000;}
