@@ -78,3 +78,32 @@ Storage keys: oillio_apc_pkg, oillio_wa_pkg, oillio_klk_pkg
 - KL only: White JC CP10/CP8, CBR, HPKS, HPKO 35/37 & 38/40, HPKL, LOW GE Shortening (all 5), Apifil 7011 XC
 - Both: Shortening 36/39 and 38/40 & 40/42
 
+
+---
+
+## [2026-05-25 v2] — Reference prices, cross-supplier sync, product display
+
+### Fixed
+- **WA_REF_DEF updated**: All commodity prices now match Apical May 25 values
+  (malaysia_cp10=1170, pk_olein=1955, pk_oil=2110, pk_stearin=2275, coconut=2060, stearin=1140, oillio_margin=5.0%)
+- **KLK_REF_DEF updated**: cp10=1170, oillio_margin=5.0%
+- **Stale localStorage cleared**: Version key `20260525` clears saved old ref prices on load
+
+### Added
+- **Cross-supplier reference sync**: `svOnRefChange()` now updates APC_REF, WA_REF, AND KLK_REF simultaneously when any yellow cell is changed. Only need to update references once under Apical.
+- **Margin % visible for all users**: Moved "OILLIO MARGIN %" input inside supplierView (after ref panel), visible to User 0, 1, and 2 whenever a supplier is selected
+- **JKT/KL toggle inside supplier panel**: Now shows next to margin input when Apical is selected
+
+### Improved
+- **Product list columns** now show all Excel data:
+  - Name + FOB Port badge (FOB Tj Priok / FOB Port Klang / FOB Surabaya)
+  - Packing | Loading (ctns/FCL) | Net Weight (kg/unit)
+  - Admin only: Est.Cost/MT | Supplier Price/SKU
+  - All users: Oillio/MT | Oillio Price/SKU
+  - Admin only: Profit/SKU
+
+### Lessons Learned
+- `id="suppMargin"` must NOT be inside `class="admin-only u2-hide"` div — User 2 can't edit it otherwise
+- WA_REF_DEF and KLK_REF_DEF must be updated EVERY TIME Apical reference prices change
+- The cache-bust version key must match the date of the price update
+
