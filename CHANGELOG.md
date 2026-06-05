@@ -145,3 +145,36 @@ Storage keys: oillio_apc_pkg, oillio_wa_pkg, oillio_klk_pkg
 - Changing supplier_margin in the panel does NOT currently alter product
   prices (fob_delta already encodes it). Display only for now.
 
+
+---
+
+## [2026-06-05 v2.2] — Pricing Fix, Profit Column, Freight Formula
+
+### Critical Fixes
+
+**Margin stuck at 5%**: Root cause was `fcpo` undefined in the product list item builder, causing `svRenderTable()` to silently crash on re-render. Now `fcpo` is computed from `APC_REF` before the item builder. **RULE: always check variable scope in map callbacks — any undefined variable silently kills the entire render.**
+
+**APICAL_DATA**: Rebuilt from May 25 Excel. All pkg_cost values verified (Yellow JC CP10 = 143). Cache-bust key `RESET_05JUN2026` forces localStorage clear on next load.
+
+### Pricing Formula (confirmed matches Excel)
+- `est = fcpo + pkg_cost` (no premium — premium already embedded in FCPO delta)
+- `fob = est + fob_delta`
+- `Supplier/unit = fob × nw/1000`
+- `Oillio/MT = fob × (1 + margin%)`
+- `Oillio/unit = Oillio/MT × nw/1000`
+- `Profit/unit = Oillio/unit - Supplier/unit`
+
+### Freight Formula (all views consistent)
+- `Freight/unit = freight_rate / load_ctn`
+- `FOB+Freight/unit = Oillio/unit + Freight/unit`
+- `FOB+Freight/MT = FOB+Freight/unit / net_wt × 1000`
+- Example: (6200/1336) + 25.85 = **30.49/SKU**; 30.49/18×1000 = **1693.91/MT**
+
+### svCalc return object
+`{su, om, os, of (with freight unit), ofm (with freight MT), ps (profit), tp, fr}`
+
+### Product List Columns
+- 🔵 Blue: Supplier (Est/MT, FOB/MT, Supplier/SKU)
+- 🟢 Green: Oillio (Oillio/MT, Oillio/SKU, Profit/SKU for User 0+1)
+- 🟡 Amber: Freight row (shown when port/manual freight selected)
+
