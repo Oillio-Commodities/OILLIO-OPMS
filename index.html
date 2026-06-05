@@ -2522,6 +2522,7 @@ function generatePdfHtml(){
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
   var showFob=(pm==='fob'||pm==='both'||!hasCifItem);
   var showCif=hasCifItem;  // show freight columns whenever any item has freight
+  var showMT=!!(typeof SHOW_MT_PRICE!=='undefined'&&SHOW_MT_PRICE);
   var _today=new Date();
   var _yyyymmdd=_today.getFullYear()+String(_today.getMonth()+1).padStart(2,'0')+String(_today.getDate()).padStart(2,'0');
   var _lsKey='oillio_ref_'+_yyyymmdd;
@@ -2676,7 +2677,7 @@ function generatePdfHtml(){
     s+='<td class="r">'+fmt(lc_,0)+'</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
     s+='<td>'+originLabel+'</td>';
-    if(showF){
+    if(showFob){
       s+='<td class="r">USD '+fmt(fob_unit,2)+'</td>';
       if(showMT)s+='<td class="r">USD '+fmt(fob_mt,2)+'/MT</td>';
       s+='<td class="r" style="font-weight:700">USD '+fmt(fob_total,2)+'</td>';
@@ -2777,12 +2778,12 @@ thead='';
   var cifSpan=2+(showMT?1:0)+1;  // Freight/unit + FOB+Fr/unit + [FOB+Fr/MT] + Total
   thead+='<tr>';
   thead+='<th colspan="6" style="background:#2c3e50;font-size:9px">QUOTATION DETAILS</th>';
-  if(showF)thead+='<th colspan="'+fobSpan+'" style="background:#155724;font-size:9px">FOB PRICING</th>';
+  if(showFob)thead+='<th colspan="'+fobSpan+'" style="background:#155724;font-size:9px">FOB PRICING</th>';
   if(showCif&&hasCifItem)thead+='<th colspan="'+cifSpan+'" style="background:#0c3a6e;font-size:9px">FOB + FREIGHT</th>';
   thead+='</tr><tr>';
   thead+='<th class="hn">#</th><th class="hn">Product</th><th class="hn">Packing</th>';
   thead+='<th class="hn">Load (CTN)</th><th class="hn">Net Wt</th><th class="hn">Origin</th>';
-  if(showF){
+  if(showFob){
     thead+='<th class="hfob">FOB/Unit (USD)</th>';
     if(showMT)thead+='<th class="hfob">FOB/MT (USD)</th>';
     thead+='<th class="hfob" style="font-weight:800">Total FOB (USD)</th>';
