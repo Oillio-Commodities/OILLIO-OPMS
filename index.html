@@ -2209,8 +2209,8 @@ function renderVTable(){
 function buildTxtTable(){
   var pm=PRICE_MODE||'fob';
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
-  var showFob=(pm==='fob'||pm==='both');
-  var showCif=(pm==='cif'||pm==='both')&&hasCifItem;
+  var showFob=true;
+  var showCif=hasCifItem;  // Always show FOB; show freight cols when any item has freight
   var cust=el('qCust').value||'',del_=el('qDel').value||'',sd=el('qDel')?el('qDel').value||'':'',ref_='';
   var d=new Date(),ds=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   var allSameOil=QITEMS.length>0&&QITEMS.every(function(x){return x.oilName===QITEMS[0].oilName;});
@@ -2220,8 +2220,8 @@ function buildTxtTable(){
   var NL=String.fromCharCode(10);
   function pad(s,n,r){s=String(s===null||s===undefined?'':s);if(s.length>n)s=s.slice(0,n);while(s.length<n)s=r?' '+s:s+' ';return s;}
   var cols=[['#',3,true],['Type',12,false],['SKU Name',24,false],['FCL',4,true],['Vol(MT)',8,true]];
-  if(showFob){cols.push(['FOB/Ctn',10,true]);cols.push(['FOB/MT',9,true]);}
-  if(showCif){cols.push(['CIF/Ctn',10,true]);cols.push(['CIF/MT',9,true]);}
+  if(showFob){cols.push(['FOB/Unit',10,true]);cols.push(['FOB/MT',9,true]);cols.push(['Total FOB',12,true]);}
+  if(showCif){cols.push(['Fr/Unit',9,true]);cols.push(['FOB+Fr/Unit',11,true]);cols.push(['FOB+Fr/MT',10,true]);cols.push(['Total FOB+Fr',13,true]);}
   cols.push(['Total USD',12,true]);
   function sep(){var s='+';for(var c=0;c<cols.length;c++)s+=new Array(cols[c][1]+3).join('-')+'+';return s;}
   function row(vals){var s='|';for(var c=0;c<cols.length;c++)s+=' '+pad(vals[c]||'',cols[c][1],cols[c][2])+' |';return s;}
@@ -2244,16 +2244,15 @@ function buildTxtTable(){
     var tfob=tu*p.fs,tcif=isCif?tu*p.cs:null;
     gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
     var vals=[(i+1)+'',item.sku.type.slice(0,12),itemDisplayName(item).slice(0,24),item.fcl+'',fmt(tm,3)];
-    if(showFob){vals.push(fmt(p.fs,4));vals.push(fmt(p.fm,2));}
-    if(showCif){vals.push(isCif?fmt(p.cs,4):'-');vals.push(isCif?fmt(p.cm,2):'-');}
-    vals.push(fmt((pm==='cif'&&isCif)?tcif:tfob,2));
+    var frUnit=isCif?(item.port?round4(item.port.freight/(item.sku.sku_fcl||1)):0):0;
+    if(showFob){vals.push(fmt(p.fs,2));vals.push(fmt(p.fm,2));vals.push(fmt(tfob,2));}
+    if(showCif){vals.push(isCif?fmt(frUnit,2):'-');vals.push(isCif?fmt(p.cs,2):'-');vals.push(isCif?fmt(p.cm,2):'-');vals.push(isCif?fmt(tcif,2):'-');}
     r+=row(vals)+NL;
   }
   r+=divider+NL;
   var tots=['','','TOTAL',gFcl+'',fmt(gMt,3)];
-  if(showFob){tots.push('');tots.push('');}
-  if(showCif){tots.push('');tots.push('');}
-  tots.push(fmt(pm==='cif'?gCif:gFob,2));
+  if(showFob){tots.push('');tots.push('');tots.push(fmt(gFob,2));}
+  if(showCif){tots.push('');tots.push('');tots.push('');tots.push(fmt(gCif,2));}
   r+=row(tots)+NL+divider+NL+NL;
   r+='REMARKS'+NL;
   r+='- All quotations are subject to final confirmation.'+NL;
