@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -5194,8 +5197,8 @@ var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_o
 var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.955};
 var KLK_REF_DEF={cp10:1170.0,supplier_margin:0.975,oillio_margin:5.0};
 function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var ok=true;if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30)ok=false;if(ok){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(parseFloat(d[k])))m[k]=parseFloat(d[k]);});return m;}localStorage.removeItem(key);}}catch(e){}return Object.assign({},def);}
-var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
-var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
+var APC_REF=Object.assign({},APC_REF_DEF);/* Always use Excel defaults */
+var WA_REF=Object.assign({},WA_REF_DEF)
 
 // ─── PACKAGING COST & PREMIUM REFERENCES ───
 var APC_PKG_KEY='oillio_apc_pkg';
@@ -5350,7 +5353,7 @@ function getPkgArr(supplier){
 }
 
 ;
-var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
+var KLK_REF=Object.assign({},KLK_REF_DEF);
 var SV_CFG=(function(){try{var d=JSON.parse(localStorage.getItem('oillio_supp'));if(d&&d.margin!=null)return d;}catch(e){}return {margin:5.0};}());var SV_APC_KEY="oillio_apc_fob";var SV_WA_KEY="oillio_wa_fob";var SV_KLK_KEY="oillio_klk_fob";
 var APICAL_DATA=[
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336,net_wt:18.0,fob_jkt:1367.7083,fob_kl:null,fcpo_default:1170.0,premium:0,pkg_cost:143.0,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta_jkt:54.7083,fob_delta_kl:null,fob_delta:54.7083},
