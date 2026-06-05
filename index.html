@@ -2663,6 +2663,7 @@ function generatePdfHtml(){
     var isCif=item.mode==='CIF'&&item.port;
     var lc_=lc*item.fcl;
     var fr_u=isCif?(item.port.freight/lc):((SV_FR.mode!=='fob'&&SV_FR.usd>0)?(SV_FR.usd/lc):0);
+    var fr=fr_u;
     var fob_unit=round4(fob*(1+m)*nw/1000);
     var fob_mt=round4(fob*(1+m));
     var fob_total=round4(fob_unit*lc_);
@@ -2697,7 +2698,7 @@ function generatePdfHtml(){
       s+='<td></td><td style="font-size:7.5pt;color:#2980b9;padding-left:16px">';
       s+='&#x1F6A2; Freight ('+portLabel+')</td>';
       s+='<td colspan="3" style="font-size:7.5pt;color:#2980b9">USD '+fmt(item.port?item.port.freight:SV_FR.usd,0)+'/FCL &divide; '+fmt(lc,0)+' ctns</td>';
-      if(showFob){s+='<td></td><td class="r" style="color:#2980b9;font-weight:700">+USD '+fmt(fr,4)+'</td>';}
+      if(showFob){s+='<td></td><td class="r" style="color:#2980b9;font-weight:700">+USD '+fmt(fr,2)+'</td>';}
       if(showCif&&hasCifItem){s+='<td class="r" style="color:#2980b9;font-weight:700">Incl.</td>';}
       if(IS_ADMIN){s+='<td></td>';}
       s+='</tr>';
