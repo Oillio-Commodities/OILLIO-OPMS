@@ -350,7 +350,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 #authOverlay{display:none}
 </style>
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
-<body>
+<body data-build="202606050309">
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:32px;display:flex;flex-direction:row;align-items:center;gap:20px">
@@ -2763,7 +2763,7 @@ function generatePdfHtml(){
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
     +'<title>Oillio OPMS — 25 May 2026 (Build 20260604_225514)</title>'
-    +'<style>'+css+'</style>'+'</head><body>'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'</body></html>';
+    +'<style>'+css+'</style>'+'</head><body data-build="202606050309">'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'</body></html>';
 }
 function doPrint(){logPdfGeneration((el('qCust')||{value:''}).value||'',QITEMS);var html=generatePdfHtml();var w=window.open('','_blank');if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.print();}catch(e){}},600);}else{try{var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.target='_blank';a.download='Oillio_Commodities'+((el('qCust')||{value:''}).value?'-'+((el('qCust')||{value:''}).value).replace(/[^a-zA-Z0-9]/g,'_'):'')+'_'+new Date().toISOString().slice(0,10).replace(/-/g,'_')+'.html';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);showToast('Quotation saved — open the file and Print → Save as PDF');}catch(e2){alert('Please allow pop-ups for this site to save PDF.');}}}
 
@@ -4014,7 +4014,7 @@ function generatePDF(){
 
     var page='<!DOCTYPE html><html lang="en"><head>'
       +'<meta charset="UTF-8">'
-      +'<title>Oillio OPMS — 25 May 2026 (Build 20260604_225514)</title><style>'+css+'</style>'+savePdfFn+'</head><body>'      +'<div class="bar">'+'<div style="display:flex;align-items:center;gap:12px">'+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="36" height="36">'+'<defs><radialGradient id="bGr" cx="35%" cy="28%" r="72%"><stop offset="0%" stop-color="#88d44c"/><stop offset="100%" stop-color="#1a5c18"/></radialGradient>'+'<radialGradient id="bOr" cx="38%" cy="32%" r="70%"><stop offset="0%" stop-color="#ffe050"/><stop offset="100%" stop-color="#c86000"/></radialGradient>'+'<clipPath id="bCl"><circle cx="28" cy="28" r="26"/></clipPath></defs>'+'<circle cx="28" cy="28" r="26" fill="url(#bGr)"/>'+'<path clip-path="url(#bCl)" d="M28 5C43 4 53 14 53 28C53 42 43 52 28 53C18 53 10 46 8 37C5 28 10 19 19 15C23 12 24 9 28 5Z" fill="url(#bOr)"/>'+'<path clip-path="url(#bCl)" d="M28 11C38 13 44 21 43 28C42 36 35 42 28 43C21 42 16 35 18 28C19 20 22 11 28 11Z" fill="white" opacity="0.9"/>'+'<circle cx="28" cy="28" r="10" fill="url(#bGr)"/>'+'</svg>'+'<div><div style="font-size:9px;opacity:.75;letter-spacing:.06em">OILLIO COMMODITIES SDN BHD (1527357-W)</div>'+'<h3>'+modeLabel+' PRICE QUOTATION</h3></div></div>'
+      +'<title>Oillio OPMS — 25 May 2026 (Build 20260604_225514)</title><style>'+css+'</style>'+savePdfFn+'</head><body data-build="202606050309">'      +'<div class="bar">'+'<div style="display:flex;align-items:center;gap:12px">'+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="36" height="36">'+'<defs><radialGradient id="bGr" cx="35%" cy="28%" r="72%"><stop offset="0%" stop-color="#88d44c"/><stop offset="100%" stop-color="#1a5c18"/></radialGradient>'+'<radialGradient id="bOr" cx="38%" cy="32%" r="70%"><stop offset="0%" stop-color="#ffe050"/><stop offset="100%" stop-color="#c86000"/></radialGradient>'+'<clipPath id="bCl"><circle cx="28" cy="28" r="26"/></clipPath></defs>'+'<circle cx="28" cy="28" r="26" fill="url(#bGr)"/>'+'<path clip-path="url(#bCl)" d="M28 5C43 4 53 14 53 28C53 42 43 52 28 53C18 53 10 46 8 37C5 28 10 19 19 15C23 12 24 9 28 5Z" fill="url(#bOr)"/>'+'<path clip-path="url(#bCl)" d="M28 11C38 13 44 21 43 28C42 36 35 42 28 43C21 42 16 35 18 28C19 20 22 11 28 11Z" fill="white" opacity="0.9"/>'+'<circle cx="28" cy="28" r="10" fill="url(#bGr)"/>'+'</svg>'+'<div><div style="font-size:9px;opacity:.75;letter-spacing:.06em">OILLIO COMMODITIES SDN BHD (1527357-W)</div>'+'<h3>'+modeLabel+' PRICE QUOTATION</h3></div></div>'
       +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
       +'<button id="topPrintBtn" class="sbtn" onclick="doPrint()" style="font-size:16px;padding:14px 32px">&#128424; SAVE AS PDF</button>'
       +'<span style="font-size:.75rem;color:#ddd">If blocked: press Ctrl+P / Cmd+P &rarr; Save as PDF</span>'
