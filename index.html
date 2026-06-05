@@ -495,7 +495,8 @@ body.user-mode #userPdfBar { display:flex !important; }
 <div id="svRefPanel" class="admin-only u2-hide" style="background:#fffde7;border:2px solid #f9a825;border-radius:var(--rad);padding:13px 16px;margin-bottom:12px">
 <div style="font-size:.82rem;font-weight:700;color:#b45309;margin-bottom:10px">&#x1F7E1; Yellow Reference Prices &mdash; update when commodity market moves</div>
 <!-- Margin + JKT/KL: visible to all users -->
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;margin-bottom:2px"><div style="background:#fffde7;border:2px solid #f9a825;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px"><label style="font-size:.71rem;font-weight:700;color:#b45309;margin:0">OILLIO MARGIN %</label><input type="number" id="suppMargin" value="5" min="0" max="99" step="0.1" oninput="onMarginChange()" class="margin-input" style="width:62px;font-weight:700;color:#b45309;border:1.5px solid #f9a825;background:#fffde7;text-align:center;padding:4px 5px;border-radius:5px;font-size:.92rem"></div><div id="svOriginWrap" style="display:none"><div style="display:flex;border-radius:8px;overflow:hidden;border:2px solid var(--olv)"><button id="svBtnJKT" onclick="svSetOrigin('JKT')" style="padding:6px 14px;border:none;background:var(--olv);color:#fff;font-size:.79rem;font-weight:700;cursor:pointer">JKT</button><button id="svBtnKL" onclick="svSetOrigin('KL')" style="padding:6px 14px;border:none;background:#fff;color:var(--olv);font-size:.79rem;font-weight:700;cursor:pointer">KL</button></div></div></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px"><div style="background:#fffde7;border:2px solid #f9a825;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px"><label style="font-size:.71rem;font-weight:700;color:#b45309;margin:0">OILLIO MARGIN %</label><input type="number" id="suppMargin" value="5" min="0" max="99" step="0.1" oninput="onMarginChange()" class="margin-input" style="width:62px;font-weight:700;color:#b45309;border:1.5px solid #f9a825;background:#fffde7;text-align:center;padding:4px 5px;border-radius:5px;font-size:.92rem"></div><div id="svOriginWrap" style="display:none"><div style="display:flex;border-radius:8px;overflow:hidden;border:2px solid var(--olv)"><button id="svBtnJKT" onclick="svSetOrigin('JKT')" style="padding:6px 14px;border:none;background:var(--olv);color:#fff;font-size:.79rem;font-weight:700;cursor:pointer">JKT</button><button id="svBtnKL" onclick="svSetOrigin('KL')" style="padding:6px 14px;border:none;background:#fff;color:var(--olv);font-size:.79rem;font-weight:700;cursor:pointer">KL</button></div></div></div>
+
 <div id="svRefFields" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"></div>
 <div class="u2-hide" style="margin-top:10px">
   <div style="font-size:.78rem;font-weight:700;color:#b45309;margin-bottom:6px">📦 Packaging Costs &amp; Premiums/Discounts</div>
@@ -2671,7 +2672,7 @@ function generatePdfHtml(){
     s+='<tr>';
     s+='<td class=\"c\">'+(idx2+1)+'</td>';
     s+='<td><b>'+item.oilName+'</b><br><small style=\"color:#888\">'+item.skuLabel+'</small></td>';
-    s+='<td>'+sku.packing+'</td>';
+    s+='<td>'+(sku.packing&&sku.packing!=='undefined'?sku.packing:'')+'</td>';
     s+='<td class=\"r\">'+fmt(lc*item.fcl,0)+'</td>';
     s+='<td class=\"r\">'+fmt(nw,1)+' kg</td>';
     s+='<td>'+originLabel+'</td>';
@@ -2765,10 +2766,10 @@ function generatePdfHtml(){
   // footer is now inline at bottom of body
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>Oillio OPMS — 25 May 2026 (Build 20260604_225514)</title>'
-    +'<style>'+css+'</style>'+'</head><body data-build="202606050309">'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'</body></html>';
+    +'<title>OillioCommodities-'+(cust||'Quotation').replace(/[^a-zA-Z0-9]/g,'')+'</title>'
+    +'<style>'+css+'</style>'+'</head><body data-build="202606050309">'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'<style>@media print{.nopr{display:none!important}}</style>'+'<div class="nopr" style="position:fixed;top:0;left:0;right:0;background:#1a6b1a;padding:10px;text-align:center;z-index:9999">'+'<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;border-radius:7px;padding:9px 28px;font-size:1rem;font-weight:700;cursor:pointer">&#x1F5A8; Print / Save as PDF</button>'+'</div>'+'</body></html>';
 }
-function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var html=generatePdfHtml();var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[^a-zA-Z0-9]/g,'').slice(0,20);var fname='OillioCommodities-'+safeCust+'-'+dd+mm+yy+'-'+hh+mi+'.html';var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank');if(!w){var a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('PDF saved as '+fname);}setTimeout(function(){URL.revokeObjectURL(url);},60000);}
+function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var html=generatePdfHtml();var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[^a-zA-Z0-9]/g,'').slice(0,20)||'Oillio';var fname='OillioCommodities-'+safeCust+'-'+dd+mm+yy+'-'+hh+mi;var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank');if(!w){var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Saved: '+fname+'.html');}setTimeout(function(){URL.revokeObjectURL(url);},60000);}
 
 
 
@@ -5762,6 +5763,8 @@ function clearLogs(){
 
 window.addEventListener('beforeunload',function(){sessionStorage.removeItem('oillio_level');});
 (function(){var V='05JUN20260652';if(localStorage.getItem('oillio_ref_ver')!==V){['oillio_apc_ref','oillio_wa_ref','oillio_klk_ref'].forEach(function(k){localStorage.removeItem(k);});localStorage.setItem('oillio_ref_ver',V);}})();
+// Sync margin input to loaded SV_CFG value
+(function(){var mg=document.getElementById("suppMargin");if(mg&&SV_CFG&&SV_CFG.margin!=null)mg.value=SV_CFG.margin;})();
 // ─── APP INIT ───
 (function(){
   initRole();
