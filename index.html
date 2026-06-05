@@ -5200,7 +5200,7 @@ var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_o
 
 var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.955};
 var KLK_REF_DEF={cp10:1170.0,supplier_margin:0.975,oillio_margin:5.0};
-function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&Object.keys(d).length){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
+function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
 
@@ -5573,7 +5573,7 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);localStorage.setItem(key,JSON.stringify(ref));
+function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);var _saveObj=Object.assign({},ref,{_savedByUser:true});localStorage.setItem(key,JSON.stringify(_saveObj));
   // Also save packaging costs/premiums
   var pkgArr=getPkgArr(s);
   var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
