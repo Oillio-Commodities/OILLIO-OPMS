@@ -6,9 +6,8 @@
 (function(){
   var _v='7e39c3c';
   if(!window.location.search.includes(_v)){
-    localStorage.removeItem('oillio_apc_ref');
-    localStorage.removeItem('oillio_wa_ref');
-    localStorage.removeItem('oillio_klk_ref');
+    // Clear ALL oillio localStorage to remove stale pkg_cost values
+    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
     window.location.replace(window.location.pathname+'?v='+_v);
   }
 })();
@@ -5218,32 +5217,32 @@ var WA_PKG_KEY='oillio_wa_pkg';
 var KLK_PKG_KEY='oillio_klk_pkg';
 
 var APC_PKG_DEF=[
-{id:0,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:138.0,premium:0.0},
-{id:1,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:138.0,premium:10.0},
-{id:2,cat:"JERRY CANS",name:"20L White Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:148.0,premium:0.0},
-{id:3,cat:"JERRY CANS",name:"20L White Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:147.0,premium:10.0},
+{id:0,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:143.0,premium:0.0},
+{id:1,cat:"JERRY CANS",name:"20L Yellow Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:143.0,premium:10.0},
+{id:2,cat:"JERRY CANS",name:"20L White Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:153.0,premium:0.0},
+{id:3,cat:"JERRY CANS",name:"20L White Jerry Can – CP8",packing:"20L Jerry Can",pkg_cost:152.0,premium:10.0},
 {id:4,cat:"SHORTENING",name:"20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:-5.0},
-{id:5,cat:"SHORTENING",name:"20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:-5.0},
-{id:6,cat:"SHORTENING",name:"20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:-7.0},
-{id:7,cat:"SHORTENING",name:"20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:-3.0},
-{id:8,cat:"SHORTENING",name:"20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:-14.5},
-{id:9,cat:"BIB",name:"20kg BIB Spread Fat",packing:"20kg BIB",pkg_cost:100.0,premium:115.0},
-{id:10,cat:"SPECIALTY — KL Only",name:"20kg CBR 37/40",packing:"20kg carton",pkg_cost:82.0,premium:500.0},
-{id:11,cat:"SPECIALTY — KL Only",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-121.0},
-{id:12,cat:"SPECIALTY — KL Only",name:"20kg Hpko 35/37",packing:"20kg carton",pkg_cost:82.0,premium:-199.0},
-{id:13,cat:"SPECIALTY — KL Only",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:190.0},
-{id:14,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/44",packing:"20kg carton",pkg_cost:82.0,premium:-155.0},
-{id:15,cat:"SPECIALTY — JKT Only",name:"20kg RCNO",packing:"20kg BIB",pkg_cost:100.0,premium:-174.0},
-{id:16,cat:"SPECIALTY — JKT Only",name:"20kg HCNO",packing:"20kg carton",pkg_cost:82.0,premium:-99.0},
-{id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:-26.0},
-{id:18,cat:"SPECIALTY — JKT Only",name:"RCNO Flexibag",packing:"Flexibag",pkg_cost:52.0,premium:-160.0},
-{id:19,cat:"SPECIALTY — JKT Only",name:"HPS Flakes",packing:"25kg polywoven bag",pkg_cost:10.0,premium:25.0},
-{id:20,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:33.0},
-{id:21,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:38.0},
-{id:22,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:45.0},
-{id:23,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:42.0},
-{id:24,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:76.0},
-{id:25,cat:"SPECIALTY — KL Only (cont.)",name:"Apifil 7011 XC",packing:"20kg carton",pkg_cost:82.0,premium:-97.4}
+{id:5,cat:"SHORTENING",name:"20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:-10.0},
+{id:6,cat:"SHORTENING",name:"20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:-16.0},
+{id:7,cat:"SHORTENING",name:"20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:-12.0},
+{id:8,cat:"SHORTENING",name:"20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:-30.0},
+{id:9,cat:"BIB",name:"20kg BIB Spread Fat",packing:"20kg BIB",pkg_cost:100.0,premium:65.0},
+{id:10,cat:"SPECIALTY — KL Only",name:"20kg CBR 37/40",packing:"20kg carton",pkg_cost:82.0,premium:345.0},
+{id:11,cat:"SPECIALTY — KL Only",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-193.0},
+{id:12,cat:"SPECIALTY — KL Only",name:"20kg Hpko 35/37",packing:"20kg carton",pkg_cost:82.0,premium:-280.0},
+{id:13,cat:"SPECIALTY — KL Only",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:-270.0},
+{id:14,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/44",packing:"20kg carton",pkg_cost:82.0,premium:-225.0},
+{id:15,cat:"SPECIALTY — JKT Only",name:"20kg RCNO",packing:"20kg BIB",pkg_cost:100.0,premium:-110.0},
+{id:16,cat:"SPECIALTY — JKT Only",name:"20kg HCNO",packing:"20kg carton",pkg_cost:82.0,premium:-45.0},
+{id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:54.0},
+{id:18,cat:"SPECIALTY — JKT Only",name:"RCNO Flexibag",packing:"Flexibag",pkg_cost:52.0,premium:-145.0},
+{id:19,cat:"SPECIALTY — JKT Only",name:"HPS Flakes",packing:"25kg polywoven bag",pkg_cost:10.0,premium:-167.0},
+{id:20,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:18.0},
+{id:21,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:28.0},
+{id:22,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 43/47",packing:"20kg carton",pkg_cost:82.0,premium:35.0},
+{id:23,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:34.0},
+{id:24,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:66.0},
+{id:25,cat:"SPECIALTY — KL Only (cont.)",name:"Apifil 7011 XC",packing:"20kg carton",pkg_cost:82.0,premium:-152.0}
 ];
 var WA_PKG_DEF=[
 {id:0,cat:"JERRY CANS",name:"20L/ 25l Yellow Jerry Can – CP10",packing:"20L Jerry Can",pkg_cost:138.0,premium:-13.0},
