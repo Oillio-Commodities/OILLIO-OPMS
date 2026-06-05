@@ -2186,7 +2186,7 @@ function renderVTable(){
       tcHtml+='Buyer\'s responsibility to ensure all required documents informed to seller prior to sales contract.<br>';
     }
     if(showTcCif){
-      tcHtml+='<br><b style="color:#1e5f8a">CIF Terms:</b><br>';
+      tcHtml+='<br><b style="color:#1e5f8a">FOB Terms (with Freight):</b><br>';
       tcHtml+='Payment: 30% deposit, balance 70% against copy BL<br>';
       tcHtml+='Shipment: '+sdVal+'<br>';
       tcHtml+='Brand: Oillio House Brand (For OEM/private label: min 5 FCL per SKU per shipment)<br>';
@@ -2324,7 +2324,7 @@ function buildRpt(){
   var hasFobItems=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both'||(!x.priceMode&&(!x.mode||x.mode.toUpperCase()==='FOB'));});
   var hasCifItems=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both'||(!x.priceMode&&x.mode&&x.mode.toUpperCase()==='CIF'))&&(x.port||x.portObj);});
   if(hasFobItems)r+=tcFob(sd)+NL;
-  if(hasFobItems&&hasCifItems)r+=DIV+NL+'[CIF TERMS]'+NL;
+  if(hasFobItems&&hasCifItems)r+=DIV+NL+'[FOB TERMS WITH FREIGHT]'+NL;
   if(hasCifItems)r+=tcCif(sd);
   return r;
 }
@@ -2519,7 +2519,7 @@ function generatePdfHtml(){
   var pm=PRICE_MODE||'fob';
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
   var showFob=(pm==='fob'||pm==='both'||!hasCifItem);
-  var showCif=(pm==='cif'||pm==='both')&&hasCifItem;
+  var showCif=hasCifItem;  // show freight columns whenever any item has freight
   var _today=new Date();
   var _yyyymmdd=_today.getFullYear()+String(_today.getMonth()+1).padStart(2,'0')+String(_today.getDate()).padStart(2,'0');
   var _lsKey='oillio_ref_'+_yyyymmdd;
@@ -2599,7 +2599,7 @@ function generatePdfHtml(){
   //   "Oillio" italic bold centred; wordmark text right of circle
   var _oillioLogo='<div style=\"display:flex;align-items:center;gap:12px\"><img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_emblem_nobg.svg?v=30\" style=\"width:72px;height:72px;display:block\"><div style=\"display:flex;flex-direction:column;justify-content:center\"><div style=\"font-size:1.7rem;font-weight:900;color:#1a5c14;line-height:1;letter-spacing:-0.3px\">Oillio</div><div style=\"font-size:0.62rem;font-weight:700;color:#1a5c14;margin-top:2px\">Commodities Sdn. Bhd.</div><div style=\"font-size:0.55rem;font-weight:400;color:#555;margin-top:1px\">(1527357-W)</div></div></div>';
 
-  var _wordmark='<div style=\"display:flex;flex-direction:column;justify-content:center;text-align:right\"><div style=\"font-size:7pt;color:#555\">No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor</div><div style=\"font-size:7pt;color:#555\">Tel: +603 5888 8339 &nbsp;|&nbsp; (M) +6012 326 3988 &nbsp;|&nbsp; export@oillio.com.my &nbsp;|&nbsp; www.oillio.com.my</div></div>';
+  var _wordmark='<div style=\"display:flex;flex-direction:column;justify-content:center;text-align:right\"></div>';
 
   // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
   var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=30" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
@@ -2728,8 +2728,8 @@ function generatePdfHtml(){
     s+=_fmtTc(tcFob(sd));
   }
   if(hasCif){
-    s+='<div style="margin-top:7pt;margin-bottom:4pt"><strong>FOB Terms (with Freight)</strong></div>';
-    s+='<div style="font-weight:700;margin-top:8px;margin-bottom:4pt;color:#0c5460">FOB Terms (with Freight)</div>';s+=_fmtTc(tcCif(sd));
+    
+    s+=_fmtTc(tcCif(sd));
   }
   s+='</div></div>';
   // Signature block - no name, just authorised stamp
@@ -2889,7 +2889,7 @@ function openPrintPreview(){
       html_+='External docs: Health Cert USD150 | Phyto Cert USD150 | CoA USD100 | CO USD30<br>';
     }
     if(showTcCif){
-      html_+='<br><b style="color:#1e5f8a">CIF Terms:</b><br>';
+      html_+='<br><b style="color:#1e5f8a">FOB Terms (with Freight):</b><br>';
       html_+='Payment: 30% deposit, balance 70% against copy BL<br>';
       if(delVal)html_+='Delivery: '+delVal+'<br>';
       html_+='Brand: Oillio House Brand (OEM/private label: min 5 FCL per SKU)<br>';
