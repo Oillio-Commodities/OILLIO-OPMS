@@ -822,7 +822,7 @@ body.user-mode #userPdfBar { display:flex !important; }
         </div>
         <button class="btn-s btn-grn" id="btnCopy" onclick="copyReport()">&#x1F4CB; Copy</button>
         <button onclick="doPrint()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F4BE; Save PDF</button>
-        <button onclick="copyAsImage()" style="background:#8e44ad;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F5BC; Image</button>
+        
         <button onclick="openSaveAsCustomer()" style="background:linear-gradient(90deg,#1e5f8a,#2980b9);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F465; Save Profile</button>
       </div>
     </div>
@@ -2248,7 +2248,16 @@ function buildTxtTable(){
     if(showFob){vals.push(fmt(p.fs,2));vals.push(fmt(p.fm,2));vals.push(fmt(tfob,2));}
     if(showCif){vals.push(isCif?fmt(frUnit,2):'-');vals.push(isCif?fmt(p.cs,2):'-');vals.push(isCif?fmt(p.cm,2):'-');vals.push(isCif?fmt(tcif,2):'-');}
     r+=row(vals)+NL;
-  }
+
+    // Add freight breakdown line
+    if(isCif&&frUnit>0){
+      var frAmt=item.port?item.port.freight:(SV_FR.usd||0);
+      var frPortN=item.port?(item.port.port+', '+item.port.country):(SV_FR.portName||'Manual');
+      var fVals=['','','  '+frPortN.slice(0,22),'',''];
+      if(showFob){fVals.push(fmt(frUnit,2));fVals.push('');fVals.push('');}
+      if(showCif){fVals.push(fmt(frUnit,2));fVals.push(fmt(p.cs,2));fVals.push(fmt(p.cm,2));fVals.push(fmt(tcif,2));}
+      r+=row(fVals)+NL;
+    }  }
   r+=divider+NL;
   var tots=['','','TOTAL',gFcl+'',fmt(gMt,3)];
   if(showFob){tots.push('');tots.push('');tots.push(fmt(gFob,2));}
@@ -2673,7 +2682,7 @@ function generatePdfHtml(){
     s+='<tr>';
     s+='<td class="c">'+(idx2+1)+'</td>';
     s+='<td><b>'+item.oilName+'</b>'+(item.skuLabel?'<br><small style="color:#888">'+item.skuLabel+'</small>':'')+'</td>';
-    s+='<td>'+(sku&&sku.packing&&sku.packing!=='undefined'?sku.packing:'')+'</td>';
+    s+='';
     s+='<td class="r">'+fmt(lc_,0)+'</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
     s+='<td>'+originLabel+'</td>';
@@ -2690,7 +2699,7 @@ function generatePdfHtml(){
     }
     s+='</tr>';
 
-    // Freight row if CIF
+    // Freight breakdown rows
     if(fr>0&&item.mode==='CIF'){
       var portLabel=item.port?item.port.port+', '+item.port.country:'Manual';
       s+='<tr style="background:#e8f4ff">';
@@ -2702,6 +2711,13 @@ function generatePdfHtml(){
       if(IS_ADMIN){s+='<td></td>';}
       s+='</tr>';
     }
+    // Total FOB+Freight row
+    var totalCols=5+(showFob?(showMT?3:2):0)+(showCif&&hasCifItem?(showMT?4:3):0);
+    s+='<tr style="background:#d4e8ff;font-weight:700">';
+    s+='<td></td><td colspan="4" style="font-size:7.5pt;color:#1a5276">Total FOB+Freight (1 FCL)</td>';
+    if(showFob){s+='<td class="r" style="color:#1a5276">'+fmt(fob_unit,2)+'</td>';if(showMT)s+='<td></td>';s+='<td class="r" style="color:#1a5276">'+fmt(fob_total,2)+'</td>';}
+    if(showCif&&hasCifItem){s+='<td class="r" style="color:#1a5276">'+fmt(fr,2)+'</td>';s+='<td class="r" style="color:#1a5276;font-size:8.5pt">'+fmt(cif_unit,2)+'</td>';if(showMT)s+='<td class="r" style="color:#1a5276">'+fmt(cif_mt,2)+'/MT</td>';s+='<td class="r" style="color:#1a5276;font-weight:800">'+fmt(cif_total,2)+'</td>';}
+    s+='</tr>';
   });
   s+='</tbody></table>';
 
@@ -2777,7 +2793,7 @@ thead='';
   var fobSpan=1+(showMT?1:0)+1;  // FOB/unit + [FOB/MT] + Total FOB
   var cifSpan=2+(showMT?1:0)+1;  // Freight/unit + FOB+Fr/unit + [FOB+Fr/MT] + Total
   thead+='<tr>';
-  thead+='<th colspan="6" style="background:#2c3e50;font-size:9px">QUOTATION DETAILS</th>';
+  thead+='<th colspan="5" style="background:#2c3e50;font-size:9px">QUOTATION DETAILS</th>';
   if(showFob)thead+='<th colspan="'+fobSpan+'" style="background:#155724;font-size:9px">FOB PRICING</th>';
   if(showCif&&hasCifItem)thead+='<th colspan="'+cifSpan+'" style="background:#0c3a6e;font-size:9px">FOB + FREIGHT</th>';
   thead+='</tr><tr>';
@@ -5200,7 +5216,7 @@ var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_o
 
 var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.955};
 var KLK_REF_DEF={cp10:1170.0,supplier_margin:0.975,oillio_margin:5.0};
-function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
+function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30){localStorage.removeItem(key);return Object.assign({},def);}var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
 
@@ -5789,7 +5805,7 @@ function clearLogs(){
 }
 
 window.addEventListener('beforeunload',function(){sessionStorage.removeItem('oillio_level');});
-(function(){var V='FORCE_05JUN20260845';if(localStorage.getItem('oillio_ref_ver')!==V){['oillio_apc_ref','oillio_wa_ref','oillio_klk_ref'].forEach(function(k){localStorage.removeItem(k);});localStorage.setItem('oillio_ref_ver',V);}})();
+(function(){var V='EXCEL_1170_05JUN2026';if(localStorage.getItem('oillio_ref_ver')!==V){['oillio_apc_ref','oillio_wa_ref','oillio_klk_ref'].forEach(function(k){localStorage.removeItem(k);});localStorage.setItem('oillio_ref_ver',V);}})();
 // Sync margin input to loaded SV_CFG value
 (function(){var mg=document.getElementById("suppMargin");if(mg&&SV_CFG&&SV_CFG.margin!=null)mg.value=SV_CFG.margin;})();
 // ─── APP INIT ───
