@@ -2662,62 +2662,52 @@ function generatePdfHtml(){
   s+='</tr></thead><tbody>';
 
   QITEMS.forEach(function(item,idx2){
-    var sku=item.sku||{};
-    var nw=sku.net_wt||20,lc=sku.sku_fcl||1;
+        var sku=item.sku||{};
+    var nw=sku.net_wt||20, lc=sku.sku_fcl||1;
     var s_=item.supplier||'apical';
     var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName;})[0]||{};
     var fob=p_.name?getLiveFob(p_,s_):(item.oilPrice||0);
     var _m=parseFloat(item.mgn!=null?item.mgn:SV_CFG.margin); var m=(isNaN(_m)?5:_m)/100;
     var isCif=item.mode==='CIF'&&item.port;
     var lc_=lc*item.fcl;
-    var fr_u=isCif?(item.port.freight/lc):((SV_FR.mode!=='fob'&&SV_FR.usd>0)?(SV_FR.usd/lc):0);
-    var fr=fr_u;
-    var fob_unit=round4(fob*(1+m)*nw/1000);
-    var fob_mt=round4(fob*(1+m));
-    var fob_total=round4(fob_unit*lc_);
-    var cif_unit=round4(fob_unit+fr_u);
-    var cif_mt=round4(cif_unit/nw*1000);
-    var cif_total=round4(cif_unit*lc_);
-    var originLabel=isCif?(item.port?(item.port.port+', '+item.port.country):(item.portName||'Manual')):'FOB '+(item.originPort||s_.toUpperCase());
+    var fob_sku=round4(fob*(1+m)*nw/1000);
+    var fob_total=round4(fob_sku*lc_);
+    var fr_rate=isCif?item.port.freight:((SV_FR.mode==='manual'&&SV_FR.usd>0)?SV_FR.usd:0);
+    var fr_port=isCif?(item.port.port+', '+item.port.country):(SV_FR.portName||'Manual freight');
+    var fr_unit=fr_rate>0?round4(fr_rate/lc):0;
+    var fr_total=round4(fr_unit*lc_);
+    var total_sku=round4(fob_sku+fr_unit);
+    var total_cargo=round4(fob_total+fr_total);
+    var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':s_.toUpperCase());
+    if(s_==='wingagro')fobl='FOB Surabaya';
     s+='<tr>';
     s+='<td class="c">'+(idx2+1)+'</td>';
-    s+='<td><b>'+item.oilName+'</b>'+(item.skuLabel?'<br><small style="color:#888">'+item.skuLabel+'</small>':'')+'</td>';
-    s+='';
-    s+='<td class="r">'+fmt(lc_,0)+'</td>';
+    s+='<td><b>'+item.oilName+'</b><span style="color:#888;font-size:7.5pt"> &nbsp;'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small></td>';
+    s+='<td class="r">'+fmt(lc_,0)+' ctns</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
-    s+='<td>'+originLabel+'</td>';
-    if(showFob){
-      s+='<td class="r">USD '+fmt(fob_unit,2)+'</td>';
-      if(showMT)s+='<td class="r">USD '+fmt(fob_mt,2)+'/MT</td>';
-      s+='<td class="r" style="font-weight:700">USD '+fmt(fob_total,2)+'</td>';
-    }
-    if(showCif&&hasCifItem){
-      s+='<td class="r">'+(isCif?'USD '+fmt(fr_u,2):'—')+'</td>';
-      s+='<td class="r">'+(isCif?'USD '+fmt(cif_unit,2):'—')+'</td>';
-      if(showMT)s+='<td class="r">'+(isCif?'USD '+fmt(cif_mt,2)+'/MT':'—')+'</td>';
-      s+='<td class="r" style="font-weight:700">'+(isCif?'USD '+fmt(cif_total,2):'—')+'</td>';
-    }
+    s+='<td class="r"><b>USD '+fmt(fob_sku,2)+'</b></td>';
+    s+='<td class="r" style="font-weight:800">USD '+fmt(fob_total,2)+'</td>';
     s+='</tr>';
-
-    // Freight breakdown rows
-    if(fr>0&&item.mode==='CIF'){
-      var portLabel=item.port?item.port.port+', '+item.port.country:'Manual';
-      s+='<tr style="background:#e8f4ff">';
-      s+='<td></td><td style="font-size:7.5pt;color:#2980b9;padding-left:16px">';
-      s+='&#x1F6A2; Freight ('+portLabel+')</td>';
-      s+='<td colspan="3" style="font-size:7.5pt;color:#2980b9">USD '+fmt(item.port?item.port.freight:SV_FR.usd,0)+'/FCL &divide; '+fmt(lc,0)+' ctns</td>';
-      if(showFob){s+='<td></td><td class="r" style="color:#2980b9;font-weight:700">+USD '+fmt(fr,2)+'</td>';}
-      if(showCif&&hasCifItem){s+='<td class="r" style="color:#2980b9;font-weight:700">Incl.</td>';}
-      if(IS_ADMIN){s+='<td></td>';}
+    if(fr_rate>0){
+      s+='<tr style="background:#eef6ff">';
+      s+='<td></td>';
+      s+='<td style="font-size:7.5pt;color:#1a5276;padding-left:14px">&#x1F6A2; <b>Freight:</b> '+fr_port+'</td>';
+      s+='<td class="r" style="color:#1a5276;font-size:7.5pt" colspan="2">USD '+fmt(fr_rate,0)+'/FCL &divide; '+fmt(lc_,0)+' ctns</td>';
+      s+='<td class="r" style="color:#1a5276;font-weight:700">+USD '+fmt(fr_unit,2)+'/unit</td>';
+      s+='<td class="r" style="color:#1a5276;font-weight:700">+USD '+fmt(fr_total,2)+'</td>';
+      s+='</tr>';
+      s+='<tr style="background:#d0e8ff;font-weight:700">';
+      s+='<td></td>';
+      s+='<td style="color:#1a5276;font-size:8pt">Total FOB + Freight ('+fmt(item.fcl,0)+' FCL)</td>';
+      s+='<td class="r" style="color:#1a5276">'+fmt(lc_,0)+' ctns</td>';
+      s+='<td class="r" style="color:#1a5276">'+fmt(nw,1)+' kg</td>';
+      s+='<td class="r" style="color:#1a5276">USD '+fmt(total_sku,2)+'/unit</td>';
+      s+='<td class="r" style="color:#1a5276;font-size:8.5pt">USD '+fmt(total_cargo,2)+'</td>';
       s+='</tr>';
     }
-    // Total FOB+Freight row
-    var totalCols=5+(showFob?(showMT?3:2):0)+(showCif&&hasCifItem?(showMT?4:3):0);
-    s+='<tr style="background:#d4e8ff;font-weight:700">';
-    s+='<td></td><td colspan="4" style="font-size:7.5pt;color:#1a5276">Total FOB+Freight (1 FCL)</td>';
-    if(showFob){s+='<td class="r" style="color:#1a5276">'+fmt(fob_unit,2)+'</td>';if(showMT)s+='<td></td>';s+='<td class="r" style="color:#1a5276">'+fmt(fob_total,2)+'</td>';}
-    if(showCif&&hasCifItem){s+='<td class="r" style="color:#1a5276">'+fmt(fr,2)+'</td>';s+='<td class="r" style="color:#1a5276;font-size:8.5pt">'+fmt(cif_unit,2)+'</td>';if(showMT)s+='<td class="r" style="color:#1a5276">'+fmt(cif_mt,2)+'/MT</td>';s+='<td class="r" style="color:#1a5276;font-weight:800">'+fmt(cif_total,2)+'</td>';}
-    s+='</tr>';
+
+    // Freight breakdown rows
+
   });
   s+='</tbody></table>';
 
@@ -2790,26 +2780,13 @@ function generatePdfHtml(){
     +'<title>OillioCommodities-'+(cust||'Quotation').replace(/[^a-zA-Z0-9]/g,'')+'</title>'
     +'<style>'+css+'</style>'+'</head><body data-build="202606050309">'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'<style>@media print{.nopr{display:none!important}}</style>'+'<div class="nopr" style="position:fixed;top:0;left:0;right:0;background:#1a6b1a;padding:10px;text-align:center;z-index:9999">'+'<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;border-radius:7px;padding:9px 28px;font-size:1rem;font-weight:700;cursor:pointer">&#x1F5A8; Print / Save as PDF</button>'+'</div>'+'</body></html>';
 thead='';
-  var fobSpan=1+(showMT?1:0)+1;  // FOB/unit + [FOB/MT] + Total FOB
-  var cifSpan=2+(showMT?1:0)+1;  // Freight/unit + FOB+Fr/unit + [FOB+Fr/MT] + Total
   thead+='<tr>';
-  thead+='<th colspan="5" style="background:#2c3e50;font-size:9px">QUOTATION DETAILS</th>';
-  if(showFob)thead+='<th colspan="'+fobSpan+'" style="background:#155724;font-size:9px">FOB PRICING</th>';
-  if(showCif&&hasCifItem)thead+='<th colspan="'+cifSpan+'" style="background:#0c3a6e;font-size:9px">FOB + FREIGHT</th>';
-  thead+='</tr><tr>';
-  thead+='<th class="hn">#</th><th class="hn">Product</th><th class="hn">Packing</th>';
-  thead+='<th class="hn">Load (CTN)</th><th class="hn">Net Wt</th><th class="hn">Origin</th>';
-  if(showFob){
-    thead+='<th class="hfob">FOB/Unit (USD)</th>';
-    if(showMT)thead+='<th class="hfob">FOB/MT (USD)</th>';
-    thead+='<th class="hfob" style="font-weight:800">Total FOB (USD)</th>';
-  }
-  if(showCif&&hasCifItem){
-    thead+='<th class="hcif">Freight/Unit</th>';
-    thead+='<th class="hcif">FOB+Freight/Unit</th>';
-    if(showMT)thead+='<th class="hcif">FOB+Freight/MT</th>';
-    thead+='<th class="hcif" style="font-weight:800">Total FOB+Freight (USD)</th>';
-  }
+  thead+='<th class="hn" style="width:22px">#</th>';
+  thead+='<th class="hn">PRODUCT DESCRIPTION</th>';
+  thead+='<th class="hn" style="text-align:right">LOAD<br>(CTN)</th>';
+  thead+='<th class="hn" style="text-align:right">NET<br>WT</th>';
+  thead+='<th class="hfob">FOB PRICE/SKU<br>(USD)</th>';
+  thead+='<th class="hfob" style="font-weight:800">TOTAL FOB<br>CARGO (USD)</th>';
   thead+='</tr></thead><tbody>';
   }
 function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var html=generatePdfHtml();var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[^a-zA-Z0-9]/g,'').slice(0,20)||'Oillio';var fname='OillioCommodities-'+safeCust+'-'+dd+mm+yy+'-'+hh+mi;var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank');if(!w){var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Saved: '+fname+'.html');}setTimeout(function(){URL.revokeObjectURL(url);},60000);}
