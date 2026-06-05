@@ -3823,11 +3823,11 @@ function generatePDF(){
     // (set permanently when user clicked "Add to Quote")
     // NOT from current global PRICE_MODE which may have changed
     var hasItemFob=QITEMS.some(function(x){return x.priceMode==='fob'||x.priceMode==='both';});
-    var hasItemCif=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both')&&x.mode==='CIF'&&x.port;});
+    var hasItemCif=QITEMS.some(function(x){return (x.priceMode==='cif'||x.priceMode==='both')&&x.mode==='FOB (with Freight)'&&x.port;});
 
     var showF=hasItemFob;
     var showC=hasItemCif;
-    var modeLabel=(!showF&&showC)?'CIF':(showF&&showC)?'FOB & CIF':'FOB';
+    var modeLabel=(!showF&&showC)?'FOB+Freight':(showF&&showC)?'FOB & FOB+Freight':'FOB';
 
     var cust=el('qCust')?el('qCust').value||'':'';
     var delVal=el('qDel')?el('qDel').value||'':'';
@@ -3843,20 +3843,20 @@ function generatePDF(){
     // Super-header only when both FOB and CIF items exist
     var thead='';
     if(showF&&showC){
-      var fobSpan=showMT?2:1;
-      var cifSpan=showMT?3:2;
+      var fobSpan=showMT?3:2;
+      var cifSpan=showMT?4:3;
       thead+='<tr>';
       thead+='<th colspan="7" style="background:#2c3e50;text-align:center;font-size:9px;letter-spacing:.08em">QUOTATION DETAILS</th>';
       thead+='<th colspan="'+fobSpan+'" style="background:#155724;text-align:center;font-size:9px;letter-spacing:.08em;border-left:2px solid #fff">&#x1F7E2; FOB PRICING</th>';
-      thead+='<th colspan="'+cifSpan+'" style="background:#0c3a6e;text-align:center;font-size:9px;letter-spacing:.08em;border-left:2px solid #fff">&#x1F535; CIF PRICING</th>';
+      thead+='<th colspan="'+cifSpan+'" style="background:#0c3a6e;text-align:center;font-size:9px;letter-spacing:.08em;border-left:2px solid #fff">&#x1F535; FOB + FREIGHT PRICING</th>';
       thead+='<th style="background:#7d3c0a;text-align:center;font-size:9px">TOTAL</th>';
       thead+='</tr>';
     }
     thead+='<tr>';
     thead+='<th>No.</th><th>Mode</th><th>Product &amp; SKU</th><th>Net&nbsp;Wt(kg)</th>';
     thead+='<th>SKU/FCL</th><th>No.FCL</th><th>Vol(MT)</th>';
-    if(showF){thead+='<th class="hfob">FOB<br>Price/Ctn</th>';if(showMT)thead+='<th class="hfob">FOB<br>Price/MT</th>';}
-    if(showC){thead+='<th class="hcif">CIF Dest</th><th class="hcif">CIF<br>Price/Ctn</th>';if(showMT)thead+='<th class="hcif">CIF<br>Price/MT</th>';}
+    if(showF){thead+='<th class="hfob">FOB Price/Unit (USD)</th>';thead+='<th class="hfob">Total FOB Cargo (USD)</th>';if(showMT)thead+='<th class="hfob">FOB Price/MT (USD)</th>';}
+    if(showC){thead+='<th class="hcif">Freight Dest</th><th class="hcif">FOB+Freight/Ctn (USD)</th>';thead+='<th class="hcif">Total FOB+Freight Cargo (USD)</th>';if(showMT)thead+='<th class="hcif">FOB+Freight/MT (USD)</th>';}
     thead+='<th class="htot">Total<br>(USD)</th></tr>';
 
     var tbody='';
@@ -3882,7 +3882,7 @@ function generatePDF(){
       // The "Total" column for this row
       var tdis=itemIsCif&&tcif!==null?tcif:tfob;
 
-      var mBadge=itemIsCif?'<span class="mcif">CIF</span>':'<span class="mfob">FOB</span>';
+      var mBadge=itemIsCif?'<span class="mcif">FOB+Freight</span>':'<span class="mfob">FOB</span>';
       var destTxt=isCif?item.port.country+'<br><small>'+item.port.port+'</small>':'--';
 
       // Row colour: blue tint for CIF items, green tint for FOB items
@@ -3905,15 +3905,12 @@ function generatePDF(){
 
       // FOB columns: show pricing ONLY if this item is FOB
       if(showF){
-        tbody+='<td class="r '+(itemIsFob?'fob':'dash')+'">'+(itemIsFob?fmt(p.fs,4):'--')+'</td>';
-        if(showMT)tbody+='<td class="r '+(itemIsFob?'fob':'dash')+'">'+(itemIsFob?fmt(p.fm,2):'--')+'</td>';
+        tbody+='<td class="r '+(itemIsFob?'fob':'dash')+'">'+(itemIsFob?fmt(p.fs,4):'--')+'</td>';tbody+='<td class="r '+(itemIsFob?'fob':'dash')+'" style="font-weight:700">'+(itemIsFob?fmt(tfob,2):'--')+'</td>';if(showMT)tbody+='<td class="r '+(itemIsFob?'fob':'dash')+'">'+(itemIsFob?fmt(p.fm,2):'--')+'</td>';
       }
 
       // CIF columns: show pricing ONLY if this item is CIF
       if(showC){
-        tbody+='<td class="c '+(itemIsCif?'':'dash')+'">'+(itemIsCif?destTxt:'--')+'</td>';
-        tbody+='<td class="r '+(itemIsCif?'cif':'dash')+'">'+(itemIsCif?fmt(p.cs,4):'--')+'</td>';
-        if(showMT)tbody+='<td class="r '+(itemIsCif?'cif':'dash')+'">'+(itemIsCif?fmt(p.cm,2):'--')+'</td>';
+        tbody+='<td class="c '+(itemIsCif?'':'dash')+'">'+(itemIsCif?destTxt:'--')+'</td>';tbody+='<td class="r '+(itemIsCif?'cif':'dash')+'">'+(itemIsCif?fmt(p.cs,4):'--')+'</td>';tbody+='<td class="r '+(itemIsCif?'cif':'dash')+'" style="font-weight:700">'+(itemIsCif&&tcif!==null?fmt(tcif,2):'--')+'</td>';if(showMT)tbody+='<td class="r '+(itemIsCif?'cif':'dash')+'">'+(itemIsCif?fmt(p.cm,2):'--')+'</td>';
       }
 
       tbody+='<td class="r tot">'+fmt(tdis,2)+'</td>';
@@ -3921,8 +3918,8 @@ function generatePDF(){
     }
 
     // Footer totals — only show the totals relevant to what's in the quote
-    var fobCols=showF?(showMT?2:1):0;
-    var cifCols=showC?(showMT?3:2):0;
+    var fobCols=showF?(showMT?3:2):0;
+    var cifCols=showC?(showMT?4:3):0;
     var colspan=7+fobCols+cifCols;
     var tfoot='<tr>';
     tfoot+='<td colspan="'+colspan+'" class="sum">TOTAL &mdash; '+QITEMS.length+' item'+(QITEMS.length>1?'s':'')+' &nbsp;|&nbsp; Vol: '+fmt(gMt,3)+' MT &nbsp;|&nbsp; FCL: '+gFcl+'</td>';
@@ -3948,7 +3945,7 @@ function generatePDF(){
     }
     if(showC){
       tcHtml+='<div class="tc tccif">';
-      tcHtml+='<b class="tcc">&#x1F535; CIF Terms &amp; Conditions</b>';
+      tcHtml+='<b class="tcc">&#x1F535; FOB Terms (with Freight) &amp; Conditions</b>';
       tcHtml+='<div class="tci">(1) Payment: 30% deposit, balance 70% against copy Bill of Lading (BL)</div>';
       if(delVal)tcHtml+='<div class="tci">(2) Shipment: '+delVal+'</div>';
       tcHtml+='<div class="tci">(3) Brand: Oillio House Brand &mdash; OEM/private label: min 5 FCL per SKU per shipment</div>';
@@ -5157,11 +5154,11 @@ function calcKLKItemP(item){
 var APC_REF_KEY='oillio_apc_ref';
 var WA_REF_KEY='oillio_wa_ref';
 var KLK_REF_KEY='oillio_klk_ref';
-var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0};
+var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.96};
 
 
 
-var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0};
+var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.955};
 var KLK_REF_DEF={cp10:1170.0,supplier_margin:0.975,oillio_margin:5.0};
 function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&Object.keys(d).length){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
@@ -5476,7 +5473,7 @@ function svFobInput(inp,i){var val=parseFloat(inp.value)||0,s=SV_SUP;if(s==='api
 function svSavePrices(){SV_CFG.margin=parseFloat((document.getElementById('suppMargin')||{}).value)||2.5;localStorage.setItem('oillio_supp',JSON.stringify(SV_CFG));var saved={},s=SV_SUP,today=new Date().toISOString().slice(0,10);if(s==='apical'){APICAL_DATA.forEach(function(p){if(p.fob_jkt!=null)saved[p.name]=p.fob_jkt;if(p.fob_kl!=null)saved[p.name+'_kl']=p.fob_kl;});localStorage.setItem(SV_APC_KEY,JSON.stringify(saved));}else if(s==='wingagro'){WA_DATA.forEach(function(p){if(p.fob_sua!=null)saved[p.name]=p.fob_sua;});localStorage.setItem(SV_WA_KEY,JSON.stringify(saved));}else if(s==='klk'){KLK_DATA.forEach(function(p){if(p.fob_mt!=null)saved[p.name]=p.fob_mt;});localStorage.setItem(SV_KLK_KEY,JSON.stringify(saved));}var log=[];try{log=JSON.parse(localStorage.getItem('oillio_fob_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,margin:SV_CFG.margin,fob:JSON.parse(JSON.stringify(saved))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_fob_log',JSON.stringify(log));showToast('FOB prices saved to this device (' + today + ') ✓');}function svAddRow(i,s){if(QITEMS.length>=50){alert("Max 50 items.");return;}var p=s==="apical"?APICAL_DATA[i]:s==="wingagro"?WA_DATA[i]:KLK_DATA[i];var fob=getLiveFob(p,s);if(!fob)return;var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(fob,nw,lc);QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:p.name,type:p.packing||"",net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:1,add:0,additiveType:"",mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==="fob"?"FOB":"CIF",port:SV_FR.port||null});rQuote();showToast(p.name+" added!");}
 function svPopulateCmp(){var sel=document.getElementById("cmpSel");if(!sel)return;var pkgs={};APICAL_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});WA_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});KLK_DATA.forEach(function(p){if(p.packing)pkgs[p.packing]=1;});sel.innerHTML='<option value="">-- Select packaging type --</option>'+Object.keys(pkgs).sort().map(function(k){return"<option>"+k+"</option>";}).join("");}function svRenderCmp(){var packing=(document.getElementById("cmpSel")||{}).value||"";var q=((document.getElementById("cmpQ")||{}).value||"").toLowerCase();var out=document.getElementById("cmpOut");if(!out)return;if(!packing&&!q){out.innerHTML='<div style="text-align:center;padding:36px;color:var(--mut)">Select a packaging type above to compare prices</div>';return;}var rows=[];function addR(data,sup,getFob){data.forEach(function(p){if(packing&&p.packing!==packing)return;if(q&&(p.name||"").toLowerCase().indexOf(q)<0)return;var fob=getFob(p);if(!fob)return;var nw=p.net_wt||20;var lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var c=svCalc(safeFob,nw,lc);rows.push({sup:sup,name:p.name,packing:p.packing,nw:p.net_wt,lc:p.load_ctn,fob:fob,os:c.os,ps:c.ps});});}addR(APICAL_DATA,"Apical",function(p){return SV_ORIGIN==="JKT"?(p.fob_jkt!=null?p.fob_jkt:p.fob_kl):(p.fob_kl!=null?p.fob_kl:p.fob_jkt);});addR(WA_DATA,"Wing Agro",function(p){return p.fob_sua;});addR(KLK_DATA,"KLK",function(p){return p.fob_mt;});if(!rows.length){out.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut)">No products found</div>';return;}rows.sort(function(a,b){return a.os-b.os;});var best=rows[0].os;var SC={Apical:"#e8f4ff",KLK:"#fff8e1","Wing Agro":"#e8f5ec"};var TC={Apical:"#0a3d8a",KLK:"#6a3800","Wing Agro":"#0a5c2a"};var html='<table style="width:100%;border-collapse:collapse;font-size:.77rem;background:var(--card)">'+'<thead><tr style="background:#4a1a7a;color:#fff">'+'<th style="padding:9px 12px;text-align:left">Supplier</th>'+'<th style="padding:9px 12px;text-align:left">Product</th>'+'<th style="padding:9px 12px;text-align:left">Packing</th>'+'<th style="padding:9px 12px;text-align:right">Net Wt</th>'+'<th style="padding:9px 12px;text-align:right">Load</th>'+'<th style="padding:9px 12px;text-align:right">FOB/MT</th>'+'<th style="padding:9px 12px;text-align:right;background:#1a5c2a">Oillio/Unit</th>'+(IS_ADMIN?'<th style="padding:9px 12px;text-align:right">Profit/Unit</th>':"")+'<th style="padding:9px 12px;text-align:right">vs Best</th></tr></thead><tbody>';rows.forEach(function(r){var iB=Math.abs(r.os-best)<0.001,diff=r.os-best;html+='<tr style="border-bottom:1px solid #eee;background:'+(iB?"#edfaf1":"#fff")+'">';html+='<td style="padding:8px 12px"><span style="background:'+(SC[r.sup]||"#eee")+';color:'+(TC[r.sup]||"#333")+';padding:3px 8px;border-radius:10px;font-size:.71rem;font-weight:700">'+r.sup+'</span></td>';html+='<td style="padding:8px 12px;font-weight:600;color:var(--brand)">'+r.name+'</td>';html+='<td style="padding:8px 12px;color:var(--mut);font-size:.71rem">'+r.packing+'</td>';html+='<td style="padding:8px 12px;text-align:right">'+fmt(r.nw,1)+' kg</td>';html+='<td style="padding:8px 12px;text-align:right">'+fmt(r.lc,0)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:600">USD '+fmt(r.fob,2)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:800;color:'+(iB?"#1a7a4a":"#1a5c2a")+';background:'+(iB?"#edfaf1":"#e8f5ec")+'">USD '+fmt(r.os,4)+'</td>';if(IS_ADMIN)html+='<td style="padding:8px 12px;text-align:right;font-weight:700;color:#1a7a4a">+'+fmt(r.ps,4)+'</td>';html+='<td style="padding:8px 12px;text-align:right;font-weight:700;color:'+(iB?"#1a7a4a":diff>0?"#c0392b":"#555")+'">'+(iB?"⭐ Best":(diff>0?"+":"")+fmt(diff,4)+"/unit")+'</td>';html+="</tr>";});out.innerHTML=html+"</tbody></table>";}
 var _svLabs={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)',supplier_margin:'Supplier Margin (%)'};
-function svRenderRefPanel(){var s=SV_SUP,ref,def;if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}else return;var fields=document.getElementById('svRefFields');if(!fields)return;var isEditable=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;var LABELS={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)'};var html='';Object.keys(def).forEach(function(k){if(k==='oillio_margin')return;var lbl=LABELS[k]||k.replace(/_/g,' ').toUpperCase();var val=ref[k]!=null?ref[k]:def[k];html+='<div>';html+='<div style="font-size:.62rem;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">'+lbl+'</div>';if(isEditable){html+='<input type="number" data-ref="'+k+'" value="'+val+'" style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem" oninput="svOnRefChange(this)">';}else{html+='<div style="padding:5px;border:1.5px solid #ccc;background:#f8f8f8;border-radius:5px;font-weight:700;color:#666;font-size:.85rem">'+val+'</div>';}html+='</div>';});fields.innerHTML=html;var pkgDiv=document.getElementById('svPkgFields');if(pkgDiv){var phtml='';pkgDiv.innerHTML=phtml;}}function svOnRefChange(inp){var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)r[k]=val;if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;});svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
+function svRenderRefPanel(){var s=SV_SUP,ref,def;if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}else return;var fields=document.getElementById('svRefFields');if(!fields)return;var isEditable=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;var LABELS={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)',supplier_margin:'Supplier Margin Factor'};var html='';Object.keys(def).forEach(function(k){if(k==='oillio_margin')return;var lbl=LABELS[k]||k.replace(/_/g,' ').toUpperCase();var val=ref[k]!=null?ref[k]:def[k];html+='<div>';html+='<div style="font-size:.62rem;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">'+lbl+'</div>';if(isEditable){html+='<input type="number" data-ref="'+k+'" value="'+val+'" style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem" oninput="svOnRefChange(this)">';}else{html+='<div style="padding:5px;border:1.5px solid #ccc;background:#f8f8f8;border-radius:5px;font-weight:700;color:#666;font-size:.85rem">'+val+'</div>';}html+='</div>';});fields.innerHTML=html;var pkgDiv=document.getElementById('svPkgFields');if(pkgDiv){var phtml='';pkgDiv.innerHTML=phtml;}}function svOnRefChange(inp){var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)r[k]=val;if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;});svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnPkgChange(inp){
   var id=parseInt(inp.getAttribute('data-pkgid'));
   var field=inp.getAttribute('data-field');

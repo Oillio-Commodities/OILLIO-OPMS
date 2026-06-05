@@ -107,3 +107,41 @@ Storage keys: oillio_apc_pkg, oillio_wa_pkg, oillio_klk_pkg
 - WA_REF_DEF and KLK_REF_DEF must be updated EVERY TIME Apical reference prices change
 - The cache-bust version key must match the date of the price update
 
+
+---
+
+## [2026-06-05] — Supplier Margin, Report Columns, T&C Fix
+
+### Fixed
+- **safeFob/nw/lc undefined crash**: Variables were stripped from product list
+  map callback but HTML generation still referenced them. Restored in correct
+  order: `var nw`, `var lc`, `var safeFob` before `svCalc()` call.
+  **RULE: Never remove variable declarations that are used later in the same function scope.**
+
+### Added
+1. **Supplier Margin tab for Apical** (matching KLK and WingAgro):
+   - `supplier_margin: 0.96` added to APC_REF_DEF
+   - `supplier_margin: 0.955` added to WA_REF_DEF
+   - Label "Supplier Margin Factor" added to svRenderRefPanel LABELS
+   - User 0: editable | User 1: view-only | User 2: not shown (inside admin panel)
+
+2. **Report — Before and After Freight columns**:
+   - NEW: `FOB Price/Unit (USD)` — price per carton before freight
+   - NEW: `Total FOB Cargo (USD)` — total value of shipment before freight (bold)
+   - NEW: `Total FOB+Freight Cargo (USD)` — total after freight added (bold)
+   - Existing: FOB Price/MT, FOB+Freight/Ctn, FOB+Freight/MT
+   - Column spans updated accordingly
+
+3. **T&C renamed**: "CIF Terms" → **"FOB Terms (with Freight)"**
+   - FOB-only mode: Shows FOB Terms only (unchanged)
+   - Freight-added mode: Shows "FOB Terms (with Freight) & Conditions"
+   - Column badge: "CIF" → "FOB+Freight"
+   - Mode label: "CIF" → "FOB+Freight"
+   - Internal data storage stays as mode:'CIF' (no breakage to existing items)
+
+### Important notes
+- `item.mode` in QITEMS is still stored as `'CIF'` internally
+  (only the PDF display text is renamed to FOB+Freight)
+- Changing supplier_margin in the panel does NOT currently alter product
+  prices (fob_delta already encodes it). Display only for now.
+
