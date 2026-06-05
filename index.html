@@ -351,7 +351,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 </style>
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body data-build="202606050923">
-<div id="verBanner" style="background:#e74c3c;color:#fff;text-align:center;padding:6px;font-size:.8rem;font-weight:700;letter-spacing:.05em">OILLIO OPMS — 5 JUNE 2026 v2.1 | Profit formula fixed | PDF columns updated</div>
+<div id="verBanner" style="background:#c0392b;color:#fff;text-align:center;padding:6px;font-size:.8rem;font-weight:700">OILLIO OPMS v2.3 — 05 JUN 2026 | Build 1534 | Pricing = Excel defaults</div>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:32px;display:flex;flex-direction:row;align-items:center;gap:20px">
@@ -5193,7 +5193,7 @@ var APC_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_o
 
 var WA_REF_DEF={malaysia_cp10:1170.0,indonesia_cp10:1050.0,pk_olein:1955.0,pk_oil:2110.0,pk_stearin:2275.0,stearin:1140.0,coconut:2060.0,oillio_margin:5.0,supplier_margin:0.955};
 var KLK_REF_DEF={cp10:1170.0,supplier_margin:0.975,oillio_margin:5.0};
-function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30){localStorage.removeItem(key);return Object.assign({},def);}var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(d[k]))m[k]=d[k];});return m;}}catch(e){}return Object.assign({},def);}
+function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var ok=true;if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30)ok=false;if(ok){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(parseFloat(d[k])))m[k]=parseFloat(d[k]);});return m;}localStorage.removeItem(key);}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
 
