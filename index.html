@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='7894e09';
+  var _v='v06JUN0957';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1184,10 +1184,13 @@ function addApicalToQuote(){
     sku:{name:sku.name,type:sku.type,net_wt:sku.net_wt,sku_fcl:sku.sku_fcl,
          units:1,pkg:pkg_ctn,apicalPrice:price,deductGroup:sku.dg,_apical:true},
     fcl:parseInt((document.getElementById('apcFcl')||{}).value||1)||1,
-    add:add,additiveType:addType,mgn:mgn,mode:APC.mode,
-    port:APC.mode==='CIF'&&portName?{country:'',port:portName,freight:freightAmt}:null,
-    apicalFreight:freightAmt,apicalPort:portName,apicalOrigin:APC.origin,
-    priceMode:APC.mode.toLowerCase()
+    add:add,additiveType:addType,mgn:mgn,
+    mode:(function(){var ef=svGetFreight(APC.mode,freightAmt,APC.mode==='CIF'&&portName?{country:'',port:portName,freight:freightAmt}:null);return ef.mode;})(),
+    port:(function(){var ef=svGetFreight(APC.mode,freightAmt,APC.mode==='CIF'&&portName?{country:'',port:portName,freight:freightAmt}:null);return ef.port;})(),
+    apicalFreight:(function(){var ef=svGetFreight(APC.mode,freightAmt,null);return ef.fr;})(),
+    apicalPort:(function(){var ef=svGetFreight(APC.mode,freightAmt,null);return ef.port?ef.port.port:portName;})(),
+    apicalOrigin:APC.origin,
+    priceMode:(function(){var ef=svGetFreight(APC.mode,freightAmt,null);return ef.mode==='CIF'?'both':'fob';})()
   });
   rQuote();rApicalSum();
   var ai=document.getElementById('apcAtqInfo');
@@ -1821,7 +1824,7 @@ function rQuote(){
     (function(item,idx){
       var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
       var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
-      var isCif=item.mode==='CIF'&&(item.apicalFreight>0||item.port);var ipm2=item.priceMode||'fob';var showIF=(ipm2==='fob'||ipm2==='both');var showIC=(ipm2==='cif'||ipm2==='both')&&isCif;var frCtn=isCif?p.ff/(item.sku.sku_fcl||1):0;var frPortLabel=item.port&&item.port.port?item.port.port:(item.apicalPort||'Manual');
+      var isCif=item.mode==='CIF'&&(item.apicalFreight>0||item.port);var ipm2=item.priceMode||'fob';var showIF=true;var showIC=(ipm2==='cif'||ipm2==='both')&&isCif;var frCtn=isCif?p.ff/(item.sku.sku_fcl||1):0;var frPortLabel=item.port&&item.port.port?item.port.port:(item.apicalPort||'Manual');
       var tfob=tu*p.fs,tcif=isCif?tu*p.cs:null;
       var tdis=showIC&&tcif!==null?tcif:tfob;
       gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
@@ -1838,7 +1841,7 @@ function rQuote(){
       }
       var modeTag=ipm2==='both'?'<b style="color:#8e44ad">FOB+CIF</b>':ipm2==='cif'?'<b style="color:#1e5f8a">CIF</b>':'<b style="color:#1a7a4a">FOB</b>';
       var portB=isCif?'<b style="color:#1a5276">FOB+Freight</b>: <b>'+frPortLabel+'</b>':modeTag;
-      var totalLabel=(showIC&&!showIF)?'FOB+Fr':(showIF&&showIC)?'FOB+FOB+Fr':'FOB';
+      var totalLabel=(showIC)?'FOB+Fr':'FOB';
       div.innerHTML='<div class="q-item-num">'+(idx+1)+'</div>'
         +'<div class="q-item-body"><div class="q-item-title">'+itemDisplayName(item)+'</div>'
         +'<div class="q-item-details"><span>Oil: <b>'+item.oilName.replace(' (USD)','')+'</b></span><span>Net: <b>'+item.sku.net_wt+'kg</b></span><span>SKU/FCL: <b>'+fmt(item.sku.sku_fcl,0)+'</b></span>'+(item.add>0?'<span>Add: <b>USD '+fmt(item.add,2)+'/MT</b>'+(item.additiveType?' ('+item.additiveType+')':'')+'</b></span>':'')+'<span>'+portB+'</span></div>'
@@ -2801,7 +2804,7 @@ thead='';
   thead+='<th class="hfob" style="font-weight:800">TOTAL FOB<br>CARGO (USD)</th>';
   thead+='</tr></thead><tbody>';
   }
-function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;var html=generatePdfHtml();html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');var banner='<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#0a3d62;color:#fff;padding:10px 20px;font-family:sans-serif;font-size:13px;display:flex;align-items:center;justify-content:space-between"><span>&#128196; <b>'+fname+'</b></span><span style=\'font-size:12px;opacity:.85\'>Use <b>Ctrl+P</b> / <b>Print</b> &rarr; <b>Save as PDF</b> to save this quotation</span><button onclick=\'window.print()\' style=\'background:#27ae60;color:#fff;border:none;padding:6px 18px;border-radius:4px;cursor:pointer;font-weight:700;font-size:13px\'>&#128424; Print / Save PDF</button></div><div style=\'margin-top:52px\'>';html=html.replace('<body>','<body>'+banner);html=html.replace('</body>','</div></body>');var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank');if(!w){window.location.href=url;}showToast('Preview opened — Print/Save to save as PDF');setTimeout(function(){URL.revokeObjectURL(url);},300000);}
+function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;var html=generatePdfHtml();html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(isMobile){var w=window.open(url,'_blank');if(!w)window.location.href=url;showToast('Preview opened — share or print to save');} else {var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Saved: '+fname+'.html');}setTimeout(function(){URL.revokeObjectURL(url);},120000);}
 
 
 
@@ -4398,7 +4401,11 @@ function addKlkToQuote(){
     id:++QID,supplier:'klk',oilName:KLK_OIL_LABELS[sku.oil_type],
     oilPrice:KLK.oilPrice,cp10:KLK_OIL_REF.CP10,
     sku:sku,fcl:fcl,add:add,additiveType:addType,mgn:mgn,
-    mode:KLK.mode,port:KLK.portObj,priceMode:KLK.mode.toLowerCase()
+    mode:(function(){var ef=svGetFreight(KLK.mode,KLK.portObj?KLK.portObj.freight:0,KLK.portObj);return ef.mode;})(),
+    port:(function(){var ef=svGetFreight(KLK.mode,KLK.portObj?KLK.portObj.freight:0,KLK.portObj);return ef.port;})(),
+    apicalFreight:(function(){var ef=svGetFreight(KLK.mode,KLK.portObj?KLK.portObj.freight:0,KLK.portObj);return ef.fr;})(),
+    apicalPort:(function(){var ef=svGetFreight(KLK.mode,0,KLK.portObj);return ef.port?ef.port.port:'';})(),
+    priceMode:(function(){var ef=svGetFreight(KLK.mode,0,KLK.portObj);return ef.mode==='CIF'?'both':'fob';})()
   });
   rQuote();rKlkSum();
   var ai=el('klkAtqInfo');
@@ -4694,8 +4701,13 @@ function addWAToQuote(){
   QITEMS.push({
     id:++QID,supplier:'wingagro',oilName:sku.name,oilPrice:sku.price,cp10:sku.price,
     sku:{name:sku.name,type:sku.type,net_wt:sku.net_wt,sku_fcl:sku.sku_fcl,pkg:pkg_ctn,units:1,_wa:true},
-    fcl:fcl,add:add,additiveType:addType,mgn:mgn,mode:'FOB',port:null,
-    waPrice:sku.price,waDg:sku.dg,priceMode:'fob'
+    fcl:fcl,add:add,additiveType:addType,mgn:mgn,
+    mode:(function(){var ef=svGetFreight('FOB',0,null);return ef.mode;})(),
+    port:(function(){var ef=svGetFreight('FOB',0,null);return ef.port;})(),
+    apicalFreight:(function(){var ef=svGetFreight('FOB',0,null);return ef.fr;})(),
+    apicalPort:(function(){var ef=svGetFreight('FOB',0,null);return ef.port?ef.port.port:'';})(),
+    waPrice:sku.price,waDg:sku.dg,
+    priceMode:(function(){var ef=svGetFreight('FOB',0,null);return ef.mode==='CIF'?'both':'fob';})()
   });
   rQuote();rWASum();
   var ai=document.getElementById('waAtqInfo');
@@ -5482,7 +5494,19 @@ var KLK_DATA=[
 ];
 
 (function(){try{var af=JSON.parse(localStorage.getItem(SV_APC_KEY)||"{}");APICAL_DATA.forEach(function(p){if(af[p.name]!=null)p.fob_jkt=af[p.name];if(af[p.name+"_kl"]!=null)p.fob_kl=af[p.name+"_kl"];});var wf=JSON.parse(localStorage.getItem(SV_WA_KEY)||"{}");WA_DATA.forEach(function(p){if(wf[p.name]!=null)p.fob_sua=wf[p.name];});var kf=JSON.parse(localStorage.getItem(SV_KLK_KEY)||"{}");KLK_DATA.forEach(function(p){if(kf[p.name]!=null)p.fob_mt=kf[p.name];});}catch(e){}var mg=document.getElementById("suppMargin");if(mg)mg.value=SV_CFG.margin!=null?SV_CFG.margin:2.5;})();
-var SV_FR={mode:"fob",usd:0,port:null,portName:""};var SV_ORIGIN="JKT";var SV_SUP=null;
+var SV_FR={mode:"fob",usd:0,port:null,portName:""};
+function svGetFreight(perMode,perFreight,perPort){
+  // Global SV_FR takes precedence
+  if(SV_FR.mode==='port'&&SV_FR.port){
+    return {mode:'CIF',fr:SV_FR.port.freight,
+      port:{country:SV_FR.port.country||'',port:SV_FR.port.port||'',freight:SV_FR.port.freight}};
+  }
+  if(SV_FR.mode==='manual'&&SV_FR.usd>0){
+    return {mode:'CIF',fr:SV_FR.usd,
+      port:{country:'',port:SV_FR.portName||'Manual',freight:SV_FR.usd}};
+  }
+  return {mode:perMode||'FOB',fr:perFreight||0,port:perPort||null};
+}var SV_ORIGIN="JKT";var SV_SUP=null;
 function svCalc(fob,nw,lc){var m=(SV_CFG.margin!=null?parseFloat(SV_CFG.margin):5)/100;var fr=0;if(SV_FR.mode==='manual')fr=(SV_FR.usd||0)/(lc||1);else if(SV_FR.mode==='port'&&SV_FR.port)fr=SV_FR.port.freight/(lc||1);var nw_=(nw||20);var su=round4(fob*nw_/1000);var om=round4(fob*(1+m));var os=round4(om*nw_/1000);var of_=round4(os+fr);var ofm=round4(of_/nw_*1000);var ps=round4(om*nw_/1000-su);var tp=round4(ps*(lc||1));return{su:su,om:om,os:os,of:of_,ofm:ofm,ps:ps,tp:tp,fr:fr};}
 function setSupplier(s){SV_SUP=s;["supApical","supKlk","supWing","supAble","supCompare"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv)sv.style.display="";var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"Apical • FOB Tj Priok / Port Klang • 13 May 2026","klk":"KLK • June 2026 • 80 Products","wingagro":"Wing Agro • FOB Surabaya • 19 May 2026","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
