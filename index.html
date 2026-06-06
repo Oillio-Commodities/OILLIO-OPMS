@@ -2791,7 +2791,7 @@ function generatePdfHtml(){
   // footer is now inline at bottom of body
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>OillioCommodities-'+(cust||'Quotation').replace(/[^a-zA-Z0-9]/g,'')+'</title>'
+    +'<title>Oillio Quotation</title>'
     +'<style>'+css+'</style>'+'</head><body data-build="202606050309">'+''+''+'<div class="page" style="position:relative;overflow:hidden">'+_watermark+s+'</div>'+'<style>@media print{.nopr{display:none!important}}</style>'+'<div class="nopr" style="position:fixed;top:0;left:0;right:0;background:#1a6b1a;padding:10px;text-align:center;z-index:9999">'+'<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;border-radius:7px;padding:9px 28px;font-size:1rem;font-weight:700;cursor:pointer">&#x1F5A8; Print / Save as PDF</button>'+'</div>'+'</body></html>';
 thead='';
   thead+='<tr>';
@@ -2803,7 +2803,7 @@ thead='';
   thead+='<th class="hfob" style="font-weight:800">TOTAL FOB<br>CARGO (USD)</th>';
   thead+='</tr></thead><tbody>';
   }
-function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var html=generatePdfHtml();var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[^a-zA-Z0-9]/g,'').slice(0,20)||'Oillio';var fname='OillioCommodities-'+safeCust+'-'+dd+mm+yy+'-'+hh+mi;var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank');if(!w){var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Saved: '+fname+'.html');}setTimeout(function(){URL.revokeObjectURL(url);},60000);}
+function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;var html=generatePdfHtml();html=html.replace('<title>Oillio Quotation</title>','<title>'+fname+'</title>');html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);var isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);if(isIOS||isSafari){var w=window.open(url,'_blank');if(!w){window.location.href=url;}}showToast('Saved: '+fname);setTimeout(function(){URL.revokeObjectURL(url);},120000);}
 
 
 

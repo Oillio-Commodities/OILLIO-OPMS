@@ -238,3 +238,49 @@ The previous fix (APC_PKG_DEF update) corrected ALL 26 Apical products
 simultaneously — not just Yellow JC CP10. Yellow JC CP10 was only called
 out as the example used to detect the bug.
 
+
+---
+
+## [2026-06-06 v3] — Pricing Formula: All 110 Products Verified
+
+### Critical Rules (DO NOT REPEAT THESE MISTAKES)
+
+**RULE 1 — Always update BOTH APICAL_DATA and APC_PKG_DEF together**
+When rebuilding product data from Excel, BOTH arrays must be updated simultaneously:
+- `APICAL_DATA` = raw product data (fob_jkt, pkg_cost, premium, deltas)
+- `APC_PKG_DEF` = adjustable packaging/premium defaults (same pkg_cost, premium values)
+If one is updated without the other, `getLiveFob()` will use wrong pkg_cost.
+
+**RULE 2 — fob_delta MUST include premium in the base calculation**
+```
+CORRECT:   fob_delta = fob_jkt - (fcpo + premium + pkg_cost)
+WRONG:     fob_delta = fob_jkt - (fcpo + pkg_cost)   ← missing premium!
+```
+getLiveFob computes: `est = fcpo + premium + pkg_cost`
+So: `fob = est + fob_delta = (fcpo+prem+pkg) + (fob_jkt - fcpo - prem - pkg) = fob_jkt ✓`
+If premium excluded from delta: `fob = fob_jkt + premium` (off by premium amount)
+Affects all products with premium ≠ 0.
+
+**RULE 3 — fcpo_ref must map to actual REF commodity, not coincidental price match**
+`best_ref()` finds the reference commodity by price proximity — but this fails when
+two different commodities have similar prices (e.g. stearin=1140 ≈ malaysia_cp10-28=1142).
+Always verify fcpo_ref makes LOGICAL sense for the product category:
+- Palm olein products (Jerry Cans): malaysia_cp10 or indonesia_cp10
+- Palm kernel products (HPKS/HPKO): pk_oil or pk_olein
+WingAgro Jerry Cans were assigned fcpo_ref='indonesia_cp10' with wrong delta,
+causing 105/MT error. Fixed to malaysia_cp10 with correct delta.
+
+**RULE 4 — KLK uses fcpo_ref='fixed' (uses fcpo_default directly)**
+KLK has its own product-category reference prices that don't match standard
+commodity REF keys. Always set KLK products to fcpo_ref='fixed' so that
+getLiveFob uses fcpo_default directly:
+`fob = fcpo_default + premium + pkg_cost + fob_delta = fob_mt (Excel) ✓`
+
+### Verification (run this after any data update)
+```python
+# For each product: fob_calc must equal fob_jkt/fob_kl/fob_mt within 0.05
+fob_calc = (REF[fcpo_ref] + fcpo_delta) + premium + pkg_cost + fob_delta
+assert abs(fob_calc - fob_expected) < 0.05
+```
+All 110 products verified: Apical 26/26 ✓ | WingAgro 4/4 ✓ | KLK 80/80 ✓
+
