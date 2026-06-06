@@ -382,3 +382,28 @@ var _fr = SV_FR.mode==='port' && SV_FR.port ? SV_FR.port.freight
 This reads the CURRENT global freight setting at render time.
 DO NOT revert to item.mode==='CIF'&&item.port — that was the old broken approach.
 
+
+---
+
+## [2026-06-06 v6] — Confirmed Working: Supplier Isolation + PDF Column Lines
+
+### Status: WORKING — DO NOT TOUCH without explicit instruction
+
+**PDF Column Separator Lines:**
+- th: border-right 1.5px white semi-transparent (visible on dark header)
+- td: border-right 1px #d0d8e8 (clear column lines in data rows)
+- Last column has no right border
+
+**Yellow Reference Price Panel:**
+- Apical tab: editable by User 0 only (yellow inputs)
+- WingAgro tab: always read-only display (grey, no editing)
+- KLK tab: always read-only display (grey, no editing)
+- Reference price changes in Apical propagate to WA_REF and KLK_REF automatically
+- Controlled by: isEd = (USER_LEVEL===0) && s==='apical'
+
+**Per-Supplier Isolation (all independent):**
+- Freight: APC_FR / WA_FR / KLK_FR — separate stores, saved/restored on tab switch
+- Customer name: APC_QUOTE / WA_QUOTE / KLK_QUOTE — separate per supplier
+- Delivery period: stored per supplier, independent
+- Colour-coded top border: Apical=green, KLK=blue, WingAgro=brown
+
