@@ -284,3 +284,51 @@ assert abs(fob_calc - fob_expected) < 0.05
 ```
 All 110 products verified: Apical 26/26 ✓ | WingAgro 4/4 ✓ | KLK 80/80 ✓
 
+
+---
+
+## [2026-06-06 v4] — Freight Display, Text/Table View, T&C Standardisation
+
+### Changes Made
+**Freight in Quotation Cart:**
+- Cart now reads SV_FR at render time (not stored item data)
+- Shows: FOB/carton → +Freight (port) → FOB+Fr/carton → FOB+Fr/MT
+- Works for all 3 suppliers (Apical, WingAgro, KLK)
+
+**Text/WhatsApp Report:**
+- Replaced ASCII monospace table with clean line-by-line format
+- Freight section per item: rate formula + per unit + total
+- Footer: Total FOB + freight + grand total
+- T&C at bottom using buildTcText() helper
+
+**Table View:**
+- Desktop: buildTableHTML() with freight columns (dark blue)
+- Mobile: card view with 🚢 Freight block showing FOB+Fr pricing
+- Both use SV_FR for freight detection (not item.mode)
+
+**T&C Standardisation — buildTcText() helper:**
+- Single source of truth used by ALL views (Text, Table, PDF)
+- FOB mode → "FOB Terms"
+- Freight mode → "FOB Terms (with Freight)"
+- Payment: 30% deposit, balance 70% against copy BL (standardised)
+- All 9 clauses consistent across every view
+
+**PDF Save (cross-device):**
+- Mobile: opens preview in new tab (existing Android behavior preserved)
+- Desktop/Laptop: direct HTML download with filename
+- Filename: OillioCommodities_CustomerName_DDMMYYYY_HHMM
+
+### Bugs Fixed
+- `ipm2 not defined` — variable removed from cart but still referenced
+- `frCtn not defined` — OLD_TOTALS replacement spread into 7 other functions
+- `sdVal not defined` — old variable reference after T&C block replacement
+- `isCif` detection fixed to use SV_FR.mode instead of item.mode&&item.port
+- Text tab was calling buildRpt() instead of buildTxtTable()
+- renderVTable mobile used item.mode=CIF&&item.port (always false with SV_FR)
+
+### Rules Added
+- NEVER do global string.replace() for code patterns — always replace ONE location
+- Always update version hash (_v) after EVERY code change, not just major ones
+- After ANY rewrite of a function, scan for variables used-but-not-defined
+- Do NOT modify working features (cart prices, product list, PDF table columns) unless explicitly instructed
+
