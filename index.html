@@ -1826,7 +1826,7 @@ function rQuote(){
     (function(item,idx){
       var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
       var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
-      var showIF=true;var showIC=_fr>0;var frCtn=showIC?round4(_fr/(item.sku.sku_fcl||1)):0;var frPortLabel=_frName||'Manual';var isCif=showIC;
+      var ipm2=item.priceMode||'fob';var showIF=true;var showIC=_fr>0;var frCtn=showIC?round4(_fr/(item.sku.sku_fcl||1)):0;var frPortLabel=_frName||'Manual';var isCif=showIC;
       var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
       var tdis=showIC&&tcif!==null?tcif:tfob;
       gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
