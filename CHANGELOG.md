@@ -332,3 +332,53 @@ All 110 products verified: Apical 26/26 ✓ | WingAgro 4/4 ✓ | KLK 80/80 ✓
 - After ANY rewrite of a function, scan for variables used-but-not-defined
 - Do NOT modify working features (cart prices, product list, PDF table columns) unless explicitly instructed
 
+
+---
+
+## [2026-06-06 v5] — Confirmed Working: Freight Display + T&C All Views
+
+### Status: WORKING — DO NOT TOUCH without explicit instruction
+
+**Quotation Cart (freight breakdown):**
+- FOB/carton always shown
+- +Freight (port name) row shown when SV_FR has freight
+- FOB+Fr/carton shown in bold blue
+- FOB+Fr/MT shown below
+- Reads SV_FR at render time — works for ALL items regardless of when added
+
+**Text/WhatsApp (line-by-line format):**
+- Header: FOB or FOB (WITH FREIGHT) PRICE QUOTATION
+- Per item: FOB Price/SKU, FOB/MT, Total FOB
+- Freight section (🚢): port name + rate formula + per unit + total
+- FOB+Fr/SKU, FOB+Fr/MT, Total FOB+Fr per item
+- Grand summary: Total FOB + Total Freight + Grand Total
+- T&C at bottom via buildTcText() helper
+
+**Table View — Desktop:**
+- FOB columns: FOB/SKU | FOB/MT | Total FOB
+- Freight columns (dark blue): +Fr/SKU | FOB+Fr/SKU | Total FOB+Fr
+- Footer: grand totals
+- T&C via buildTcText()
+
+**Table View — Mobile (card layout):**
+- FOB Pricing block (green)
+- 🚢 Freight block (blue): Freight/Unit | FOB+Fr/Carton | FOB+Fr/MT | Total FOB+Fr
+- Summary card: Total FOB + Total FOB+Fr
+- T&C via buildTcText()
+
+**T&C (consistent across ALL views via buildTcText() helper):**
+- FOB mode → "FOB Terms"
+- Freight mode → "FOB Terms (with Freight)"
+- Payment: 30% deposit, balance 70% against copy BL
+- Shipment, Brand, External Documents (9 clauses)
+- Same wording in Text, Table, PDF — no inconsistencies
+
+### Key Implementation Detail
+All freight detection uses:
+```js
+var _fr = SV_FR.mode==='port' && SV_FR.port ? SV_FR.port.freight
+        : SV_FR.mode==='manual' && SV_FR.usd>0 ? SV_FR.usd : 0;
+```
+This reads the CURRENT global freight setting at render time.
+DO NOT revert to item.mode==='CIF'&&item.port — that was the old broken approach.
+
