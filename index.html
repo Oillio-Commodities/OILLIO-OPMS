@@ -369,7 +369,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:32px;display:flex;flex-direction:row;align-items:center;gap:20px">
-    <img src="logo_emblem_nobg.svg?v=30" alt="Oillio"
+    <img src="logo_emblem_nobg.svg?v=31" alt="Oillio"
          style="width:95px;height:95px;flex-shrink:0;display:block;
                 filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))">
     <div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.1">
@@ -476,7 +476,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 ═══════════════════════════════════════════════════ -->
 <header style="display:flex;align-items:center;gap:10px;padding:8px 14px;flex-wrap:nowrap;min-height:56px">
   <!-- Oillio Logo Icon -->
-  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg?v=30" alt="Oillio" style="width:46px;height:46px;display:block"></div>
+  <div style="flex-shrink:0;width:46px;height:46px"><img src="logo_emblem_nobg.svg?v=31" alt="Oillio" style="width:46px;height:46px;display:block"></div>
   <!-- Company name + subtitle -->
   <div style="flex:1;min-width:0;overflow:hidden">
     <div style="font-size:.95rem;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.01em">Oillio Commodities</div>
@@ -2553,12 +2553,12 @@ function generatePdfHtml(){
   //   Layout: [circle-logo | Oillio wordmark] ............ [date/ref]
   //   The orange/amber oval fills right-60% of circle, clipped inside
   //   "Oillio" italic bold centred; wordmark text right of circle
-  var _oillioLogo='<div style=\"display:flex;align-items:center;gap:12px\"><img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_emblem_nobg.svg?v=30\" style=\"width:72px;height:72px;display:block\"><div style=\"display:flex;flex-direction:column;justify-content:center\"><div style=\"font-size:1.7rem;font-weight:900;color:#1a5c14;line-height:1;letter-spacing:-0.3px\">Oillio</div><div style=\"font-size:0.62rem;font-weight:700;color:#1a5c14;margin-top:2px\">Commodities Sdn. Bhd.</div><div style=\"font-size:0.55rem;font-weight:400;color:#555;margin-top:1px\">(1527357-W)</div></div></div>';
+  var _oillioLogo='<div style=\"display:flex;align-items:center;gap:12px\"><img src=\"https://oillio-commodities.github.io/OILLIO-OPMS/logo_emblem_nobg.svg?v=31\" style=\"width:72px;height:72px;display:block\"><div style=\"display:flex;flex-direction:column;justify-content:center\"><div style=\"font-size:1.7rem;font-weight:900;color:#1a5c14;line-height:1;letter-spacing:-0.3px\">Oillio</div><div style=\"font-size:0.62rem;font-weight:700;color:#1a5c14;margin-top:2px\">Commodities Sdn. Bhd.</div><div style=\"font-size:0.55rem;font-weight:400;color:#555;margin-top:1px\">(1527357-W)</div></div></div>';
 
   var _wordmark='<div style=\"display:flex;flex-direction:column;justify-content:center;text-align:right\"></div>';
 
   // Full-page watermark — faded logo backdrop (right-centre, matching invoice)
-  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=30" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
+  var _watermark='<div style="position:absolute;top:50%;right:-80px;transform:translateY(-50%);pointer-events:none;z-index:0"><img src="logo_emblem_nobg.svg?v=31" style="width:480px;height:480px;object-fit:contain;opacity:0.04"></div>';
 
   // Header HTML — no address here (address is in footer only, exactly like invoice)
   s+='<div class="hdr">';
@@ -2892,7 +2892,7 @@ function doPrint(){
   // Pre-render SVG logo to canvas for embedding
   function runWithLogo(cb){
     try{
-      var svgUrl='logo_emblem_nobg.svg?v=30';
+      var svgUrl='logo_emblem_nobg.svg?v=31';
       var img=new Image();img.crossOrigin='anonymous';
       img.onload=function(){
         try{
