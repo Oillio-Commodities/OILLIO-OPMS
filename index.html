@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1419';
+  var _v='v06JUN1428';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2738,50 +2738,133 @@ function doPrint(){
   var safeCust=(cust2||'Quotation').replace(/[\/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';
   var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;
   var btn=el('savePdfBtn');
-  if(btn){btn.disabled=true;btn.textContent='\u231B Opening...';}
-
-  var rawHtml=generatePdfHtml();
-  rawHtml=rawHtml.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');
-
-  // Add print CSS + instruction bar (hidden when printing via @media print)
-  var printCss='@media print{#_bar{display:none!important}body{margin:0}@page{size:A4;margin:8mm}}';
-  var isMac=/Mac/i.test(navigator.platform||'');
-  var shortcut=isMac?'\u2318+S':'Ctrl+S';
-  var bar=[
-    '<style>'+printCss+'<\/style>',
-    '<div id="_bar" style="position:fixed;top:0;left:0;right:0;z-index:9999;',
-    'background:#1a6b1a;color:#fff;font-family:Arial,sans-serif;',
-    'padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">',
-    '<div style="font-size:12px;opacity:.9">',
-    '\ud83d\udccc In the Save dialog: set <b>Destination</b> to <b>"Save as PDF"</b> then click <b>Save</b></div>',
-    '<div style="display:flex;align-items:center;gap:8px">',
-    '<span style="font-size:11px;opacity:.75">filename: '+fname+'</span>',
-    '<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;',
-    'padding:9px 22px;border-radius:6px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap">',
-    '\ud83d\udcbe Save as PDF<\/button>',
-    '<\/div><\/div>',
-    '<div style="height:50px"><\/div>'  // spacer so content not behind bar
-  ].join('');
-
-  // Add auto-trigger script — auto-opens save dialog immediately
-  var autoScript=[
-    '<scr'+'ipt>',
-    'window.addEventListener("load",function(){',
-    '  setTimeout(function(){window.print();},700);',
-    '});',
-    '<\/scr'+'ipt>'
-  ].join('');
-
-  // Inject bar + autoScript into body
-  var finalHtml=rawHtml.replace('<body>','<body>'+bar+autoScript);
-
-  var blob=new Blob([finalHtml],{type:'text/html'});
-  var url=URL.createObjectURL(blob);
-  var w=window.open(url,'_blank');
-  if(!w){window.location.href=url;}
-  if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
-  showToast('\uD83D\uDDCB Save dialog opening\u2026 set Destination to "Save as PDF"');
-  setTimeout(function(){URL.revokeObjectURL(url);},300000);
+  if(btn){btn.disabled=true;btn.textContent='\u231B Generating...';}
+  showToast('\uD83D\uDCBE Building PDF\u2026');
+  function loadLib(url,cb){var s=document.createElement('script');s.src=url;s.onload=cb;s.onerror=function(){cb();};document.head.appendChild(s);}
+  function buildPdf(){
+    try{
+      var G=[26,107,26],W=[255,255,255],DK=[17,17,17],GY=[100,100,100],BL=[220,235,255],LG=[235,245,235];
+      var doc=new window.jspdf.jsPDF('p','mm','a4');
+      var pgW=210,margin=12,cW=pgW-margin*2;
+      var _fr=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);
+      var _frName=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.mode==='manual'?(SV_FR.portName||'Manual'):'');
+      var hasFr=_fr>0;
+      var sd=el('qDel')?el('qDel').value||'':'';
+      var dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+      var refNo='Oillio-'+yy+mm+dd+'-01';
+      // ── HEADER ──
+      doc.setFillColor.apply(doc,G);doc.rect(0,0,pgW,20,'F');
+      doc.setTextColor.apply(doc,W);doc.setFontSize(16);doc.setFont('helvetica','bold');
+      doc.text('Oillio',margin+1,10);
+      doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text('Commodities Sdn. Bhd.',margin+1,14.5);
+      doc.text('(1527357-W)',margin+1,18.5);
+      doc.setFontSize(8);
+      doc.text(dateStr,pgW-margin,8,{align:'right'});
+      doc.text('Ref: '+refNo,pgW-margin,13,{align:'right'});
+      doc.text('Page 1',pgW-margin,18,{align:'right'});
+      // ── GREEN LINE ──
+      doc.setFillColor.apply(doc,G);doc.rect(0,20,pgW,1,'F');
+      // ── TITLE ──
+      var y=29;
+      doc.setTextColor.apply(doc,G);doc.setFontSize(13);doc.setFont('helvetica','bold');
+      doc.text(hasFr?'FOB (with Freight) PRICE QUOTATION':'FOB PRICE QUOTATION',margin,y);
+      doc.setDrawColor.apply(doc,G);doc.setLineWidth(0.4);doc.line(margin,y+2,pgW-margin,y+2);
+      // ── META ──
+      y+=9;doc.setFontSize(8.5);
+      var meta=[['Date:',dateStr],['Reference No:',refNo],['To:',cust2||''],['Shipment Period:',sd||'To be advised'],['Incoterms:',hasFr?'FOB (with Freight)':'FOB']];
+      if(hasFr)meta.push(['Freight:',_frName+(_fr>0?' (USD '+Math.round(_fr)+'/FCL)':'')]);
+      meta.forEach(function(r){
+        doc.setFont('helvetica','bold');doc.setTextColor.apply(doc,DK);doc.text(r[0],margin,y);
+        doc.setFont('helvetica','normal');doc.text(r[1],margin+42,y);
+        y+=5;
+      });
+      // ── PRICE SCHEDULE HEADING ──
+      y+=3;
+      doc.setFillColor.apply(doc,LG);doc.roundedRect(margin,y-4,cW,7,1,1,'F');
+      doc.setTextColor.apply(doc,G);doc.setFontSize(9);doc.setFont('helvetica','bold');
+      doc.text('Price Schedule',margin+2,y+0.5);
+      y+=7;
+      // ── TABLE ──
+      var head=[['#','Product Description','Load (CTN)','Net Wt','FOB Price/SKU','Total FOB Cargo']];
+      if(hasFr)head[0].push('FOB+Fr/SKU','Total FOB+Fr');
+      var body=[];
+      var gFob=0,gFr=0;
+      QITEMS.forEach(function(item,idx){
+        var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
+        var lc=item.sku.sku_fcl||1,nw=item.sku.net_wt||20,lc_=lc*item.fcl;
+        var fob_sku=round4(p.fs),fob_tot=round4(fob_sku*lc_);
+        var frU=hasFr?round4(_fr/lc):0,cifU=round4(fob_sku+frU),cifT=round4(cifU*lc_);
+        gFob+=fob_tot;gFr+=cifT-fob_tot;
+        var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
+        var fobl=p_.fob_jkt!=null?'FOB Tj Priok':p_.fob_kl!=null?'FOB Port Klang':'FOB Origin';
+        if(item.supplier==='wingagro')fobl='FOB Surabaya';
+        if(item.supplier==='klk')fobl='FOB Port Klang';
+        var desc=itemDisplayName(item)+'\n'+fobl+' | Net '+nw.toFixed(1)+' kg/unit';
+        var row=[(idx+1).toString(),desc,fmt(lc_,0)+' ctns',nw.toFixed(1)+' kg','USD '+fmt(fob_sku,2),'USD '+fmt(fob_tot,2)];
+        if(hasFr)row.push('USD '+fmt(cifU,2),'USD '+fmt(cifT,2));
+        body.push(row);
+        if(hasFr&&frU>0){
+          var fr_row=['','\uD83D\uDEA2 Freight: '+_frName,'USD '+Math.round(_fr)+'/FCL','÷'+fmt(lc_,0)+' ctns','+USD '+fmt(frU,2),'','USD '+fmt(cifU,2),'USD '+fmt(cifT,2)];
+          if(!hasFr)fr_row=['',' Freight: '+_frName,'','','+USD '+fmt(frU,2),''];
+          body.push(fr_row);
+        }
+      });
+      // Totals row
+      var totRow=['','TOTAL','','','','USD '+fmt(gFob,2)];
+      if(hasFr)totRow.push('','USD '+fmt(gFob+gFr,2));
+      body.push(totRow);
+      doc.autoTable({
+        head:head,body:body,startY:y,
+        margin:{left:margin,right:margin},
+        styles:{fontSize:7.5,cellPadding:2.5,valign:'middle'},
+        headStyles:{fillColor:G,textColor:W,fontStyle:'bold',fontSize:7.5},
+        columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:hasFr?52:62},2:{halign:'right'},3:{halign:'right'},4:{halign:'right',fontStyle:'bold'},5:{halign:'right',fontStyle:'bold'},6:{halign:'right',fontStyle:'bold'},7:{halign:'right',fontStyle:'bold'}},
+        didParseCell:function(data){
+          var r=data.row.raw;
+          if(r&&r[1]&&r[1].indexOf('\uD83D\uDEA2')>=0){data.cell.styles.textColor=[26,82,118];data.cell.styles.fillColor=BL;}
+          if(data.row.index===body.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=LG;}
+        },
+        alternateRowStyles:{fillColor:[250,252,255]}
+      });
+      // ── T&C ──
+      var tcY=doc.lastAutoTable.finalY+6;
+      doc.setFillColor(255,247,230);doc.roundedRect(margin,tcY-3,cW,4,1,1,'F');
+      doc.setTextColor.apply(doc,G);doc.setFontSize(8.5);doc.setFont('helvetica','bold');
+      doc.text(hasFr?'FOB Terms (with Freight)':'FOB Terms',margin+2,tcY);
+      tcY+=5;doc.setFont('helvetica','normal');doc.setTextColor.apply(doc,DK);doc.setFontSize(7.5);
+      var tc=['Payment  : 30% deposit, balance 70% against copy BL','Shipment : '+(sd||'As per shipment period stated'),'Brand     : Oillio House Brand (OEM/private label: min 5 FCL per SKU per shipment)'];
+      if(hasFr&&_frName)tc.push('Freight   : '+_frName+(_fr>0?' — USD '+Math.round(_fr)+'/FCL':''));
+      tc.forEach(function(t){doc.text(t,margin,tcY);tcY+=4.5;});
+      tcY+=2;
+      doc.setFont('helvetica','bold');doc.text('External Documents (indicative):',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
+      ['Govt Health Certificate = USD150/BL set','Govt Phyto Certificate = USD150/BL set','External Certificate of Analysis = USD100/BL set','Certificate of Origin (Chamber) = USD30/BL set','Cargo Tracking & External Inspection on buyer account'].forEach(function(t,i){doc.text((i+1)+'. '+t,margin+2,tcY);tcY+=4.2;});
+      tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
+      ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
+      // ── FOOTER ──
+      var footY=287;
+      doc.setFillColor.apply(doc,G);doc.rect(0,footY,pgW,10,'F');
+      doc.setTextColor.apply(doc,W);doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.text('\uD83D\uDCCD No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+4.5);
+      doc.text('\uD83D\uDCDE (O)+603 5888 8339 / (M) +6012 326 3988   \u2709 export@oillio.com.my',margin,footY+8.5);
+      doc.setFont('helvetica','bold');doc.text('www.oillio.com.my',pgW-margin,footY+6.5,{align:'right'});
+      doc.save(fname+'.pdf');
+      if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
+      showToast('\u2705 Saved: '+fname+'.pdf');
+    }catch(err){
+      console.error(err);
+      if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
+      showToast('PDF error: '+err.message);
+    }
+  }
+  if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable){buildPdf();}
+  else{
+    loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',function(){
+      loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',function(){
+        buildPdf();
+      });
+    });
+  }
 }
 
 
