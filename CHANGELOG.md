@@ -523,3 +523,26 @@ symptom reported.
 ### Rule
 NEVER replace doPrint() internals without preserving doc.save() as the output mechanism.
 The HTML blob / window.open approach is for openPrintPreview (table view) only.
+
+---
+
+## [2026-06-06 v12] — PDF: Watermark + Footer restored to match HTML invoice
+
+### Watermark
+- Faded logo (opacity 0.04) drawn behind content using `doc.GState({opacity:0.04})`
+- Positioned right-centre (x=pgW-110, y=70, 130×130mm) — matches HTML version
+- Only drawn when logo canvas render succeeds (safe fallback)
+
+### Footer
+- Height increased 10mm → 13mm (matches HTML invoice footer proportions)
+- Dark green bar covers full page width at bottom
+- **Orange accent circles** drawn top-right corner (two overlapping circles: amber + orange)
+  — matches the `linear-gradient(135deg,#ffb300,#e65c00)` accent in HTML version
+- Address, phone, email on two lines (left-aligned, white text)
+- `www.oillio.com.my` bold right-aligned
+- footY recalculated from 297mm (A4 height) so footer always sits at page bottom
+
+### Rule
+jsPDF cannot render CSS. All HTML footer/watermark visual effects must be
+re-implemented using jsPDF primitives: `doc.rect()`, `doc.circle()`,
+`doc.ellipse()`, `doc.setGState()` for opacity, `doc.addImage()` for logo.

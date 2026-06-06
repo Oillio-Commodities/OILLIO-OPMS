@@ -2778,6 +2778,15 @@ function doPrint(){
       doc.text('Page 1',pgW-margin,18,{align:'right'});
       // ── GREEN LINE ──
       doc.setFillColor.apply(doc,G);doc.rect(0,20,pgW,1,'F');
+      // ── WATERMARK — faded logo behind content ──
+      if(_logoUrl){
+        try{
+          doc.saveGraphicsState();
+          doc.setGState(new doc.GState({opacity:0.04}));
+          doc.addImage(_logoUrl,'PNG',pgW-110,70,130,130);
+          doc.restoreGraphicsState();
+        }catch(e){}
+      }
       // ── TITLE ──
       var y=29;
       doc.setTextColor.apply(doc,G);doc.setFontSize(13);doc.setFont('helvetica','bold');
@@ -2872,13 +2881,20 @@ function doPrint(){
       ['Govt Health Certificate = USD150/BL set','Govt Phyto Certificate = USD150/BL set','External Certificate of Analysis = USD100/BL set','Certificate of Origin (Chamber) = USD30/BL set','Cargo Tracking & External Inspection on buyer account'].forEach(function(t,i){doc.text((i+1)+'. '+t,margin+2,tcY);tcY+=4.2;});
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
-      // ── FOOTER ──
-      var footY=287;
-      doc.setFillColor.apply(doc,G);doc.rect(0,footY,pgW,10,'F');
+      // ── FOOTER — dark green bar + orange accent circle ──
+      var footH=13,footY=297-footH;
+      doc.setFillColor.apply(doc,G);doc.rect(0,footY,pgW,footH,'F');
+      // Orange accent circle (top-right, partially clipped) — matches HTML invoice
+      doc.setFillColor(230,100,0);doc.circle(pgW-8,footY-2,18,'F');
+      doc.setFillColor(255,180,0);doc.circle(pgW-12,footY-4,12,'F');
+      // Address line
       doc.setTextColor.apply(doc,W);doc.setFontSize(7);doc.setFont('helvetica','normal');
-      doc.text('\uD83D\uDCCD No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+4.5);
-      doc.text('\uD83D\uDCDE (O)+603 5888 8339 / (M) +6012 326 3988   \u2709 export@oillio.com.my',margin,footY+8.5);
-      doc.setFont('helvetica','bold');doc.text('www.oillio.com.my',pgW-margin,footY+6.5,{align:'right'});
+      doc.text('No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+5);
+      // Phone + email
+      doc.text('(O)+603 5888 8339 / (M) +6012 326 3988    export@oillio.com.my',margin,footY+9.5);
+      // Website right-aligned
+      doc.setFont('helvetica','bold');doc.setFontSize(8);
+      doc.text('www.oillio.com.my',pgW-28,footY+7,{align:'right'});
       doc.save(fname+'.pdf');
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
       showToast('\u2705 Saved: '+fname+'.pdf');
