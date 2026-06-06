@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1148';
+  var _v='v06JUN1159';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2581,19 +2581,16 @@ function generatePdfHtml(){
   s+='<div class="section-title">Price Schedule</div>';
   s+='<table>';
   s+='<thead><tr>';
-  s+='<th>No.</th><th>Product Description</th><th>Packing</th><th class="r">Load (ctn)</th><th class="r">Net Wt</th><th>Origin</th>';
-  if(showFob)s+='<th class="r">FOB/MT</th>';
-  s+='<th class="r">FOB Price/Unit (USD)</th>';
+  s+='<th>No.</th>';
+  s+='<th>Product Description</th>';
+  s+='<th class="r">Load (CTN)</th>';
+  s+='<th class="r">Net Wt</th>';
+  s+='<th class="r">FOB Price/SKU (USD)</th>';
   s+='<th class="r" style="font-weight:800">Total FOB Cargo (USD)</th>';
-  if(showCif&&hasCifItem){
-    s+='<th class="r">Freight/Unit (USD)</th>';
-    s+='<th class="r">FOB+Freight/Unit (USD)</th>';
-    s+='<th class="r" style="font-weight:800">Total FOB+Freight (USD)</th>';
-  }
   s+='</tr></thead><tbody>';
 
   QITEMS.forEach(function(item,idx2){
-        var sku=item.sku||{};
+    var sku=item.sku||{};
     var nw=sku.net_wt||20, lc=sku.sku_fcl||1;
     var s_=item.supplier||'apical';
     var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
@@ -2603,17 +2600,17 @@ function generatePdfHtml(){
     var fob_sku=round4(fob*(1+m)*nw/1000);
     var fob_total=round4(fob_sku*lc_);
     var fr_rate=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);
-    var fr_port=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.portName||'Manual freight');
+    var fr_port=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.portName||'Manual');
     var fr_unit=fr_rate>0?round4(fr_rate/lc):0;
     var fr_total=round4(fr_unit*lc_);
     var total_sku=round4(fob_sku+fr_unit);
     var total_cargo=round4(fob_total+fr_total);
     var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':'Origin');
     if(s_==='wingagro')fobl='FOB Surabaya';
-    if(s_==='klk')fobl='FOB Port Klang, Malaysia';
+    if(s_==='klk')fobl='FOB Port Klang';
     s+='<tr>';
     s+='<td class="c">'+(idx2+1)+'</td>';
-    s+='<td><b>'+itemDisplayName(item)+'</b><span style="color:#888;font-size:7.5pt"> &nbsp;'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit | '+fmt(lc_,0)+' ctns/FCL</small></td>';
+    s+='<td><b>'+itemDisplayName(item)+'</b> <span style="color:#888;font-size:7.5pt">'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small></td>';
     s+='<td class="r">'+fmt(lc_,0)+' ctns</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
     s+='<td class="r"><b>USD '+fmt(fob_sku,2)+'</b></td>';
@@ -2629,16 +2626,13 @@ function generatePdfHtml(){
       s+='</tr>';
       s+='<tr style="background:#d0e8ff;font-weight:700">';
       s+='<td></td>';
-      s+='<td style="color:#1a5276;font-size:8pt">Total FOB + Freight ('+fmt(item.fcl,0)+' FCL)</td>';
+      s+='<td style="color:#1a5276;font-size:8pt">Total FOB+Freight ('+fmt(item.fcl,0)+' FCL)</td>';
       s+='<td class="r" style="color:#1a5276">'+fmt(lc_,0)+' ctns</td>';
       s+='<td class="r" style="color:#1a5276">'+fmt(nw,1)+' kg</td>';
       s+='<td class="r" style="color:#1a5276">USD '+fmt(total_sku,2)+'/unit</td>';
       s+='<td class="r" style="color:#1a5276;font-size:8.5pt">USD '+fmt(total_cargo,2)+'</td>';
       s+='</tr>';
     }
-
-    // Freight breakdown rows
-
   });
   s+='</tbody></table>';
 
