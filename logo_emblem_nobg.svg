@@ -1,57 +1,102 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
   <defs>
-    <radialGradient id="gG" cx="26%" cy="20%" r="88%" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="#c0ee28"/>
-      <stop offset="28%"  stop-color="#52cc30"/>
-      <stop offset="62%"  stop-color="#1e9018"/>
-      <stop offset="100%" stop-color="#0b4e08"/>
+    <!-- GREEN: lime upper-left → mid green → dark forest lower-right
+         Real logo sampled values: #bdd74f (lime), #56a44e (mid), #026c3c (dark teal) -->
+    <linearGradient id="gGrn" x1="10%" y1="8%" x2="88%" y2="92%">
+      <stop offset="0%"   stop-color="#bdd74f"/>
+      <stop offset="25%"  stop-color="#78c045"/>
+      <stop offset="55%"  stop-color="#3a9e42"/>
+      <stop offset="80%"  stop-color="#1a7a38"/>
+      <stop offset="100%" stop-color="#026c3c"/>
+    </linearGradient>
+
+    <!-- YELLOW-ORANGE disc sampled: #fdc029 top, #fba929 mid, #f78c2c bottom -->
+    <radialGradient id="gYel" cx="32%" cy="28%" r="72%">
+      <stop offset="0%"   stop-color="#ffe050"/>
+      <stop offset="22%"  stop-color="#fdc029"/>
+      <stop offset="55%"  stop-color="#fba929"/>
+      <stop offset="82%"  stop-color="#f78c2c"/>
+      <stop offset="100%" stop-color="#e06020"/>
     </radialGradient>
-    <radialGradient id="gY" cx="36%" cy="28%" r="72%" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="#ffec50"/>
-      <stop offset="36%"  stop-color="#f8b800"/>
-      <stop offset="100%" stop-color="#cc5a00"/>
+
+    <!-- Ring inner-edge highlight — the curved inner edge of the crescent shows
+         a lighter green line where it meets the yellow disc -->
+    <radialGradient id="gInnerEdge" cx="62%" cy="50%" r="25%">
+      <stop offset="0%"   stop-color="#90d055" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#90d055" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="gDk" cx="65%" cy="80%" r="52%" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="#052405" stop-opacity="0.65"/>
-      <stop offset="100%" stop-color="#052405" stop-opacity="0"/>
+
+    <!-- Upper-left highlight on green ring -->
+    <radialGradient id="gHL" cx="18%" cy="15%" r="40%">
+      <stop offset="0%"   stop-color="#d8f060" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#d8f060" stop-opacity="0"/>
     </radialGradient>
-    <!-- 
-      Ring: outer r=96 minus inner circle offset RIGHT by 32px (cx=132) with r=66
-      Opening is wider on right, matches real logo
-    -->
+
+    <!-- Dark shadow bottom-right of ring -->
+    <radialGradient id="gShad" cx="78%" cy="82%" r="40%">
+      <stop offset="0%"   stop-color="#013020" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#013020" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Yellow disc depth: darker on right/bottom -->
+    <radialGradient id="gYelDpth" cx="78%" cy="72%" r="48%">
+      <stop offset="0%"   stop-color="#802000" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#802000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Clip to outer boundary -->
+    <clipPath id="cOut"><circle cx="250" cy="250" r="228"/></clipPath>
+
+    <!-- RING CLIP: outer r=228 minus inner circle offset right
+         Inner circle: cx=318, cy=250, r=168 → wider opening on right -->
     <clipPath id="cRing">
-      <path d="M100,4 A96,96 0 1,0 100,196 A96,96 0 1,0 100,4 Z
-               M132,34 A66,66 0 1,1 132,166 A66,66 0 1,1 132,34 Z"
-            fill-rule="evenodd"/>
+      <path fill-rule="evenodd" d="
+        M250,22 A228,228 0 1,0 250,478 A228,228 0 1,0 250,22 Z
+        M318,82 A168,168 0 1,1 318,418 A168,168 0 1,1 318,82 Z
+      "/>
     </clipPath>
-    <clipPath id="cOut"><circle cx="100" cy="100" r="96"/></clipPath>
-    <!-- Soft inner edge glow on ring opening (right side) -->
-    <radialGradient id="gEdge" cx="85%" cy="50%" r="30%" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="#1e9018" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#1e9018" stop-opacity="0"/>
+
+    <!-- Ring tip glow: the folded inner rim at opening edges shows lighter green -->
+    <radialGradient id="gTipTop" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#5ab840" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#5ab840" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gTipBot" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#1a6b30" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#1a6b30" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- GREEN CRESCENT RING -->
+  <!-- ① YELLOW-ORANGE DISC (rendered behind green ring) -->
+  <circle cx="316" cy="250" r="174" fill="url(#gYel)" clip-path="url(#cOut)"/>
+  <circle cx="316" cy="250" r="174" fill="url(#gYelDpth)" clip-path="url(#cOut)"/>
+
+  <!-- ② GREEN CRESCENT RING -->
   <g clip-path="url(#cRing)">
-    <circle cx="100" cy="100" r="100" fill="url(#gG)"/>
-    <!-- Dark shadow bottom-right of ring -->
-    <circle cx="100" cy="100" r="100" fill="url(#gDk)"/>
-    <!-- White highlight top-left -->
-    <ellipse cx="45" cy="44" rx="28" ry="20" transform="rotate(-38 45 44)"
-             fill="white" opacity="0.18"/>
-    <!-- Dark curl tips at top and bottom opening -->
-    <ellipse cx="138" cy="30"  rx="18" ry="10" transform="rotate(-30 138 30)"  fill="#0a3808" opacity="0.45"/>
-    <ellipse cx="136" cy="170" rx="18" ry="10" transform="rotate( 30 136 170)" fill="#0a3808" opacity="0.45"/>
+    <circle cx="250" cy="250" r="240" fill="url(#gGrn)"/>
+    <!-- Highlight top-left -->
+    <circle cx="250" cy="250" r="240" fill="url(#gHL)"/>
+    <!-- Shadow bottom-right -->
+    <circle cx="250" cy="250" r="240" fill="url(#gShad)"/>
+    <!-- Inner edge lighter strip (where ring curves inward) -->
+    <circle cx="250" cy="250" r="240" fill="url(#gInnerEdge)"/>
+    <!-- TOP TIP: folded 3D look — lighter inner curl at top opening -->
+    <ellipse cx="318" cy="86" rx="28" ry="14" transform="rotate(-42,318,86)"
+             fill="url(#gTipTop)" opacity="0.9"/>
+    <!-- BOTTOM TIP: darker fold -->
+    <ellipse cx="318" cy="414" rx="28" ry="14" transform="rotate(42,318,414)"
+             fill="#013822" opacity="0.6"/>
+    <!-- Extra dark edge along bottom of ring -->
+    <ellipse cx="200" cy="425" rx="130" ry="28" fill="#012818" opacity="0.35"/>
   </g>
 
-  <!-- YELLOW-ORANGE DISC — sits inside ring opening, slightly overlaps left edge -->
-  <circle cx="118" cy="100" r="76" fill="url(#gY)" clip-path="url(#cOut)"/>
-  <!-- Subtle orange shadow on right of disc -->
-  <ellipse cx="168" cy="106" rx="28" ry="42" fill="#993800" opacity="0.18" clip-path="url(#cOut)"/>
-
-  <!-- WHITE LEAF / EYE — at left overlap of ring and disc -->
-  <ellipse cx="76" cy="100" rx="15" ry="32"
-           transform="rotate(-5 76 100)"
-           fill="white" opacity="0.97"/>
+  <!-- ③ WHITE LEAF/EYE — precisely at intersection of ring left-inner-edge and yellow disc -->
+  <!-- Positioned at x=192 which is where ring inner edge meets disc (measured: ~38% of emblem) -->
+  <ellipse cx="190" cy="250" rx="46" ry="95"
+           transform="rotate(-5,190,250)"
+           fill="white"/>
+  <!-- Very subtle warm tint at base of leaf -->
+  <ellipse cx="193" cy="316" rx="30" ry="20"
+           transform="rotate(-5,193,316)"
+           fill="#f0e8c8" opacity="0.18"/>
 </svg>
