@@ -4138,7 +4138,7 @@ function generatePDF(){
         +'@page{size:A4 landscape;margin:7mm}'
       +'}';
 
-    var savePdfFn='<scr'+'ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},400);});function doPrint(){window.print();}<\/scr'+'ipt>';
+    var savePdfFn='<scr'+'ipt>window.addEventListener(\'load\',function(){setTimeout(function(){window.print();},600);});function doPrint(){window.print();}<\/scr'+'ipt>';
     var infoLine=[];
     if(cust)infoLine.push('Attn: '+cust);
     if(delVal)infoLine.push('Delivery: '+delVal);
@@ -4166,15 +4166,11 @@ function generatePDF(){
     var pdfUrl=URL.createObjectURL(pdfBlob);
     var w=window.open(pdfUrl,'_blank');
     if(!w){
-      // Popup blocked — download instead
-      var a=document.createElement('a');
-      a.href=pdfUrl;
-      a.download=fname;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){URL.revokeObjectURL(pdfUrl);},5000);
-      showToast('PDF downloaded — open it in browser and tap Print → Save as PDF');
+      // Popup blocked — fall back to jsPDF real PDF instead of downloading HTML
+      setTimeout(function(){URL.revokeObjectURL(pdfUrl);},1000);
+      showToast('Popup blocked — generating PDF directly...');
+      doPrint();
+      return;
     }else{
       setTimeout(function(){URL.revokeObjectURL(pdfUrl);},30000);
     }

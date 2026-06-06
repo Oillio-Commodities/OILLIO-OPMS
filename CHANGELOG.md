@@ -452,3 +452,28 @@ NEVER call `window.print()` from inside `#fullModal` or any modal that is hidden
 - User sees the browser's native Print/Save as PDF dialog immediately — no extra button click needed
 - Fallback `doPrint()` button still present for manual trigger
 
+
+---
+
+## [2026-06-06 v9] — PDF Save: Fixed HTML download bug (root cause)
+
+### Root Cause
+`openPrintPreview()` embeds a script into the HTML page to auto-trigger `window.print()`.
+The script string used unescaped single quotes around `'load'`:
+```
+window.addEventListener('load', ...)  ← broke JS string, script never embedded
+```
+So auto-print never fired. The tab opened with just a raw HTML page showing the table.
+If popup was blocked, it fell back to downloading the `.html` file (20KB) — exactly the
+symptom reported.
+
+### Fixes
+1. **Escaped the quotes correctly**: `\'load\'` inside the JS string literal — script
+   now embeds and fires correctly in the opened tab.
+2. **Popup-blocked fallback**: previously downloaded `.html`; now calls `doPrint()`
+   (jsPDF) instead — guaranteed real `.pdf` regardless of popup policy.
+
+### Result
+- Popup allowed → new tab opens, `window.print()` fires after 600ms → browser Save as PDF dialog
+- Popup blocked → jsPDF kicks in directly → real `.pdf` downloaded automatically
+
