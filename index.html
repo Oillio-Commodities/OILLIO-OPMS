@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1253';
+  var _v='v06JUN1316';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1485,6 +1485,18 @@ var S={cat:null,types:[],skuSearch:'',oilCat:'Palm Olein',oilName:'P.Olein-CP10 
   cp10:1215,oilPrice:1215,oilManual:false,additive:0,additiveType:'',margin:0,
   mode:'FOB',portObj:null,portSearch:'',region:'ALL',country:'ALL',sel:null};
 var QITEMS=[],QID=0,PRICE_MODE='fob',SHOW_MT_PRICE=true;
+// Per-supplier cart items — each supplier has its own independent quote cart
+var _SUP_ITEMS={apical:[],klk:[],wingagro:[],ableperfect:[],compare:[]};
+function _saveSupItems(s){
+  if(s&&_SUP_ITEMS[s]!==undefined)
+    _SUP_ITEMS[s]=QITEMS.slice();
+}
+function _loadSupItems(s){
+  QITEMS.length=0;
+  var items=_SUP_ITEMS[s]||[];
+  for(var i=0;i<items.length;i++)QITEMS.push(items[i]);
+}
+
 
 function el(id){return document.getElementById(id);}
 function getOilPriceBase(n,c){var d=OIL_DEF[n];if(!d)return c;return d[1]?c+d[0]:d[0];}
@@ -3312,7 +3324,7 @@ function loadCustProfile(id){
     action=choice?'replace':'append';
   }
 
-  if(action==='replace')QITEMS=[];
+  if(action==='replace'){QITEMS.length=0;}
 
   var loaded=0;
   c.items.forEach(function(it){
@@ -5483,13 +5495,14 @@ function svGetFreight(perMode,perFreight,perPort){
 function svCalc(fob,nw,lc){var m=(SV_CFG.margin!=null?parseFloat(SV_CFG.margin):5)/100;var fr=0;if(SV_FR.mode==='manual')fr=(SV_FR.usd||0)/(lc||1);else if(SV_FR.mode==='port'&&SV_FR.port)fr=SV_FR.port.freight/(lc||1);var nw_=(nw||20);var su=round4(fob*nw_/1000);var om=round4(fob*(1+m));var os=round4(om*nw_/1000);var of_=round4(os+fr);var ofm=round4(of_/nw_*1000);var ps=round4(om*nw_/1000-su);var tp=round4(ps*(lc||1));return{su:su,om:om,os:os,of:of_,ofm:ofm,ps:ps,tp:tp,fr:fr};}
 function setSupplier(s){
   // Save current supplier's freight before switching
-  if(SV_SUP&&SV_SUP!=='ableperfect'&&SV_SUP!=='compare'){
+  if(SV_SUP&&_SUP_ITEMS[SV_SUP]!==undefined){
     saveSupFR(SV_SUP);saveSupQuote(SV_SUP);
+    _saveSupItems(SV_SUP);
   }
   SV_SUP=s;
   // Load new supplier's freight settings
   if(s==='apical'||s==='klk'||s==='wingagro'){
-    loadSupFR(s);loadSupQuote(s);
+    _loadSupItems(s);loadSupFR(s);loadSupQuote(s);
     // Update freight UI buttons and fields
     setTimeout(function(){
       svSetFreight(SV_FR.mode);
@@ -5497,6 +5510,7 @@ function setSupplier(s){
       if(ma)ma.value=SV_FR.usd||0;
       var mp=document.getElementById('svFrPortName');
       if(mp)mp.value=SV_FR.portName||'';
+      rQuote();rReport();
     },50);
   }
   ["supApical","supKlk","supWing","supAble","supCompare"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
