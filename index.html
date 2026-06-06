@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1316';
+  var _v='v06JUN1333';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2729,7 +2729,71 @@ thead='';
   thead+='<th class="hfob" style="font-weight:800">TOTAL FOB<br>CARGO (USD)</th>';
   thead+='</tr></thead><tbody>';
   }
-function doPrint(){var cust2=(el('qCust')||{value:''}).value||'';logPdfGeneration(cust2,QITEMS);var d=new Date();var dd=('0'+d.getDate()).slice(-2);var mm=('0'+(d.getMonth()+1)).slice(-2);var yy=d.getFullYear();var hh=('0'+d.getHours()).slice(-2);var mi=('0'+d.getMinutes()).slice(-2);var safeCust=(cust2||'Quotation').replace(/[/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;var html=generatePdfHtml();html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');var blob=new Blob([html],{type:'text/html'});var url=URL.createObjectURL(blob);var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(isMobile){var w=window.open(url,'_blank');if(!w)window.location.href=url;showToast('Preview opened — share or print to save');} else {var a=document.createElement('a');a.href=url;a.download=fname+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);showToast('Saved: '+fname+'.html');}setTimeout(function(){URL.revokeObjectURL(url);},120000);}
+function doPrint(){
+  var cust2=(el('qCust')||{value:''}).value||'';
+  logPdfGeneration(cust2,QITEMS);
+  var d=new Date();
+  var dd=('0'+d.getDate()).slice(-2);
+  var mm=('0'+(d.getMonth()+1)).slice(-2);
+  var yy=d.getFullYear();
+  var hh=('0'+d.getHours()).slice(-2);
+  var mi=('0'+d.getMinutes()).slice(-2);
+  var safeCust=(cust2||'Quotation').replace(/[\/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';
+  var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;
+  var html=generatePdfHtml();
+  html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');
+
+  // Inject save instructions banner into preview
+  var isIOS=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var isAndroid=/Android/i.test(navigator.userAgent);
+  var isMac=/Macintosh/i.test(navigator.userAgent)&&!isIOS;
+  var instructions=isAndroid?'Tap the share icon \u2197 then "Print" or "Download"':
+                   isIOS?'Tap Share \u2197 \u2192 Print \u2192 pinch-zoom to save as PDF':
+                   isMac?'Press \u2318+P \u2192 choose "Save as PDF"':
+                   'Press Ctrl+P \u2192 Destination: "Save as PDF" \u2192 Save';
+  var banner='<div style="position:fixed;top:0;left:0;right:0;z-index:9999;'
+    +'background:#1a6b1a;color:#fff;padding:10px 16px;font-family:Arial,sans-serif;'
+    +'display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+    +'<span style="font-size:12px;opacity:.9">'+instructions+'</span>'
+    +'<div style="display:flex;gap:8px;flex-shrink:0">'
+    +'<button onclick="window.print()" style="background:#fff;color:#1a6b1a;border:none;'
+    +'padding:8px 20px;border-radius:5px;cursor:pointer;font-weight:700;font-size:13px">'
+    +'\uD83D\uDDA8 Print / Save as PDF</button>'
+    +'<a id="_dlBtn" download="'+fname+'.html" style="background:#e8f5e9;color:#1a6b1a;border:none;'
+    +'padding:8px 16px;border-radius:5px;cursor:pointer;font-weight:700;font-size:13px;'
+    +'text-decoration:none;display:inline-flex;align-items:center">'
+    +'\uD83D\uDCBE Save HTML</a>'
+    +'</div></div>'
+    +'<div style="margin-top:52px">';
+  html=html.replace('<body>','<body>'+banner);
+  html=html.replace('</body>','</div></body>');
+
+  var blob=new Blob([html],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+
+  // Set download link href inside preview (done after blob created)
+  // Try opening in new tab first (works on Android, Desktop, iPad Safari)
+  var w=window.open(url,'_blank');
+  if(!w){
+    // Popup blocked — open in current tab
+    window.location.href=url;
+  }
+
+  // For desktop browsers: ALSO trigger direct HTML download as backup
+  if(!isAndroid&&!isIOS){
+    setTimeout(function(){
+      var a=document.createElement('a');
+      a.href=url;
+      a.download=fname+'.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },500);
+  }
+
+  showToast('\uD83D\uDDCB Preview opened \u2014 use Print to save as PDF');
+  setTimeout(function(){URL.revokeObjectURL(url);},300000);
+}
 
 
 
