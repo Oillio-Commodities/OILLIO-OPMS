@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='fix06JUN1031';
+  var _v='v06JUN1054';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2006,15 +2006,7 @@ function buildTableHTML(forWindow){
     s+='<td style="'+FSF+'text-align:right">USD '+fmt(gFob+gFr,2)+'</td>';
   }
   s+='</tr></tfoot></table>';
-  var tcLabel=hasFr?'FOB Terms (with Freight)':'FOB Terms';
-  var rem='<div style="padding:12px 14px;background:#f8fafc;border-top:2px solid #4a7fa5;font-size:.73rem;line-height:1.85;color:#333">';
-  rem+='<b style="color:#0a3d62;font-size:.79rem">'+tcLabel+'</b><br>';
-  if(hasFr)rem+='<b>Freight:</b> '+_frName+(SV_FR.mode==="manual"?' — USD '+fmt(_fr,0)+'/FCL':'')+'<br>';
-  rem+='<b>Payment:</b> 30% deposit, balance 70% against copy BL &nbsp;|&nbsp; <b>Shipment:</b> '+(sd||'As per shipment period stated')+'<br>';
-  rem+='<b>Brand:</b> Oillio House Brand (OEM/private label: min 5 FCL per SKU per shipment)<br>';
-  rem+='<b>External docs:</b> Govt Health Cert=USD150 | Govt Phyto Cert=USD150 | COA=USD100 | COO(Chamber)=USD30 | Cargo Tracking & External Inspection on buyer account.<br>';
-  rem+='<b>Special Clauses:</b> GRI/PSS/PCS before loading charged to buyer. Shipper decides shipping liner. BL to order unless full payment received. Buyer to ensure all required documents informed to seller prior to sales contract.';
-  rem+='</div>';
+  var rem='<div style="padding:12px 14px;background:#fffef7;border-top:2px solid #4a7fa5;font-size:.74rem;font-family:monospace,sans-serif;white-space:pre-wrap">'+buildTcText(hasFr,_frName,_fr,sd,false).replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';
   return {tableHtml:s,remarkHtml:rem,modeLabel:modeLabel,cust:cust,sd:sd,ds:ds};
 }
 
@@ -2150,7 +2142,7 @@ function renderVTable(){
     tcHtml+='**Price subject to final confirmation<br>';
     if(showTcFob){
       tcHtml+='<br><b style="color:#1a7a4a">FOB Terms:</b><br>';
-      tcHtml+='Payment: 30% deposit, balance 70% -- 15 working days before loading<br>';
+      tcHtml+='Payment: 30% deposit, balance 70% against copy BL<br>';
       tcHtml+='Shipment: '+sdVal+'<br>';
       tcHtml+='Brand: Oillio House Brand (For OEM/private label: min 5 FCL per SKU per shipment)<br>';
       tcHtml+='External docs: Health Cert USD150 | Phyto Cert USD150 | Cert of Analysis USD100 | CO (Chamber) USD30<br>';
@@ -2182,21 +2174,16 @@ function buildTxtTable(){
   var cust=el('qCust').value||'',sd=el('qDel')?el('qDel').value||'':'';
   var d=new Date(),ds=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   var NL=String.fromCharCode(10);
+  var SEP=Array(42).join('-');
   var modeTitle=hasFr?'FOB (WITH FREIGHT) PRICE QUOTATION':'FOB PRICE QUOTATION';
-  var cols=[['#',3,true],['Product',26,false],['FCL',4,true],['Net(MT)',7,true],['FOB/SKU',10,true],['FOB/MT',10,true],['Total FOB',13,true]];
-  if(hasFr){cols.push(['+Fr/SKU',9,true]);cols.push(['FOB+Fr/SKU',12,true]);cols.push(['Total+Fr',13,true]);}
-  function sep(){var s='+';for(var ci=0;ci<cols.length;ci++)s+=Array(cols[ci][1]+3).join('-')+'+';return s;}
-  function row(vals){var s='|';for(var ci=0;ci<cols.length;ci++){var v=String(vals[ci]===undefined||vals[ci]===null?'':vals[ci]);while(v.length<cols[ci][1])v=cols[ci][2]?' '+v:v+' ';if(v.length>cols[ci][1])v=v.slice(0,cols[ci][1]);s+=' '+v+' |';}return s;}
-  var div=sep();
-  var r='*OILLIO COMMODITIES SDN BHD*'+NL+'*'+modeTitle+'*'+NL;
-  if(cust)r+='To: '+cust+NL;
-  r+='Date: '+ds+NL;
-  if(sd)r+='Shipment: '+sd+NL;
-  if(hasFr)r+='Freight: '+_frName+(SV_FR.mode==='manual'?' (USD'+fmt(_fr,0)+'/FCL)':'')+NL;
-  r+=NL+div+NL;
-  var hdr=['#','Product','FCL','Net(MT)','FOB/SKU','FOB/MT','Total FOB'];
-  if(hasFr){hdr.push('+Fr/SKU');hdr.push('FOB+Fr/SKU');hdr.push('Total+Fr');}
-  r+=row(hdr)+NL+div+NL;
+  var r='*OILLIO COMMODITIES SDN BHD*'+NL;
+  r+='*'+modeTitle+'*'+NL;
+  r+=SEP+NL;
+  if(cust)r+='To        : '+cust+NL;
+  r+='Date      : '+ds+NL;
+  if(sd)r+='Shipment  : '+sd+NL;
+  if(hasFr)r+='Freight   : '+_frName+(_fr>0?' (USD '+Math.round(_fr)+'/FCL)':'')+NL;
+  r+=NL;
   var gFob=0,gFr=0,gMt=0,gFcl=0;
   for(var i=0;i<QITEMS.length;i++){
     var item=QITEMS[i];
@@ -2204,38 +2191,37 @@ function buildTxtTable(){
     var tu=item.fcl*(item.sku.sku_fcl||1),tm=round4(tu*item.sku.net_wt/1000);
     var frUnit=hasFr?round4(_fr/(item.sku.sku_fcl||1)):0;
     var cifUnit=round4(p.fs+frUnit);
+    var cifMT=item.sku.net_wt>0?round4(cifUnit/item.sku.net_wt*1000):0;
     var tfob=round4(tu*p.fs),tFr=round4(tu*frUnit),tCif=round4(tu*cifUnit);
     gFob+=tfob;gFr+=tFr;gMt+=tm;gFcl+=item.fcl;
-    var vals=[(i+1)+'',item.oilName.slice(0,26),(item.fcl+''),fmt(tm,3),fmt(p.fs,2),fmt(p.fm,2),fmt(tfob,2)];
-    if(hasFr){vals.push('+'+fmt(frUnit,2));vals.push(fmt(cifUnit,2));vals.push(fmt(tCif,2));}
-    r+=row(vals)+NL;
+    r+=SEP+NL;
+    r+='*Item '+(i+1)+': '+item.oilName+'*'+NL;
+    if(item.supplier==='apical')r+='Origin    : FOB '+(item.apicalOrigin==='JKT'?'Tj Priok, Jakarta':'Port Klang, Malaysia')+NL;
+    r+='FCL       : '+item.fcl+' | SKU/FCL: '+fmt(item.sku.sku_fcl,0)+' | Volume: '+fmt(tm,3)+' MT'+NL;
+    r+=NL;
+    r+='FOB Price/SKU : USD '+fmt(p.fs,2)+NL;
+    r+='FOB/MT        : USD '+fmt(p.fm,2)+NL;
+    r+='Total FOB     : USD '+fmt(tfob,2)+NL;
     if(hasFr&&frUnit>0){
-      var fv=[(i+1)+'','  Freight: '+_frName.slice(0,22),'','','+'+fmt(frUnit,2),'','+'+fmt(tFr,2)];
-      fv.push('+'+fmt(frUnit,2));fv.push(fmt(cifUnit,2));fv.push(fmt(tCif,2));
-      r+=row(fv)+NL;
+      r+=NL;
+      r+='🚢 Freight: '+_frName+NL;
+      r+='   Rate: USD '+Math.round(_fr)+'/FCL ÷ '+fmt(item.sku.sku_fcl,0)+' units = +USD '+fmt(frUnit,2)+'/unit'+NL;
+      r+='   Total Freight: USD '+fmt(tFr,2)+NL;
+      r+=NL;
+      r+='FOB+Fr/SKU    : USD '+fmt(cifUnit,2)+NL;
+      r+='FOB+Fr/MT     : USD '+fmt(cifMT,2)+NL;
+      r+='Total FOB+Fr  : USD '+fmt(tCif,2)+NL;
     }
   }
-  r+=div+NL;
-  var tot=['','TOTAL',gFcl+'',fmt(gMt,3),'','',fmt(gFob,2)];
-  if(hasFr){tot.push('');tot.push('');tot.push(fmt(gFob+gFr,2));}
-  r+=row(tot)+NL+div+NL+NL;
-  r+='TERMS & CONDITIONS'+NL+Array(40).join('-')+NL;
-  r+=(hasFr?'Incoterms : FOB (with Freight)':'Incoterms : FOB')+NL;
-  r+='Payment   : 30% deposit, balance 70% against copy BL'+NL;
-  r+='Shipment  : '+(sd||'As per shipment period stated')+NL;
-  r+='Brand     : Oillio House Brand'+NL;
-  r+='(For OEM/private label: min 5 FCL per SKU per shipment)'+NL+NL;
-  r+='External documents (indicative, latest may differ):'+NL;
-  r+='1. Govt Health Certificate = USD150/BL set'+NL;
-  r+='2. Govt Phyto Certificate = USD150/BL set'+NL;
-  r+='3. External Certificate of Analysis = USD100/BL set'+NL;
-  r+='4. Certificate of Origin (Chamber) = USD30/BL set'+NL;
-  r+='5. Cargo Tracking Note & External Inspection on buyer account.'+NL+NL;
-  r+='SPECIAL CLAUSES:'+NL;
-  r+='6. Any additional GRI/PSS/PCS by shipping liner before loading charged to buyer.'+NL;
-  r+='7. Shipper to decide on shipping liner.'+NL;
-  r+='8. BL under consignee is to order unless full payment received before draft BL.'+NL;
-  r+='9. Buyer responsibility to ensure all required documents informed to seller prior to sales contract.'+NL;
+  r+=NL+SEP+NL;
+  r+='*TOTAL SUMMARY*'+NL;
+  r+='Items     : '+QITEMS.length+' | FCL: '+gFcl+' | Volume: '+fmt(gMt,3)+' MT'+NL;
+  r+='Total FOB : USD '+fmt(gFob,2)+NL;
+  if(hasFr){
+    r+='Total Fr  : USD '+fmt(gFr,2)+NL;
+    r+='Grand Total (FOB+Fr): USD '+fmt(gFob+gFr,2)+NL;
+  }
+  r+=NL+buildTcText(hasFr,_frName,_fr,sd,false);
   return r;
 }
 
@@ -2328,7 +2314,7 @@ function tcCif(sd){
 
 function tcFob(sd){
   var NL=String.fromCharCode(10);
-  return 'Payment  : 30% deposit, balance 70% -- 15 working days before loading'+NL
+  return 'Payment  : 30% deposit, balance 70% against copy BL'+NL
     +'Shipment : '+sd+NL+'Brand    : Oillio House Brand'+NL
     +'(For OEM / private label: min 5 FCL per SKU per shipment)'+NL+NL
     +'External documents (indicative pricing, latest may differ):'+NL
@@ -2881,7 +2867,7 @@ function openPrintPreview(){
     html_+='<b style="color:#0a3d62">Terms & Conditions</b><br>**Price subject to final confirmation<br>';
     if(showTcFob){
       html_+='<br><b style="color:#1a7a4a">FOB Terms:</b><br>';
-      html_+='Payment: 30% deposit, balance 70% -- 15 working days before loading<br>';
+      html_+='Payment: 30% deposit, balance 70% against copy BL<br>';
       if(delVal)html_+='Delivery: '+delVal+'<br>';
       html_+='Brand: Oillio House Brand (OEM/private label: min 5 FCL per SKU)<br>';
       html_+='External docs: Health Cert USD150 | Phyto Cert USD150 | CoA USD100 | CO USD30<br>';
@@ -5449,6 +5435,33 @@ var KLK_DATA=[
 
 (function(){try{var af=JSON.parse(localStorage.getItem(SV_APC_KEY)||"{}");APICAL_DATA.forEach(function(p){if(af[p.name]!=null)p.fob_jkt=af[p.name];if(af[p.name+"_kl"]!=null)p.fob_kl=af[p.name+"_kl"];});var wf=JSON.parse(localStorage.getItem(SV_WA_KEY)||"{}");WA_DATA.forEach(function(p){if(wf[p.name]!=null)p.fob_sua=wf[p.name];});var kf=JSON.parse(localStorage.getItem(SV_KLK_KEY)||"{}");KLK_DATA.forEach(function(p){if(kf[p.name]!=null)p.fob_mt=kf[p.name];});}catch(e){}var mg=document.getElementById("suppMargin");if(mg)mg.value=SV_CFG.margin!=null?SV_CFG.margin:2.5;})();
 var SV_FR={mode:"fob",usd:0,port:null,portName:""};
+
+function buildTcText(hasFr, frName, frAmt, sd, asHtml){
+  var NL = asHtml ? '<br>' : String.fromCharCode(10);
+  var SEP = asHtml ? '<hr style="border:none;border-top:1px solid #ccc;margin:6px 0">' : Array(42).join('-');
+  var BOLD = function(t){ return asHtml ? '<b>'+t+'</b>' : t; };
+  var tc = '';
+  tc += SEP + NL;
+  tc += BOLD('TERMS & CONDITIONS') + NL;
+  tc += BOLD('Incoterms') + ' : ' + (hasFr ? 'FOB (with Freight)' : 'FOB') + NL;
+  if(hasFr && frName) tc += BOLD('Freight') + '  : ' + frName + (frAmt > 0 ? ' (USD '+Math.round(frAmt)+'/FCL)' : '') + NL;
+  tc += BOLD('Payment') + '  : 30% deposit, balance 70% against copy BL' + NL;
+  tc += BOLD('Shipment') + ' : ' + (sd || 'As per shipment period stated') + NL;
+  tc += BOLD('Brand') + '    : Oillio House Brand' + NL;
+  tc += '(OEM/private label: min 5 FCL per SKU per shipment)' + NL + NL;
+  tc += BOLD('External Documents') + ' (indicative pricing):' + NL;
+  tc += '1. Govt Health Certificate = USD 150/BL set' + NL;
+  tc += '2. Govt Phyto Certificate = USD 150/BL set' + NL;
+  tc += '3. External Certificate of Analysis = USD 100/BL set' + NL;
+  tc += '4. Certificate of Origin (Chamber) = USD 30/BL set' + NL;
+  tc += '5. Cargo Tracking Note & External Inspection on buyer account' + NL + NL;
+  tc += BOLD('Special Clauses:') + NL;
+  tc += '6. Any additional GRI/PSS/PCS by shipping liner before loading charged to buyer.' + NL;
+  tc += '7. Shipper to decide on shipping liner.' + NL;
+  tc += '8. BL under consignee is to order unless full payment received before draft BL.' + NL;
+  tc += '9. Buyer responsibility to ensure all required documents informed to seller prior to sales contract.' + NL;
+  return tc;
+}
 function svGetFreight(perMode,perFreight,perPort){
   // Global SV_FR takes precedence
   if(SV_FR.mode==='port'&&SV_FR.port){
