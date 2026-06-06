@@ -407,3 +407,30 @@ DO NOT revert to item.mode==='CIF'&&item.port — that was the old broken approa
 - Delivery period: stored per supplier, independent
 - Colour-coded top border: Apical=green, KLK=blue, WingAgro=brown
 
+
+---
+
+## [2026-06-06 v7] — Print Button Fix: fullModal → printModal Copy
+
+### Root Cause
+The `🖨 Print` button in `#fmFoot` (fullModal footer) called `window.print()` directly.
+`@media print` CSS hides all `body>*` except `#printModal`, so `#fullModal` was also
+hidden during print — resulting in a blank page on desktop/proper print dialog.
+
+Android Vivo "worked" because Android's Share/Save screenshot captures the live screen
+render, bypassing `@media print` entirely. Not a real fix — just a workaround.
+
+### Fix
+Changed Print button to call new `printFmContent()` instead of `window.print()`.
+
+`printFmContent()` does:
+1. Copies `#fmBody` innerHTML into `#printContent` (inside `#printModal`)
+2. Sets `#printModal` to `display:block`
+3. Waits 120ms for DOM to settle
+4. Calls `window.print()` — now `#printModal` has content and prints correctly
+5. After 1s, restores `#printModal` to hidden and clears `#printContent`
+
+### Rule Added
+NEVER call `window.print()` from inside `#fullModal` or any modal that is hidden by
+`@media print`. Always copy content into `#printModal` first.
+

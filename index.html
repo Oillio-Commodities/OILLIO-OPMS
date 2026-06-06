@@ -867,7 +867,7 @@ body.user-mode #userPdfBar { display:flex !important; }
   </div>
   <div id="fmBody"></div>
   <div id="fmFoot">
-    <button class="fm-btn" style="background:var(--grn);color:#fff" onclick="window.print()">&#x1F5A8; Print</button>
+    <button class="fm-btn" style="background:var(--grn);color:#fff" onclick="printFmContent()">&#x1F5A8; Print</button>
     <button class="fm-btn" style="background:var(--acc);color:#fff" onclick="closeFm()">&#x2715; Close</button>
   </div>
 </div>
@@ -3514,6 +3514,25 @@ function updateCartPrices(){
 
 function closePrintModal(){
   el('printModal').style.display='none';
+}
+
+function printFmContent(){
+  // Copy #fmBody content into #printModal so @media print shows it correctly.
+  // (#fullModal is a body>* and is hidden by the print CSS; #printModal is the only body>* that prints.)
+  var src=el('fmBody');
+  var pc=el('printContent');
+  if(!src||!pc){window.print();return;}
+  // Clone the current fullModal view (card or table) into printModal
+  pc.innerHTML='<div style="padding:8px">'+src.innerHTML+'</div>';
+  el('printModal').style.display='block';
+  // Let the DOM settle, then print, then restore
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){
+      el('printModal').style.display='none';
+      pc.innerHTML='';
+    },1000);
+  },120);
 }
 
 
