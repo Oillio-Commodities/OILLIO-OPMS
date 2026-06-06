@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1112';
+  var _v='v06JUN1134';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2596,24 +2596,24 @@ function generatePdfHtml(){
         var sku=item.sku||{};
     var nw=sku.net_wt||20, lc=sku.sku_fcl||1;
     var s_=item.supplier||'apical';
-    var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName;})[0]||{};
+    var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
     var fob=p_.name?getLiveFob(p_,s_):(item.oilPrice||0);
     var _m=parseFloat(item.mgn!=null?item.mgn:SV_CFG.margin); var m=(isNaN(_m)?5:_m)/100;
-    var isCif=item.mode==='CIF'&&item.port;
     var lc_=lc*item.fcl;
     var fob_sku=round4(fob*(1+m)*nw/1000);
     var fob_total=round4(fob_sku*lc_);
-    var fr_rate=isCif?item.port.freight:((SV_FR.mode==='manual'&&SV_FR.usd>0)?SV_FR.usd:0);
-    var fr_port=isCif?(item.port.port+', '+item.port.country):(SV_FR.portName||'Manual freight');
+    var fr_rate=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);
+    var fr_port=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.portName||'Manual freight');
     var fr_unit=fr_rate>0?round4(fr_rate/lc):0;
     var fr_total=round4(fr_unit*lc_);
     var total_sku=round4(fob_sku+fr_unit);
     var total_cargo=round4(fob_total+fr_total);
     var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':s_.toUpperCase());
     if(s_==='wingagro')fobl='FOB Surabaya';
+    if(s_==='klk')fobl='FOB Port Klang, Malaysia';
     s+='<tr>';
     s+='<td class="c">'+(idx2+1)+'</td>';
-    s+='<td><b>'+item.oilName+'</b><span style="color:#888;font-size:7.5pt"> &nbsp;'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small></td>';
+    s+='<td><b>'+itemDisplayName(item)+'</b><span style="color:#888;font-size:7.5pt"> &nbsp;'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit | '+fmt(lc_,0)+' ctns/FCL</small></td>';
     s+='<td class="r">'+fmt(lc_,0)+' ctns</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
     s+='<td class="r"><b>USD '+fmt(fob_sku,2)+'</b></td>';
