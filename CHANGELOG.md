@@ -215,3 +215,26 @@ Correct: est=1313,         fob=1367.71,          Oillio/SKU=25.85 ✓
   reflect the same Excel source simultaneously
 - When clearing stale data, clear ALL `oillio_*` localStorage keys, not just refs
 
+
+---
+
+## [2026-06-06 v2] — Full Cross-Check: All Suppliers Verified
+
+### Verification Result
+Complete cross-check of APC_PKG_DEF / WA_PKG_DEF / KLK_PKG_DEF vs source data:
+
+**Apical — 26/26 products ✓**
+All pkg_cost and premium values match May 25 Excel exactly.
+(Yellow JC CP10=143, White JC CP10=153, Shortening=82, BIB=100, etc.)
+
+**WingAgro — 4/4 products ✓**
+All pkg_cost values match WA_DATA. (Jerry Cans=138, Cartons=82)
+
+**KLK — 80/80 products ✓**
+All pkg_cost values match KLK_DATA. Zero mismatches.
+
+### Note
+The previous fix (APC_PKG_DEF update) corrected ALL 26 Apical products
+simultaneously — not just Yellow JC CP10. Yellow JC CP10 was only called
+out as the example used to detect the bug.
+
