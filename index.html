@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1159';
+  var _v='v06JUN1205';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2608,8 +2608,9 @@ function generatePdfHtml(){
     var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':'Origin');
     if(s_==='wingagro')fobl='FOB Surabaya';
     if(s_==='klk')fobl='FOB Port Klang';
-    s+='<tr>';
-    s+='<td class="c">'+(idx2+1)+'</td>';
+    var rowSep=idx2>0?'border-top:2.5px solid #4a7fa5;':'';
+    s+='<tr style="'+rowSep+'">';
+    s+='<td class="c" style="'+rowSep+'">'+(idx2+1)+'</td>';
     s+='<td><b>'+itemDisplayName(item)+'</b> <span style="color:#888;font-size:7.5pt">'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small></td>';
     s+='<td class="r">'+fmt(lc_,0)+' ctns</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
