@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1134';
+  var _v='v06JUN1148';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2480,7 +2480,7 @@ function generatePdfHtml(){
   var supplierSet={};
   QITEMS.forEach(function(x){supplierSet[x.supplier||'ref']=1;});
   var suppList=Object.keys(supplierSet).map(function(s){
-    return s==='apical'?'Apical':s==='klk'?'KLK':s==='wingagro'?'Wing Agro':'For Reference Only';
+    return 'Oillio House Brand';
   }).join(', ');
 
   // ── CSS ──
@@ -2608,7 +2608,7 @@ function generatePdfHtml(){
     var fr_total=round4(fr_unit*lc_);
     var total_sku=round4(fob_sku+fr_unit);
     var total_cargo=round4(fob_total+fr_total);
-    var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':s_.toUpperCase());
+    var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':'Origin');
     if(s_==='wingagro')fobl='FOB Surabaya';
     if(s_==='klk')fobl='FOB Port Klang, Malaysia';
     s+='<tr>';
