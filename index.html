@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1205';
+  var _v='v06JUN1223';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -5406,6 +5406,22 @@ var KLK_DATA=[
 
 (function(){try{var af=JSON.parse(localStorage.getItem(SV_APC_KEY)||"{}");APICAL_DATA.forEach(function(p){if(af[p.name]!=null)p.fob_jkt=af[p.name];if(af[p.name+"_kl"]!=null)p.fob_kl=af[p.name+"_kl"];});var wf=JSON.parse(localStorage.getItem(SV_WA_KEY)||"{}");WA_DATA.forEach(function(p){if(wf[p.name]!=null)p.fob_sua=wf[p.name];});var kf=JSON.parse(localStorage.getItem(SV_KLK_KEY)||"{}");KLK_DATA.forEach(function(p){if(kf[p.name]!=null)p.fob_mt=kf[p.name];});}catch(e){}var mg=document.getElementById("suppMargin");if(mg)mg.value=SV_CFG.margin!=null?SV_CFG.margin:2.5;})();
 var SV_FR={mode:"fob",usd:0,port:null,portName:""};
+// Per-supplier freight stores — each supplier has independent freight settings
+var APC_FR={mode:'fob',usd:0,port:null,portName:''};
+var WA_FR={mode:'fob',usd:0,port:null,portName:''};
+var KLK_FR={mode:'fob',usd:0,port:null,portName:''};
+function getSupFR(s){return s==='klk'?KLK_FR:s==='wingagro'?WA_FR:APC_FR;}
+function saveSupFR(s){
+  var store=getSupFR(s);
+  store.mode=SV_FR.mode;store.usd=SV_FR.usd;
+  store.port=SV_FR.port;store.portName=SV_FR.portName;
+}
+function loadSupFR(s){
+  var store=getSupFR(s);
+  SV_FR.mode=store.mode;SV_FR.usd=store.usd;
+  SV_FR.port=store.port;SV_FR.portName=store.portName;
+}
+
 
 function buildTcText(hasFr, frName, frAmt, sd, asHtml){
   var NL = asHtml ? '<br>' : String.fromCharCode(10);
@@ -5446,7 +5462,23 @@ function svGetFreight(perMode,perFreight,perPort){
   return {mode:perMode||'FOB',fr:perFreight||0,port:perPort||null};
 }var SV_ORIGIN="JKT";var SV_SUP=null;
 function svCalc(fob,nw,lc){var m=(SV_CFG.margin!=null?parseFloat(SV_CFG.margin):5)/100;var fr=0;if(SV_FR.mode==='manual')fr=(SV_FR.usd||0)/(lc||1);else if(SV_FR.mode==='port'&&SV_FR.port)fr=SV_FR.port.freight/(lc||1);var nw_=(nw||20);var su=round4(fob*nw_/1000);var om=round4(fob*(1+m));var os=round4(om*nw_/1000);var of_=round4(os+fr);var ofm=round4(of_/nw_*1000);var ps=round4(om*nw_/1000-su);var tp=round4(ps*(lc||1));return{su:su,om:om,os:os,of:of_,ofm:ofm,ps:ps,tp:tp,fr:fr};}
-function setSupplier(s){SV_SUP=s;["supApical","supKlk","supWing","supAble","supCompare"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv)sv.style.display="";var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"Apical • FOB Tj Priok / Port Klang • 13 May 2026","klk":"KLK • June 2026 • 80 Products","wingagro":"Wing Agro • FOB Surabaya • 19 May 2026","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
+function setSupplier(s){
+  // Save current supplier's freight before switching
+  if(SV_SUP&&SV_SUP!=='ableperfect'&&SV_SUP!=='compare')saveSupFR(SV_SUP);
+  SV_SUP=s;
+  // Load new supplier's freight settings
+  if(s==='apical'||s==='klk'||s==='wingagro'){
+    loadSupFR(s);
+    // Update freight UI buttons and fields
+    setTimeout(function(){
+      svSetFreight(SV_FR.mode);
+      var ma=document.getElementById('svFrAmt');
+      if(ma)ma.value=SV_FR.usd||0;
+      var mp=document.getElementById('svFrPortName');
+      if(mp)mp.value=SV_FR.portName||'';
+    },50);
+  }
+  ["supApical","supKlk","supWing","supAble","supCompare"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnFrChange(){SV_FR.portName=(document.getElementById("svFrPortName")||{value:""}).value||"";SV_FR.usd=parseFloat((document.getElementById("svFrAmt")||{}).value)||0;svRenderTable();}function svSetFreight(m){SV_FR.mode=m;["fob","manual","port"].forEach(function(k){var b=document.getElementById("frBtn"+k.charAt(0).toUpperCase()+k.slice(1));if(!b)return;b.style.background=k===m?"var(--brand)":"#fff";b.style.color=k===m?"#fff":"var(--mut)";b.style.borderColor=k===m?"var(--brand)":"var(--bdr)";});var mw=document.getElementById("svFrManual"),pw=document.getElementById("svFrPort");if(mw)mw.style.display=m==="manual"?"":"none";if(pw)pw.style.display=m==="port"?"":"none";if(m==="port"){var rs=document.getElementById("svPortRegion");if(rs&&!rs.options.length)svInitPorts();}svRenderTable();}function svInitPorts(){var rs=document.getElementById('svPortRegion');if(!rs)return;var regions=['ALL'].concat([...new Set(ALL_PORTS.map(function(p){return p.region;}))].sort());rs.innerHTML=regions.map(function(r){return'<option>'+r+'</option>';}).join('');svFilterPorts();}function svFilterPorts(){var q=((document.getElementById('svPortSearch')||{}).value||'').toLowerCase();var reg=(document.getElementById('svPortRegion')||{}).value||'ALL';var el_=document.getElementById('svPortList');if(!el_)return;var ports=ALL_PORTS.filter(function(p){if(reg!=='ALL'&&p.region!==reg)return false;if(q&&(p.port+p.country+p.region).toLowerCase().indexOf(q)<0)return false;return true;});window._svPC=ports;el_.innerHTML=ports.slice(0,200).map(function(p,i){var age=p.updated?Math.round((Date.now()-new Date(p.updated))/(1000*86400)):999;var cls=age<90?'fresh':age<180?'warn':'stale';return'<div class="pitem" data-fi="'+i+'">'+'<div class="pdot '+cls+'"></div>'+'<div class="pport">'+p.port+'</div>'+'<div class="pcty">'+p.country+'</div>'+'<div class="pfr">$'+fmt(p.freight,0)+'</div></div>';}).join('');el_.querySelectorAll('[data-fi]').forEach(function(d){d.onclick=function(){var p=window._svPC[+this.getAttribute('data-fi')];if(p)svSelectPort(p.country,p);};});}function svSelectPort(country,p){SV_FR.port={country:p.country,port:p.port,freight:p.freight};var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="";if(pl)pl.style.display="none";var nm=document.getElementById("svPortSelName"),rt=document.getElementById("svPortSelRate");if(nm)nm.textContent=p.port+", "+country;if(rt)rt.textContent="USD "+fmt(p.freight,0)+"/FCL (indicative from Able Perfect data)";svRenderTable();}function svClearPort(){SV_FR.port=null;var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="none";if(pl)pl.style.display="";svRenderTable();}
 function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var cats={};data.forEach(function(p){if(p.cat)cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c;}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
@@ -5488,7 +5520,7 @@ function svRenderRefPanel(){
   else return;
   var fld=document.getElementById('svRefFields');
   if(!fld)return;
-  var isEd=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;
+  var isEd=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0 && s==='apical';// WingAgro and KLK ref panels are always read-only
   var LABS={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',
     pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',
     pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',
