@@ -434,3 +434,21 @@ Changed Print button to call new `printFmContent()` instead of `window.print()`.
 NEVER call `window.print()` from inside `#fullModal` or any modal that is hidden by
 `@media print`. Always copy content into `#printModal` first.
 
+
+---
+
+## [2026-06-06 v8] — Logo in PDF + Auto-print HTML Quotation
+
+### Fix 1: Logo missing in jsPDF (Save PDF button)
+- `doPrint()` header previously drew only text: "Oillio", "Commodities Sdn. Bhd.", "(1527357-W)"
+- Now embeds `logo_emblem_nobg.svg` as a base64 PNG (144×144px → 18×18mm in PDF)
+- Header height increased 20mm → 24mm to accommodate logo
+- Logo positioned left (margin,3mm), company text to its right
+- Title `y` start adjusted 29→33 to match new header height
+
+### Fix 2: HTML quotation page was downloading as .html (not PDF)
+- `openPrintPreview()` opened an HTML blob in new tab; if popup was blocked it downloaded as .html (20KB)
+- Now the embedded page script auto-triggers `window.print()` 400ms after load
+- User sees the browser's native Print/Save as PDF dialog immediately — no extra button click needed
+- Fallback `doPrint()` button still present for manual trigger
+
