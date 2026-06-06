@@ -2742,7 +2742,7 @@ function doPrint(){
   showToast('\uD83D\uDCBE Building PDF\u2026');
   function loadLib(url,cb){var s=document.createElement('script');s.src=url;s.onload=cb;s.onerror=function(){cb();};document.head.appendChild(s);}
   function buildPdf(logoDataUrl){
-    try{var _logoUrl=logoDataUrl||null;
+    var _logoUrl=logoDataUrl||null;
     try{
       var G=[26,107,26],W=[255,255,255],DK=[17,17,17],GY=[100,100,100],BL=[220,235,255],LG=[235,245,235];
       var doc=new window.jspdf.jsPDF('p','mm','a4');
