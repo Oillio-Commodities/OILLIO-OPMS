@@ -178,3 +178,40 @@ Storage keys: oillio_apc_pkg, oillio_wa_pkg, oillio_klk_pkg
 - 🟢 Green: Oillio (Oillio/MT, Oillio/SKU, Profit/SKU for User 0+1)
 - 🟡 Amber: Freight row (shown when port/manual freight selected)
 
+
+---
+
+## [2026-06-06] — ROOT CAUSE FIX: Pricing Formula Correct
+
+### The Actual Bug (after extensive investigation)
+`getLiveFob()` looks up `pkg_cost` from `APC_PKG_DEF` **before** using APICAL_DATA.
+`APC_PKG_DEF` had stale May 13 values (`pkg_cost=138`) while APICAL_DATA was
+correctly updated to May 25 values (`pkg_cost=143`). Every calculation used the
+wrong pkg_cost, giving wrong est/FOB/prices across all views.
+
+### Root Cause Chain
+```
+getLiveFob() → getPkgArr() → APC_PKG_DEF → pkg_cost=138 (WRONG)
+                                          ↑ should have been 143
+Result: est=1308 (wrong), fob=1362.71 (wrong), Oillio/SKU=25.76 (wrong)
+Correct: est=1313,         fob=1367.71,          Oillio/SKU=25.85 ✓
+```
+
+### Fix
+- Updated `APC_PKG_DEF` with correct May 25 Excel values for all 26 products
+- Version redirect now clears ALL `oillio_*` localStorage keys (incl. pkg arrays)
+- Added `no-cache` meta headers + version-based URL redirect for fresh JS loading
+- `APC_REF/WA_REF/KLK_REF` hardcoded to Excel defaults (no localStorage dependency)
+
+### Verified Calculation (Yellow JC CP10)
+- `est = 1170 + 0 + 143 = 1313`
+- `fob = 1313 + 54.71 = 1367.71`
+- `Supplier/SKU = 24.61875` ✓
+- `Oillio/MT = 1,436.094` ✓
+- `Oillio/SKU = 25.85` ✓
+
+### Rules Added
+- **NEVER update APICAL_DATA without also updating APC_PKG_DEF** — both must
+  reflect the same Excel source simultaneously
+- When clearing stale data, clear ALL `oillio_*` localStorage keys, not just refs
+
