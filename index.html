@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1054';
+  var _v='v06JUN1108';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1918,7 +1918,7 @@ function rReport(){
     el('rptTableTxt').value='';
     return;
   }
-  el('reportTxt').value=buildRpt();
+  el('reportTxt').value=buildTxtTable();
   if(RPT_MODE==='table'){renderVTable();}
 }
 
@@ -2013,7 +2013,7 @@ function buildTableHTML(forWindow){
 function renderVTable(){
   var isMobile=window.innerWidth<750;
   var pm=PRICE_MODE||'fob';
-  var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
+  var _fr=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _frName=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.mode==='manual'?(SV_FR.portName||'Manual'):'');var hasCifItem=_fr>0;
   var showCif=(pm==='cif'||pm==='both')&&hasCifItem;
   var cust=el('qCust').value||'',del_=el('qDel').value||'',sd=el('qDel')?el('qDel').value||'':'',ref_='';
   var d=new Date(),ds=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
@@ -2021,7 +2021,7 @@ function renderVTable(){
   var allApical=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='apical';});
   var allAble=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier!=='apical';});
   var allKlk=QITEMS.length>0&&QITEMS.every(function(x){return x.supplier==='klk';});
-  var modeLabel=pm==='cif'?'CIF':pm==='both'?'FOB & CIF':'FOB';
+  var modeLabel=hasCifItem?'FOB (with Freight)':'FOB';
   var oilLabel=allSameOil&&QITEMS.length>0?QITEMS[0].oilName.replace(' (USD)',''):'';
   var sub=[];
   if(oilLabel)sub.push('Oil: <b>'+oilLabel+'</b>');
@@ -2056,7 +2056,7 @@ function renderVTable(){
       var d_=itemsData[i],item=d_.item,p=d_.p,isCif=d_.isCif,tfob=d_.tfob,tcif=d_.tcif,tm=d_.tm,tu=d_.tu;
       var ipm3=item.priceMode||'fob';
       var showItemFob=(ipm3==='fob'||ipm3==='both');
-      var showItemCif=(ipm3==='cif'||ipm3==='both')&&isCif;
+      var showItemCif=_fr>0;  // Use global SV_FR freight
       // Determine which total to show
 
 
@@ -2089,14 +2089,18 @@ function renderVTable(){
         wrap+='<div style="display:flex;justify-content:space-between;font-size:.79rem;padding:2px 0;border-top:1px solid #c8ebd8;margin-top:3px;padding-top:4px"><span style="color:#6b7a95">Total FOB</span><span style="font-weight:800;color:#1a7a4a">USD '+fmt(tfob,2)+'</span></div>';
         wrap+='</div>';
       }
-      // CIF pricing block -- only when mode includes CIF AND item is CIF
+      // FOB+Freight block — shown when SV_FR has freight
       if(showItemCif){
-        wrap+='<div style="background:#e8f0fa;border-radius:6px;padding:8px 10px;margin-top:6px">';
-        wrap+='<div style="font-size:.68rem;font-weight:700;color:#1e5f8a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">CIF -- '+item.port.country+' ('+item.port.port+')</div>';
-        wrap+='<div style="display:flex;justify-content:space-between;font-size:.79rem;padding:2px 0"><span style="color:#6b7a95">Price / Carton</span><span style="font-weight:700;color:#1e5f8a">USD '+fmt(p.cs,4)+'</span></div>';
-        wrap+='<div style="display:flex;justify-content:space-between;font-size:.79rem;padding:2px 0"><span style="color:#6b7a95">Price / MT</span><span style="font-weight:700;color:#1e5f8a">USD '+fmt(p.cm,2)+'</span></div>';
-        // Freight/FCL not shown to customer
-        wrap+='<div style="display:flex;justify-content:space-between;font-size:.79rem;padding:2px 0;border-top:1px solid #b8d4f0;margin-top:3px;padding-top:4px"><span style="color:#6b7a95">Total CIF</span><span style="font-weight:800;color:#1e5f8a">USD '+fmt(tcif,2)+'</span></div>';
+        var _frUnit=round4(_fr/(item.sku.sku_fcl||1));
+        var _cifUnit=round4(p.fs+_frUnit);
+        var _cifMT_=item.sku.net_wt>0?round4(_cifUnit/item.sku.net_wt*1000):0;
+        var _tCif_=round4(d_.tu*_cifUnit);
+        wrap+='<div style="background:#dbeafe;border-radius:6px;padding:8px 10px;margin-top:6px">';
+        wrap+='<div style="font-size:.68rem;font-weight:700;color:#1a5276;text-transform:uppercase;margin-bottom:4px">🚢 Freight: '+_frName+'</div>';
+        wrap+='<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:2px 0"><span style="color:#6b7a95">Freight/Unit</span><span style="font-weight:700;color:#1a5276">+USD '+fmt(_frUnit,2)+'</span></div>';
+        wrap+='<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:2px 0"><span style="color:#6b7a95">FOB+Fr/Carton</span><span style="font-weight:700;color:#1a5276">USD '+fmt(_cifUnit,2)+'</span></div>';
+        wrap+='<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:2px 0"><span style="color:#6b7a95">FOB+Fr/MT</span><span style="font-weight:700;color:#1a5276">USD '+fmt(_cifMT_,2)+'</span></div>';
+        wrap+='<div style="display:flex;justify-content:space-between;font-size:.79rem;padding:3px 0;border-top:1px solid #93c5fd;margin-top:3px"><span style="color:#1a5276;font-weight:700">Total FOB+Fr</span><span style="font-weight:800;color:#1a5276">USD '+fmt(_tCif_,2)+'</span></div>';
         wrap+='</div>';
       }
       // Total band removed to avoid confusion when showing both FOB & CIF
@@ -2110,8 +2114,8 @@ function renderVTable(){
       wrap+='<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:2px"><span style="color:#6b7a95">Total FCL</span><span style="font-weight:600">'+gFcl+'</span></div>';
       wrap+='<div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px"><span style="color:#6b7a95">Total Volume</span><span style="font-weight:600">'+fmt(gMt,3)+' MT</span></div>';
       if(showFob){wrap+='<div style="display:flex;justify-content:space-between;font-size:.82rem;padding-top:5px;border-top:1px solid #b8d4f0"><span style="color:#1a7a4a;font-weight:700">Total FOB</span><span style="font-weight:800;color:#1a7a4a">USD '+fmt(gFob,2)+'</span></div>';}
-      if(showCif&&hasCifItem){wrap+='<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-top:3px"><span style="color:#1e5f8a;font-weight:700">Total CIF</span><span style="font-weight:800;color:#1e5f8a">USD '+fmt(gCif,2)+'</span></div>';}
-      if(showFob&&showCif&&hasCifItem){wrap+='<div style="display:flex;justify-content:space-between;font-size:.86rem;margin-top:5px;padding-top:5px;border-top:2px solid #0a3d62"><span style="color:#0a3d62;font-weight:800">Est. Grand Total of Sales</span><span style="font-weight:800;color:#0a3d62">USD '+fmt(gFob+gCif,2)+'</span></div>';}
+      if(hasCifItem){wrap+='<div style="display:flex;justify-content:space-between;font-size:.82rem;margin-top:3px"><span style="color:#1a5276;font-weight:700">Total FOB+Fr</span><span style="font-weight:800;color:#1a5276">USD '+fmt(gCif,2)+'</span></div>';}
+      
       wrap+='</div>';
     }
     wrap+='</div>';
@@ -2130,36 +2134,8 @@ function renderVTable(){
   wrap+='&#x2022; Pricing does not include 3rd party documentation, testing and certification charges.';
   if(del_)wrap+='<br><b>Delivery:</b> '+del_;
   wrap+='<br><b>Date:</b> '+ds+'</div>';
-  // Terms & Conditions -- auto-select based on price mode
-  var sdVal=el('qDel')?el('qDel').value||'To be advised':'To be advised';
-  var hasFobItems=QITEMS.some(function(x){return x.mode!=='CIF';});
-  var hasCifItems2=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
-  var showTcFob=(pm==='fob'||pm==='both');
-  var showTcCif=(pm==='cif'||pm==='both')&&hasCifItems2;
-  if(showTcFob||showTcCif){
-    var tcHtml='<div style="padding:10px 14px;background:#fff3e0;border-top:1px solid #ffe0b2;font-size:.71rem;color:#5d4037;line-height:1.85">';
-    tcHtml+='<b style="color:#0a3d62">Terms & Conditions</b><br>';
-    tcHtml+='**Price subject to final confirmation<br>';
-    if(showTcFob){
-      tcHtml+='<br><b style="color:#1a7a4a">FOB Terms:</b><br>';
-      tcHtml+='Payment: 30% deposit, balance 70% against copy BL<br>';
-      tcHtml+='Shipment: '+sdVal+'<br>';
-      tcHtml+='Brand: Oillio House Brand (For OEM/private label: min 5 FCL per SKU per shipment)<br>';
-      tcHtml+='External docs: Health Cert USD150 | Phyto Cert USD150 | Cert of Analysis USD100 | CO (Chamber) USD30<br>';
-      tcHtml+='Buyer\'s responsibility to ensure all required documents informed to seller prior to sales contract.<br>';
-    }
-    if(showTcCif){
-      tcHtml+='<br><b style="color:#1e5f8a">FOB Terms (with Freight):</b><br>';
-      tcHtml+='Payment: 30% deposit, balance 70% against copy BL<br>';
-      tcHtml+='Shipment: '+sdVal+'<br>';
-      tcHtml+='Brand: Oillio House Brand (For OEM/private label: min 5 FCL per SKU per shipment)<br>';
-      tcHtml+='External docs: Health Cert USD150 | Phyto Cert USD150 | Cert of Analysis USD100 | CO (Chamber) USD30<br>';
-      tcHtml+='Special Clauses: (6) Any GRI/PSS/PCS by shipping liner before loading charged to buyer. (7) Shipper decides liner. (8) BL "to order" unless full payment received. (9) Buyer ensures all docs provided before concluding contract.<br>';
-    }
-    tcHtml+='</div>';
-    wrap+=tcHtml;
-  }
-  wrap+='</div>';
+  // T&C using buildTcText helper (consistent across all views)
+  wrap+=buildTcText(_fr>0,_frName,_fr,sdVal,true);
   el('rptTableDiv').innerHTML=wrap;
   el('rptTableTxt').value=buildTxtTable();
 }
