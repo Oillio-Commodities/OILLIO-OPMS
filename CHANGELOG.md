@@ -477,3 +477,19 @@ symptom reported.
 - Popup allowed → new tab opens, `window.print()` fires after 600ms → browser Save as PDF dialog
 - Popup blocked → jsPDF kicks in directly → real `.pdf` downloaded automatically
 
+
+---
+
+## [2026-06-06 v10] — UI: Header colour + Product card box alignment
+
+### Header
+- Version banner: red `#c0392b` → dark brand green `#1a4d30` with light green text `#c8e6c9`
+- Font size reduced slightly (`.8rem` → `.75rem`), letter-spacing added for cleaner look
+
+### Product list cards (SUPPLIER / OILLIO / WITH FREIGHT boxes)
+- `apc-item` changed to `align-items:stretch` (was `center`) — boxes now fill height evenly per row
+- Supplier and Oillio boxes: `min-height:72px` added — consistent height across all products
+- Box labels (SUPPLIER / OILLIO / WITH FREIGHT) now have: bold uppercase, letter-spacing, bottom border separator
+- Box padding increased `4px 6px` → `6px 8px` for better readability
+- Price grid uses `align-items:start` — content starts from top, not middle
+- Outer card content wrapped in `flex:1; flex-direction:column` for consistent vertical layout
