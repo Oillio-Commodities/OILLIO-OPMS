@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='fix06JUN1025';
+  var _v='fix06JUN1031';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1827,7 +1827,7 @@ function rQuote(){
       var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
       var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
       var ipm2=item.priceMode||'fob';var showIF=true;var showIC=_fr>0;var frCtn=showIC?round4(_fr/(item.sku.sku_fcl||1)):0;var frPortLabel=_frName||'Manual';var isCif=showIC;
-      var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+      var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
       var tdis=showIC&&tcif!==null?tcif:tfob;
       gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
       var div=document.createElement('div');div.className='q-item';
@@ -2043,7 +2043,7 @@ function renderVTable(){
     var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
     var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
     var isCif=item.mode==='CIF'&&item.port;
-    var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+    var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
     gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
     itemsData.push({item:item,p:p,tu:tu,tm:tm,isCif:isCif,tfob:tfob,tcif:tcif});
   }
@@ -2263,7 +2263,7 @@ function buildRpt(){
     var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
     var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
     var isCif=item.mode==='CIF'&&item.port;
-    var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+    var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
     gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;
     var ipm=item.priceMode||'fob';
     r+='*Item '+(i+1)+'*'+NL;
@@ -2413,7 +2413,7 @@ function renderFm(){
       var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
       var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
       var isCif=item.mode==='CIF'&&item.port;
-      var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+      var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
       var tdis=(pm==='cif'&&isCif)?tcif:tfob;
       if(pm==='both'&&isCif)tdis=tcif;
 
@@ -2800,7 +2800,7 @@ function openPrintPreview(){
     var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
     var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
     var isCif=item.mode==='CIF'&&item.port;
-    var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+    var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
     gFob+=tfob;gCif+=(tcif!==null?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
 
     // Item card
@@ -3506,7 +3506,7 @@ function copyAsImage(){
     var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
     var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
     var isCif=item.mode==='CIF'&&item.port;
-    var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+    var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
     var tdis=(pm==='cif'&&isCif)?tcif:(pm==='both'&&isCif?tcif:tfob);
     gFob+=tfob;gCif+=(tcif?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
     var ch=CARD_H(item);
@@ -3666,7 +3666,7 @@ function saveAsPDF(){
         var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
         var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
         var isCif=item.mode==='CIF'&&item.port;
-        var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+        var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
         gFob+=tfob;gCif+=(tcif?tcif:tfob);gMt+=tm;gFcl+=item.fcl;
         var ch=CARD_H(item);
         RR(MARG,y,W-2*MARG,ch,8,'#fff');
@@ -3870,7 +3870,7 @@ function generatePDF(){
       var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
       var tu=item.fcl*item.sku.sku_fcl,tm=tu*item.sku.net_wt/1000;
       var isCif=item.mode==='CIF'&&item.port;
-      var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=tu*p.fs,tcif=showIC?tu*_cifCtn:null;
+      var _sv_fr_=SV_FR.mode==='port'&&SV_FR.port?SV_FR.port.freight:(SV_FR.mode==='manual'&&SV_FR.usd>0?SV_FR.usd:0);var _showFr_=_sv_fr_>0;var frCtn=_showFr_?round4(_sv_fr_/(item.sku.sku_fcl||1)):0;var _cifCtn=round4(p.fs+frCtn);var _cifMT=item.sku.net_wt>0?round4(_cifCtn/item.sku.net_wt*1000):0;var tfob=round4(tu*p.fs),tcif=_showFr_?round4(tu*_cifCtn):null;
 
       // Per-item: which pricing applies to THIS item based on ITS OWN locked priceMode
       var itemIsFob=item.priceMode==='fob'||item.priceMode==='both';
