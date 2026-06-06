@@ -546,3 +546,18 @@ The HTML blob / window.open approach is for openPrintPreview (table view) only.
 jsPDF cannot render CSS. All HTML footer/watermark visual effects must be
 re-implemented using jsPDF primitives: `doc.rect()`, `doc.circle()`,
 `doc.ellipse()`, `doc.setGState()` for opacity, `doc.addImage()` for logo.
+
+---
+
+## [2026-06-07] — For Reference Only: SKUS synced from latest Able Perfect
+
+### What changed
+- Both `var SKUS=[...]` arrays in Oillio updated to match latest Able Perfect repo
+  (`joelmatlantic/Able-Perfect-Calculator` commit `a36e3be`)
+- **86 out of 103 SKUs** had updated `pkg` values (packaging cost per unit)
+- `OIL_CATS` was already identical — no change needed
+- No changes made to Able Perfect repo itself
+
+### Surgical scope
+Only the two `var SKUS=` arrays were replaced. Nothing else touched:
+no oil prices, no logic, no UI, no other supplier data.
