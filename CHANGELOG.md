@@ -493,3 +493,33 @@ symptom reported.
 - Box padding increased `4px 6px` → `6px 8px` for better readability
 - Price grid uses `align-items:start` — content starts from top, not middle
 - Outer card content wrapped in `flex:1; flex-direction:column` for consistent vertical layout
+
+---
+
+## [2026-06-06 v11] — PDF: Logo fix, freight totals, remarks, save restored
+
+### Logo
+- Removed broken base64 PNG blob (18KB embedded string that corrupted layout)
+- Now loads `logo_emblem_nobg.svg` at runtime via `<Image>` → canvas → `toDataURL('image/png')`
+- `doc.addImage()` embeds 144×144 canvas render — actual Oillio logo, not primitives
+- Fallback: if SVG can't load (CORS etc.), header shows text-only — PDF still saves cleanly
+
+### Freight totals (was missing)
+- Added separate summary rows at bottom of table:
+  - **TOTAL FOB** — sum of all FOB cargo values (green)
+  - **TOTAL FREIGHT** — sum of all freight costs (amber)
+  - **GRAND TOTAL (FOB + Freight)** — combined (bold green)
+- Each row styled distinctly so they read clearly
+
+### Remarks
+- Added grey remarks bar above T&C:
+  `"Remarks: Pricing is subject to final confirmation. All quotations valid for the date of issue only."`
+
+### PDF save
+- Restored original `doc.save(fname+'.pdf')` flow via jsPDF — direct download
+- Logo pre-load is async (canvas render) then calls `buildPdf(logoUrl)` — no timing issues
+- `runBuildPdf()` is the entry point: loads logo then generates PDF
+
+### Rule
+NEVER replace doPrint() internals without preserving doc.save() as the output mechanism.
+The HTML blob / window.open approach is for openPrintPreview (table view) only.
