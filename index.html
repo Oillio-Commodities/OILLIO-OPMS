@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v06JUN1351';
+  var _v='v06JUN1358';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2738,44 +2738,72 @@ function doPrint(){
   var safeCust=(cust2||'Quotation').replace(/[\/\\:*?"<>|]/g,'').trim().slice(0,30)||'Oillio';
   var fname='OillioCommodities_'+safeCust+'_'+dd+mm+yy+'_'+hh+mi;
   var btn=el('savePdfBtn');
-  if(btn){btn.disabled=true;btn.textContent='\u231B Generating PDF...';}
-  showToast('\uD83D\uDCBE Generating PDF, please wait...');
-  var html=generatePdfHtml();
-  html=html.replace(/<title>[^<]*<\/title>/,'<title>'+fname+'</title>');
-  function doSave(){
-    var iframe=document.createElement('iframe');
-    iframe.style.cssText='position:fixed;left:-9999px;top:0;width:210mm;height:900px;border:none;visibility:hidden;';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(html);
-    iframe.contentDocument.close();
+  if(btn){btn.disabled=true;btn.textContent='\u231B Generating...';}
+  showToast('\uD83D\uDCBE Generating PDF...');
+
+  function doGenerate(){
+    var html=generatePdfHtml();
+    // Extract body content and CSS for rendering in current page
+    var cssMatch=html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+    var bodyMatch=html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    var cssText=cssMatch?cssMatch[1]:'';
+    var bodyHtml=bodyMatch?bodyMatch[1]:html;
+
+    // Create a visible container positioned off-screen (html2canvas needs visible elements)
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;top:0;left:0;width:210mm;background:#fff;'
+      +'z-index:-9999;overflow:hidden;opacity:0.01;pointer-events:none;';
+    var styleEl=document.createElement('style');
+    styleEl.textContent=cssText+'body,html{margin:0;padding:0}';
+    overlay.appendChild(styleEl);
+    var contentDiv=document.createElement('div');
+    contentDiv.className='page';
+    contentDiv.style.cssText='padding:16px 22px;background:#fff;width:210mm;';
+    contentDiv.innerHTML=bodyHtml;
+    overlay.appendChild(contentDiv);
+    document.body.appendChild(overlay);
+
     setTimeout(function(){
       var opt={
-        margin:[8,8,8,8],
+        margin:[6,6,6,6],
         filename:fname+'.pdf',
-        image:{type:'jpeg',quality:0.97},
-        html2canvas:{scale:2,useCORS:true,logging:false},
+        image:{type:'jpeg',quality:0.98},
+        html2canvas:{
+          scale:2,
+          useCORS:true,
+          logging:false,
+          backgroundColor:'#ffffff',
+          windowWidth:794,
+          width:794
+        },
         jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
       };
-      html2pdf().from(iframe.contentDocument.body).set(opt).save().then(function(){
-        document.body.removeChild(iframe);
+      html2pdf().from(contentDiv).set(opt).save().then(function(){
+        document.body.removeChild(overlay);
         if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
         showToast('\u2705 Saved: '+fname+'.pdf');
-      }).catch(function(){
-        document.body.removeChild(iframe);
+      }).catch(function(err){
+        document.body.removeChild(overlay);
         if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
-        showToast('Error generating PDF. Try again.');
+        showToast('PDF error. Try again.');
       });
-    },600);
+    },800);
   }
-  if(typeof html2pdf!=='undefined'){doSave();}
+
+  if(typeof html2pdf!=='undefined'){doGenerate();}
   else{
     var s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    s.onload=doSave;
+    s.onload=doGenerate;
     s.onerror=function(){
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
-      showToast('Could not load PDF library. Check internet connection.');
+      // Fallback: open preview + auto-print
+      var html2=generatePdfHtml();
+      var html2r=html2.replace('<\/body>',
+        '<scr'+'ipt>window.onload=function(){setTimeout(window.print,800);}<\/scr'+'ipt><\/body>');
+      var blob=new Blob([html2r],{type:'text/html'});
+      window.open(URL.createObjectURL(blob),'_blank');
+      showToast('Opening print dialog \u2014 select Save as PDF');
     };
     document.head.appendChild(s);
   }
