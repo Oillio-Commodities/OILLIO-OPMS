@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v07JUN1532';
+  var _v='v07JUN1540';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2742,29 +2742,32 @@ function doPrint(){
       var sd=el('qDel')?el('qDel').value||'':'';
       var dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
       var refNo='Oillio-'+yy+mm+dd+'-01';
-      // ── HEADER (white bg, logo left, green curved blob top-right) ──
-      // White header background
-      doc.setFillColor(255,255,255);doc.rect(0,0,pgW,22,'F');
-      // Logo left-aligned
-      if(_logoUrl){
-        try{doc.addImage(_logoUrl,'PNG',margin,2,62,18);}catch(e){}
-      } else {
-        doc.setTextColor(26,107,26);doc.setFontSize(16);doc.setFont('helvetica','bold');
-        doc.text('Oillio Commodities Sdn. Bhd.',margin,12);
+      // ── HEADER: white bg, logo left, green polygon top-right ──
+      // White header bg
+      doc.setFillColor(255,255,255);doc.rect(0,0,pgW,24,'F');
+      // Green right-side polygon using lines (jsPDF compatible)
+      doc.setFillColor(26,107,26);
+      doc.lines([[-(pgW-80),0],[0,24],[pgW-80,0]],pgW,0,null,'F');
+      // Logo left
+      if(_logoUrl){try{doc.addImage(_logoUrl,'PNG',margin,2.5,62,18);}catch(e){
+        doc.setTextColor(26,107,26);doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('Oillio Commodities',margin,14);
+      }}else{
+        doc.setTextColor(26,107,26);doc.setFontSize(14);doc.setFont('helvetica','bold');doc.text('Oillio Commodities',margin,14);
       }
-      // Green curved blob top-right (drawn with curves approximated by trapezoid)
-      doc.setFillColor.apply(doc,G);
-      doc.triangle(pgW-80,0, pgW,0, pgW,22,'F');
-      doc.triangle(pgW-80,0, pgW-55,22, pgW,22,'F');
-      // Date/ref/page — white text over green blob
+      // White text over green — date/ref/page
       doc.setFontSize(7.5);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
       doc.text(dateStr,pgW-margin,7,{align:'right'});
       doc.setFont('helvetica','normal');doc.setFontSize(7);
-      doc.text('Ref: '+refNo,pgW-margin,12,{align:'right'});
-      doc.text('Page 1',pgW-margin,17,{align:'right'});
-      // Thin green separator line
-      doc.setDrawColor.apply(doc,G);doc.setLineWidth(0.5);doc.line(0,22,pgW,22);
-      // (no watermark in PDF — GState opacity not reliable cross-platform)
+      doc.text('Ref: '+refNo,pgW-margin,12.5,{align:'right'});
+      doc.text('Page 1 of 1',pgW-margin,18,{align:'right'});
+      // Green separator
+      doc.setDrawColor(26,107,26);doc.setLineWidth(0.5);doc.line(0,24,pgW,24);
+      // Watermark — draw logo faintly using GState if available
+      if(_logoUrl){try{
+        var gs=doc.GState({opacity:0.05});doc.setGState(gs);
+        doc.addImage(_logoUrl,'PNG',pgW/2-50,297/2-15,100,30);
+        var gs2=doc.GState({opacity:1});doc.setGState(gs2);
+      }catch(e){}}
       // ── TITLE ──
       var y=29;
       doc.setTextColor.apply(doc,G);doc.setFontSize(13);doc.setFont('helvetica','bold');
@@ -2807,32 +2810,54 @@ function doPrint(){
         body.push(row);
 
       });
-      // Totals rows
-      var totRow=['','TOTAL FOB','','','','USD '+fmt(gFob,2)];
-      if(hasFr){totRow.push('','');}
-      body.push(totRow);
+      // Totals rows — 3 rows: TOTAL FOB | TOTAL FREIGHT | GRAND TOTAL
       if(hasFr){
-        var frTotRow=['','TOTAL FREIGHT','','','','','','USD '+fmt(gFr,2)];
-        body.push(frTotRow);
-        var grandRow=['','GRAND TOTAL (FOB + Freight)','','','','','','USD '+fmt(gFob+gFr,2)];
-        body.push(grandRow);
+        // Row 1: TOTAL FOB — value in FOB total col (5)
+        body.push(['','TOTAL FOB CARGO','','','','USD '+fmt(gFob,2),'','']);
+        // Row 2: TOTAL FREIGHT — value in FOB+Fr total col (7)
+        body.push(['','TOTAL FREIGHT','','','','','','USD '+fmt(gFr,2)]);
+        // Row 3: GRAND TOTAL — value in FOB+Fr total col (7)
+        body.push(['','GRAND TOTAL (FOB + Freight)','','','','','','USD '+fmt(gFob+gFr,2)]);
+      } else {
+        body.push(['','TOTAL FOB CARGO','','','','USD '+fmt(gFob,2)]);
       }
       doc.autoTable({
         head:head,body:body,startY:y,
         margin:{left:margin,right:margin},
-        styles:{fontSize:7.5,cellPadding:2.5,valign:'middle'},
-        headStyles:{fillColor:G,textColor:W,fontStyle:'bold',fontSize:7.5},
-        columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:hasFr?52:62},2:{halign:'right'},3:{halign:'right'},4:{halign:'right',fontStyle:'bold'},5:{halign:'right',fontStyle:'bold'},6:{halign:'right',fontStyle:'bold'},7:{halign:'right',fontStyle:'bold'}},
+        styles:{fontSize:7.5,cellPadding:2.5,valign:'middle',lineWidth:0.15,lineColor:[210,215,220]},
+        headStyles:{fillColor:G,textColor:W,fontStyle:'bold',fontSize:7.5,lineWidth:0.3,lineColor:[255,255,255]},
+        columnStyles:{
+          0:{cellWidth:8,halign:'center'},
+          1:{cellWidth:hasFr?50:62},
+          2:{halign:'right',cellWidth:20},
+          3:{halign:'right',cellWidth:16},
+          4:{halign:'right',fontStyle:'bold',cellWidth:22},
+          5:{halign:'right',fontStyle:'bold',cellWidth:24},
+          6:{halign:'right',fontStyle:'bold',cellWidth:22},
+          7:{halign:'right',fontStyle:'bold',cellWidth:26}
+        },
         didParseCell:function(data){
-          var r=data.row.raw;
-          if(r&&r[1]&&r[1].indexOf('\uD83D\uDEA2')>=0){data.cell.styles.textColor=[26,82,118];data.cell.styles.fillColor=BL;}
           var ri=data.row.index;
+          var nb=body.length;
           if(hasFr){
-            if(ri===body.length-3){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=LG;}// TOTAL FOB
-            if(ri===body.length-2){data.cell.styles.fillColor=[255,248,220];data.cell.styles.textColor=[133,100,4];}// TOTAL FREIGHT
-            if(ri===body.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[200,230,201];data.cell.styles.textColor=[26,77,26];}// GRAND TOTAL
+            if(ri===nb-3){// TOTAL FOB — green tint
+              data.cell.styles.fontStyle='bold';
+              data.cell.styles.fillColor=LG;
+              data.cell.styles.textColor=[26,77,26];
+            }
+            if(ri===nb-2){// TOTAL FREIGHT — amber tint
+              data.cell.styles.fontStyle='bold';
+              data.cell.styles.fillColor=[255,248,220];
+              data.cell.styles.textColor=[133,90,4];
+            }
+            if(ri===nb-1){// GRAND TOTAL — bold green
+              data.cell.styles.fontStyle='bold';
+              data.cell.styles.fillColor=[200,230,201];
+              data.cell.styles.textColor=[26,77,26];
+              data.cell.styles.fontSize=8;
+            }
           } else {
-            if(ri===body.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=LG;}
+            if(ri===nb-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=LG;data.cell.styles.textColor=[26,77,26];}
           }
         },
         alternateRowStyles:{fillColor:[250,252,255]}
