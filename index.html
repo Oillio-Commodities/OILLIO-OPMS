@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1633';
+  var _v='v08JUN1638';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1489,6 +1489,19 @@ function _loadSupItems(s){
 
 
 function el(id){return document.getElementById(id);}
+  // ── Activity Logger (Google Sheets via Apps Script) ──
+  var _GAS_URL='https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID_HERE/exec';
+  function _logActivity(payload){
+    if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;// not configured yet
+    var userLabel=['User 0','User 1','User 2'][window.USER_LEVEL]||'Unknown';
+    payload.user=userLabel;
+    payload.device=navigator.userAgent.slice(0,120);
+    try{
+      fetch(_GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }catch(e){}// silent — never block the UI
+  }
+
+
 function getOilPriceBase(n,c){var d=OIL_DEF[n];if(!d)return c;return d[1]?c+d[0]:d[0];}
 function getOilFormula(n,c){var d=OIL_DEF[n];if(!d)return'';
   if(d[1]){var s=d[0];return s===0?'= CP10 base':s>0?'= CP10 + '+s+' = '+(c+s):'= CP10 - '+Math.abs(s)+' = '+(c+s);}
@@ -2896,6 +2909,26 @@ function doPrint(){
       // www.oillio.com.my — white bold on orange, right side
       doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,255,255);
       doc.text('www.oillio.com.my',pgW-4,footY+footH/2+1.5,{align:'right'});
+      // Log this quote generation
+      try{
+        var _items=QITEMS.map(function(it){
+          var p2=it.supplier==='apical'?calcApicalItemP(it):it.supplier==='klk'?calcKlkP(it.sku,it.oilPrice,it.add||0,it.mgn||0,it.mode,it.port):calcP(it.sku,it.oilPrice,it.add,it.mgn,it.mode,it.port);
+          var lc2=it.sku.sku_fcl||1,frU2=hasFr?round4(_fr/lc2):0;
+          return itemDisplayName(it)+' x'+it.fcl+'FCL FOB:USD'+round4(p2.fs)+' Fr:USD'+frU2;
+        }).join(' | ');
+        _logActivity({
+          event:'PDF_GENERATED',
+          customer:cust2||'',
+          supplier:(SUPPLIER||'').toUpperCase(),
+          products:_items,
+          fobTotal:fmt(gFob,2),
+          freight:hasFr?fmt(gFr,2):'0',
+          grandTotal:fmt(hasFr?gFob+gFr:gFob,2),
+          filename:fname,
+          freightPort:_frName||'',
+          incoterms:hasFr?'FOB (with Freight)':'FOB'
+        });
+      }catch(_le){}
       doc.save(fname+'.pdf');
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
       showToast('\u2705 Saved: '+fname+'.pdf');
@@ -5862,7 +5895,18 @@ function svRenderRefPanel(){
   var pd=document.getElementById('svPkgFields');if(pd)pd.innerHTML='';
 }
 
-function svOnRefChange(inp){var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)r[k]=val;if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;});svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
+function svOnRefChange(inp){
+  var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;
+  // Capture old values before update
+  var _oldVals={};[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
+  [APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)r[k]=val;if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;});
+  svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+  // Log ref price change (User 0 only)
+  if(window.USER_LEVEL===0){
+    var _oldV=_oldVals[k]!==undefined?_oldVals[k]:'?';
+    _logActivity({event:'REF_PRICE_CHANGE',supplier:(SUPPLIER||'').toUpperCase(),changes:[{key:k,oldVal:_oldV,newVal:val}]});
+  }
+}
 function svOnPkgChange(inp){
   var id=parseInt(inp.getAttribute('data-pkgid'));
   var field=inp.getAttribute('data-field');
