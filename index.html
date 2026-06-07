@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1638';
+  var _v='v08JUN2024';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2890,25 +2890,40 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: green trapezoid left + orange blob right — matches reference exactly ──
-      var footH=20;var footY=297-footH;
-      // White base
-      doc.setFillColor(255,255,255);doc.rect(0,footY,pgW,footH,'F');
-      // GREEN trapezoid: full left, angled cut on right side
-      // Polygon points: bottom-left(0,297), top-left(0,footY), top-right(175,footY), bottom-right(185,297)
+      // ── FOOTER: matches reference image exactly ──
+      // Layout: white gap above, green parallelogram left (diagonal right edge),
+      //         large orange circle top-right (dome visible above green),
+      //         white text on green, white www on orange dome
+      var footH=15;           // green bar height mm
+      var footGap=10;         // white gap above green
+      var footY=297-footH-footGap; // top of white gap
+      // 1. White background for entire footer zone
+      doc.setFillColor(255,255,255);
+      doc.rect(0,footY,pgW,footH+footGap,'F');
+      // 2. Orange circle — drawn FIRST so green overlaps its lower half
+      //    Centre at right edge (pgW), top of green bar, large radius
+      doc.setFillColor(235,138,0);
+      doc.circle(pgW,footY+footGap,22,'F');
+      // 3. Green parallelogram — left flush, diagonal right edge
+      //    4 corners: TL(0,footY+footGap), TR(183,footY+footGap), BR(210,footY+footGap+footH), BL(0,footY+footGap+footH)
       doc.setFillColor(26,107,26);
-      doc.lines([[175,0],[10,footH],[-185,0]],0,footY,null,'F');
-      // ORANGE semi-circle blob on right
-      doc.setFillColor(240,140,0);
-      doc.circle(pgW-8,footY+footH/2,14,'F');
-      // White text on green — Row 1: pin icon + address
-      doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',5,footY+7);
-      // Row 2: phone + email
-      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988     \u2709  export@oillio.com.my',5,footY+14);
-      // www.oillio.com.my — white bold on orange, right side
-      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,255,255);
-      doc.text('www.oillio.com.my',pgW-4,footY+footH/2+1.5,{align:'right'});
+      doc.lines(
+        [[183,0],[27,footH],[-210,0],[0,-footH]],
+        0, footY+footGap, null, 'F'
+      );
+      // 4. White text on green
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica','normal');
+      // Row 1: pin icon + address
+      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',4,footY+footGap+5.5);
+      // Row 2: phone icon + number + envelope icon + email
+      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988     \u2709  export@oillio.com.my',4,footY+footGap+11.5);
+      // 5. www.oillio.com.my — white bold on orange dome, right-aligned
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(255,255,255);
+      doc.text('www.oillio.com.my',pgW-4,footY+footGap-3,{align:'right'});
       // Log this quote generation
       try{
         var _items=QITEMS.map(function(it){
