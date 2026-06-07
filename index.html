@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN2318';
+  var _v='v08JUN2325';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1932,7 +1932,7 @@ function rReport(){
   if(!QITEMS.length){
     el('reportTxt').value='';
     el('rptTableDiv').innerHTML='';
-    el('rptTableTxt').value='';
+    if(el('rptTableTxt'))el('rptTableTxt').value='';
     return;
   }
   el('reportTxt').value=buildTxtTable();
@@ -2154,7 +2154,7 @@ function renderVTable(){
   // T&C using buildTcText helper (consistent across all views)
   wrap+=buildTcText(_fr>0,_frName,_fr,sd,true);
   el('rptTableDiv').innerHTML=wrap;
-  el('rptTableTxt').value=buildTxtTable();
+  if(el('rptTableTxt'))el('rptTableTxt').value=buildTxtTable();
 }
 
 
