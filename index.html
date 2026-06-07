@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v07JUN1559';
+  var _v='v08JUN1609';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2770,7 +2770,7 @@ function doPrint(){
       var y=29;
       doc.setTextColor.apply(doc,G);doc.setFontSize(13);doc.setFont('helvetica','bold');
       doc.text(hasFr?'FOB (with Freight) PRICE QUOTATION':'FOB PRICE QUOTATION',margin,y);
-      doc.setDrawColor.apply(doc,G);doc.setLineWidth(0.4);doc.line(margin,y+2,pgW-margin,y+2);
+      // (no underline below title)
       // ── META ──
       y+=9;doc.setFontSize(8.5);
       var meta=[['Date:',dateStr],['Reference No:',refNo],['To:',cust2||''],['Shipment Period:',sd||'To be advised'],['Incoterms:',hasFr?'FOB (with Freight)':'FOB']];
@@ -2877,19 +2877,20 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: light grey bar — pin/address, phone/email, green website ──
-      var footH=15;var footY=297-footH;
-      doc.setFillColor(245,245,243);doc.rect(0,footY,pgW,footH,'F');
-      doc.setDrawColor(195,195,195);doc.setLineWidth(0.5);doc.line(0,footY,pgW,footY);
-      doc.setTextColor(55,55,55);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-      // Row 1: location icon + address
-      doc.text('\u25BE  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+5.5);
-      // Row 2: phone + separator + email
-      doc.text('\u260F  (O)+603 5888 8339 / (M) +6012 326 3988',margin,footY+11);
-      doc.text('\u2022  export@oillio.com.my',margin+80,footY+11);
-      // Website — bold dark green, right-aligned, vertically centred
-      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(20,90,20);
-      doc.text('www.oillio.com.my',pgW-margin,footY+8.5,{align:'right'});
+      // ── FOOTER: dark green bar + orange website — EXACTLY matching reference ──
+      var footH=16;var footY=297-footH;
+      // Dark green background (same green as header/table)
+      doc.setFillColor(26,107,26);doc.rect(0,footY,pgW,footH,'F');
+      // White text — all left-side content
+      doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+      // Row 1: pin icon + address
+      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+5.5);
+      // Row 2: phone icon + number + gap + envelope + email
+      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988',margin,footY+11.5);
+      doc.text('\u2709  export@oillio.com.my',margin+86,footY+11.5);
+      // www.oillio.com.my — ORANGE/AMBER bold, right-aligned (matching reference)
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,165,0);
+      doc.text('www.oillio.com.my',pgW-margin,footY+9,{align:'right'});
       doc.save(fname+'.pdf');
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
       showToast('\u2705 Saved: '+fname+'.pdf');
