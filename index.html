@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN2229';
+  var _v='v08JUN2306';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2891,25 +2891,29 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: pure jsPDF drawing — pixel-measured from reference ──
-      // White zone above green bar
+      // ── FOOTER: green parallelogram + orange circle ──
+      // Measured from reference image: image 1260x223px, A4=210mm wide
+      // White background for footer zone
       doc.setFillColor(255,255,255);
       doc.rect(0,262,210,35,'F');
-      // Draw orange ellipse FIRST (behind green, dome protrudes above)
-      // Centre: x=210 (right edge), y=277.5 (top of green), rx=59mm, ry=19.5mm
+      // ORANGE circle: in reference, large circle on right side
+      // Centre at page right edge x=210, y=277.5 (top of green bar), radius=59mm
+      // Only the left portion is visible — the dome above green
       doc.setFillColor(242,146,0);
-      doc.ellipse(210,277.5,59,19.5,'F');
-      // Draw green parallelogram ON TOP of orange bottom half
-      // Points: (0,277.5) -> (170.8,277.5) -> (147,297) -> (0,297)
+      doc.circle(210,277.5,24,'F');
+      // GREEN parallelogram using triangle pairs (definitely works in jsPDF)
+      // Shape: TL(0,277.5) TR(171,277.5) BR(147,297) BL(0,297)
       doc.setFillColor(39,105,43);
-      doc.lines([[170.8,0],[-23.8,19.5],[-147,0],[0,-19.5]],0,277.5,null,'F');
-      // White text on green
-      doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','normal');
-      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',4,284);
+      doc.triangle(0,277.5, 171,277.5, 0,297,'F');
+      doc.triangle(171,277.5, 147,297, 0,297,'F');
+      // White text on green — row 1
+      doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',4,283);
+      // Row 2
       doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988     \u2709  export@oillio.com.my',4,291);
-      // www.oillio.com.my white bold on orange dome
-      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,255,255);
-      doc.text('www.oillio.com.my',206,274,{align:'right'});
+      // www.oillio.com.my — white bold, on orange area right side
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(255,255,255);
+      doc.text('www.oillio.com.my',207,275,{align:'right'});
       // Log this quote generation
       try{
         var _items=QITEMS.map(function(it){
