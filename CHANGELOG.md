@@ -596,3 +596,43 @@ GRAND TOTAL (FOB + Freight)                                                     
 - **Calculator header logo**: Added subtle white pill background (rgba 92%)
   so the Oillio wordmark blends naturally on the dark navy header without
   appearing as a harsh white rectangle
+
+---
+
+## 07 JUN 2026 — Rev: UI Fixes + PDF generatePDF() Root Cause Fixed
+
+### Confirmed Working ✅
+
+#### Login Page
+- **Plain white background** (`#ffffff`) — logo blends naturally, no grey/off-white
+- **Password asterisks visible** — removed `-webkit-text-fill-color: white` from `#pwInput` style; asterisks now show in dark colour when typing
+
+#### Calculator Header
+- **Logo on white pill** — Oillio wordmark sits on a subtle `rgba(255,255,255,0.92)` pill background so it reads cleanly against the dark navy nav bar
+
+#### Version Banner
+- **Hidden** — `id="verBanner"` set to `display:none`; the green build version bar no longer appears on screen
+
+#### PDF Report — `generatePDF()` (Print / Save as PDF button)
+> **Root cause resolved**: All previous session edits had been applied to `generatePdfHtml()` — a 369 KB dead-code function that is **never called**. The actual function invoked by the Print button is `generatePDF()` at offset ~1,289,000 in `index.html`. Edits now applied to the correct function.
+
+- **Header — white background**: `.hdr` class changed to `background:#fff`; no more dark bar across the top of the printed page
+- **Header — full wordmark logo left**: `_oillioLogo` base64 PNG rendered left-aligned at 44pt height, no pill/box, no background colour
+- **Header — green deco shape**: SVG curved shape (`<path d="M130 0 Q80 0 55 30 Q35 55 130 70 Z" fill="#1d6e1d"/>`) fills top-right corner of header
+- **Header — date / ref / page text**: White text overlaid on green shape; `ref_` variable auto-generates `Oillio-YYYYMMDD-01`
+- **Footer — added**: White/light-grey background (`#f8f8f8`) with `border-top: 1px solid #d0d0d0`
+  - Row 1: SVG location-pin icon + `No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.`
+  - Row 2: SVG phone icon + `(O)+603 5888 8339 / (M) +6012 326 3988` | SVG envelope icon + `export@oillio.com.my`
+  - Right side: `www.oillio.com.my` bold green (`#1d6e1d`)
+- **Watermark — added**: Full Oillio wordmark PNG at `opacity: 0.07`, `width: 420px`, `position: fixed`, centred on page body
+
+### Function Map (critical — do not confuse these)
+| Function | Offset | Size | Called by | Status |
+|---|---|---|---|---|
+| `generatePdfHtml()` | ~675k | 369 KB | **NEVER called** | Dead code — do not edit |
+| `openPrintPreview()` | ~1,232k | 11 KB | `downloadPdf()` | Mobile card view in modal |
+| **`generatePDF()`** | ~1,289k | 28 KB | **`doPrint()`** | ✅ Real A4 print function |
+| `buildPdf()` | ~1,045k | — | `runBuildPdf()` | jsPDF direct .pdf download |
+
+### Cache buster
+`var _v = 'v07JUN1038'`
