@@ -365,7 +365,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 </style>
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body data-build="202606050923">
-<div id="verBanner" style="background:#1a4d30;color:#c8e6c9;text-align:center;padding:5px;font-size:.75rem;font-weight:600;letter-spacing:.02em">OILLIO OPMS v2.3 — 05 JUN 2026 | Build 1534 | Pricing = Excel defaults</div>
+<div id="verBanner" style="background:#1a4d30;color:#c8e6c9;text-align:center;padding:5px;font-size:.75rem;font-weight:600;letter-spacing:.02em">OILLIO OPMS v2.3 — 07 JUN 2026 | Build 1600 | Pricing = Excel defaults</div>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#071c2e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:24px;display:flex;flex-direction:column;align-items:center;gap:0">
@@ -2616,29 +2616,14 @@ function generatePdfHtml(){
     var rowSep=idx2>0?'border-top:2.5px solid #4a7fa5;':'';
     s+='<tr style="'+rowSep+'">';
     s+='<td class="c" style="'+rowSep+'">'+(idx2+1)+'</td>';
-    s+='<td><b>'+itemDisplayName(item)+'</b> <span style="color:#888;font-size:7.5pt">'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small></td>';
+    var frNote2=fr_rate>0?'<small style="color:#1a5276"> &nbsp;+Fr/unit: +USD '+fmt(fr_unit,2)+'</small>':'';
+    s+='<td><b>'+itemDisplayName(item)+'</b> <span style="color:#888;font-size:7.5pt">'+fobl+'</span><br><small style="color:#555">Net '+fmt(nw,1)+' kg/unit</small>'+frNote2+'</td>';
     s+='<td class="r">'+fmt(lc_,0)+' ctns</td>';
     s+='<td class="r">'+fmt(nw,1)+' kg</td>';
     s+='<td class="r"><b>USD '+fmt(fob_sku,2)+'</b></td>';
     s+='<td class="r" style="font-weight:800">USD '+fmt(fob_total,2)+'</td>';
     s+='</tr>';
-    if(fr_rate>0){
-      s+='<tr style="background:#eef6ff">';
-      s+='<td></td>';
-      s+='<td style="font-size:7.5pt;color:#1a5276;padding-left:14px">&#x1F6A2; <b>Freight:</b> '+fr_port+'</td>';
-      s+='<td class="r" style="color:#1a5276;font-size:7.5pt" colspan="2">USD '+fmt(fr_rate,0)+'/FCL &divide; '+fmt(lc_,0)+' ctns</td>';
-      s+='<td class="r" style="color:#1a5276;font-weight:700">+USD '+fmt(fr_unit,2)+'/unit</td>';
-      s+='<td class="r" style="color:#1a5276;font-weight:700">+USD '+fmt(fr_total,2)+'</td>';
-      s+='</tr>';
-      s+='<tr style="background:#d0e8ff;font-weight:700">';
-      s+='<td></td>';
-      s+='<td style="color:#1a5276;font-size:8pt">Total FOB+Freight ('+fmt(item.fcl,0)+' FCL)</td>';
-      s+='<td class="r" style="color:#1a5276">'+fmt(lc_,0)+' ctns</td>';
-      s+='<td class="r" style="color:#1a5276">'+fmt(nw,1)+' kg</td>';
-      s+='<td class="r" style="color:#1a5276">USD '+fmt(total_sku,2)+'/unit</td>';
-      s+='<td class="r" style="color:#1a5276;font-size:8.5pt">USD '+fmt(total_cargo,2)+'</td>';
-      s+='</tr>';
-    }
+    
   });
   s+='</tbody></table>';
 
@@ -2801,15 +2786,12 @@ function doPrint(){
         var fobl=p_.fob_jkt!=null?'FOB Tj Priok':p_.fob_kl!=null?'FOB Port Klang':'FOB Origin';
         if(item.supplier==='wingagro')fobl='FOB Surabaya';
         if(item.supplier==='klk')fobl='FOB Port Klang';
-        var desc=itemDisplayName(item)+'\n'+fobl+' | Net '+nw.toFixed(1)+' kg/unit';
+        var frNote=hasFr&&frU>0?' | +Fr/SKU: +USD '+fmt(frU,2):'';
+        var desc=itemDisplayName(item)+'\n'+fobl+' | Net '+nw.toFixed(1)+' kg/unit'+frNote;
         var row=[(idx+1).toString(),desc,fmt(lc_,0)+' ctns',nw.toFixed(1)+' kg','USD '+fmt(fob_sku,2),'USD '+fmt(fob_tot,2)];
         if(hasFr)row.push('USD '+fmt(cifU,2),'USD '+fmt(cifT,2));
         body.push(row);
-        if(hasFr&&frU>0){
-          var fr_row=['','\uD83D\uDEA2 Freight: '+_frName,'USD '+Math.round(_fr)+'/FCL','÷'+fmt(lc_,0)+' ctns','+USD '+fmt(frU,2),'','USD '+fmt(cifU,2),'USD '+fmt(cifT,2)];
-          if(!hasFr)fr_row=['',' Freight: '+_frName,'','','+USD '+fmt(frU,2),''];
-          body.push(fr_row);
-        }
+
       });
       // Totals rows
       var totRow=['','TOTAL FOB','','','','USD '+fmt(gFob,2)];
@@ -2883,8 +2865,8 @@ function doPrint(){
       var img=new Image();img.crossOrigin='anonymous';
       img.onload=function(){
         try{
-          var c=document.createElement('canvas');c.width=144;c.height=144;
-          var ctx=c.getContext('2d');ctx.drawImage(img,0,0,144,144);
+          var c=document.createElement('canvas');c.width=800;c.height=235;
+          var ctx=c.getContext('2d');ctx.drawImage(img,0,0,800,235);
           cb(c.toDataURL('image/png'));
         }catch(e){cb(null);}
       };

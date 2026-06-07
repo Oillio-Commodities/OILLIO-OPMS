@@ -561,3 +561,23 @@ re-implemented using jsPDF primitives: `doc.rect()`, `doc.circle()`,
 ### Surgical scope
 Only the two `var SKUS=` arrays were replaced. Nothing else touched:
 no oil prices, no logic, no UI, no other supplier data.
+
+---
+
+## 07 JUN 2026 — Rev: PDF Polish + Logo HD
+
+### Fixes applied (per screenshot annotation)
+- **Logo HD**: jsPDF canvas resolution increased from 144×144 to 800×235px — logo in saved PDF is now sharp/crisp
+- **Remove freight sub-row**: The per-item "🚢 Freight: [port]" row that appeared mid-table between product rows is removed from both jsPDF and HTML quotation — table is now clean with just product rows + totals
+- **Remove "Total FOB+Freight per item" row**: The blue "Total FOB+Freight (N FCL)" sub-row also removed — freight breakdown is shown only in the TOTAL FREIGHT and GRAND TOTAL summary rows at the bottom
+- **Freight note in product description**: Since freight sub-rows are gone, freight per-unit is shown inline in the product description cell as "+Fr/unit: +USD X.XX"
+- **Version banner**: Updated to 07 JUN 2026 Build 1600
+
+### Table layout is now:
+```
+# | Product Description (+ FOB origin + Net wt + +Fr/unit) | Load | Net Wt | FOB/SKU | Total FOB | [FOB+Fr/SKU] | [Total FOB+Fr]
+--- product rows (clean, 1 row per item) ---
+TOTAL FOB                                                                              USD XX,XXX
+TOTAL FREIGHT                                                                                         USD X,XXX  
+GRAND TOTAL (FOB + Freight)                                                                           USD XX,XXX
+```
