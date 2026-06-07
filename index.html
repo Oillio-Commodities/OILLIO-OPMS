@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1615';
+  var _v='v08JUN1622';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2751,8 +2751,11 @@ function doPrint(){
         doc.setTextColor(26,107,26);doc.setFontSize(15);doc.setFont('helvetica','bold');doc.text('Oillio',margin,14);
       }
       // Black text top-right — ref format DDMMYYYY-001 (daily running)
-      var refSeq=('000'+(((d.getDate()*1000000+(d.getMonth()+1)*10000+d.getFullYear())+'_seq') in window?window[(d.getDate()*1000000+(d.getMonth()+1)*10000+d.getFullYear())+'_seq']++:1)).slice(-3);
-      var refNo2=dd+mm+yy+'-'+refSeq;
+      // Running ref number: DDMMYYYY-001, increments each generation, resets daily
+      var _refKey='oillio_ref_'+dd+mm+yy;
+      var _refN=1;
+      try{var _stored=localStorage.getItem(_refKey);_refN=_stored?parseInt(_stored)+1:1;localStorage.setItem(_refKey,_refN);}catch(e){}
+      var refNo2=dd+mm+yy+'-'+('00'+_refN).slice(-3);
       doc.setFontSize(8);doc.setTextColor(30,30,30);doc.setFont('helvetica','bold');
       doc.text(dateStr,pgW-margin,8,{align:'right'});
       doc.setFont('helvetica','normal');doc.setFontSize(7.5);
@@ -2877,22 +2880,25 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: white bg, dark text, icons, green website — matches reference ──
-      var footH=18;var footY=297-footH;
-      // White/off-white background
+      // ── FOOTER: green trapezoid left + orange blob right — matches reference exactly ──
+      var footH=20;var footY=297-footH;
+      // White base
       doc.setFillColor(255,255,255);doc.rect(0,footY,pgW,footH,'F');
-      // Top border line
-      doc.setDrawColor(180,180,180);doc.setLineWidth(0.3);doc.line(0,footY,pgW,footY);
-      // Dark text
-      doc.setTextColor(50,50,50);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-      // Row 1: pin/location icon + address
-      doc.text('\u25BE  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+6);
-      // Row 2: phone icon + number | envelope icon + email  (same row, spaced)
-      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988',margin,footY+12);
-      doc.text('   \u2709  export@oillio.com.my',margin+82,footY+12);
-      // www.oillio.com.my — BOLD DARK GREEN, right-aligned — matches reference
-      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(26,107,26);
-      doc.text('www.oillio.com.my',pgW-margin,footY+9,{align:'right'});
+      // GREEN trapezoid: full left, angled cut on right side
+      // Polygon points: bottom-left(0,297), top-left(0,footY), top-right(175,footY), bottom-right(185,297)
+      doc.setFillColor(26,107,26);
+      doc.lines([[175,0],[10,footH],[-185,0]],0,footY,null,'F');
+      // ORANGE semi-circle blob on right
+      doc.setFillColor(240,140,0);
+      doc.circle(pgW-8,footY+footH/2,14,'F');
+      // White text on green — Row 1: pin icon + address
+      doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',5,footY+7);
+      // Row 2: phone + email
+      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988     \u2709  export@oillio.com.my',5,footY+14);
+      // www.oillio.com.my — white bold on orange, right side
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(255,255,255);
+      doc.text('www.oillio.com.my',pgW-4,footY+footH/2+1.5,{align:'right'});
       doc.save(fname+'.pdf');
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
       showToast('\u2705 Saved: '+fname+'.pdf');
