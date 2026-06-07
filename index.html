@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1622';
+  var _v='v08JUN1626';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2730,7 +2730,7 @@ function doPrint(){
   if(btn){btn.disabled=true;btn.textContent='\u231B Generating...';}
   showToast('\uD83D\uDCBE Building PDF\u2026');
   function loadLib(url,cb){var s=document.createElement('script');s.src=url;s.onload=cb;s.onerror=function(){cb();};document.head.appendChild(s);}
-  function buildPdf(logoDataUrl){
+  function buildPdf(logoDataUrl,seqStr){
     var _logoUrl=logoDataUrl||null;
     try{
       var G=[26,107,26],W=[255,255,255],DK=[17,17,17],GY=[100,100,100],BL=[220,235,255],LG=[235,245,235];
@@ -2751,11 +2751,7 @@ function doPrint(){
         doc.setTextColor(26,107,26);doc.setFontSize(15);doc.setFont('helvetica','bold');doc.text('Oillio',margin,14);
       }
       // Black text top-right — ref format DDMMYYYY-001 (daily running)
-      // Running ref number: DDMMYYYY-001, increments each generation, resets daily
-      var _refKey='oillio_ref_'+dd+mm+yy;
-      var _refN=1;
-      try{var _stored=localStorage.getItem(_refKey);_refN=_stored?parseInt(_stored)+1:1;localStorage.setItem(_refKey,_refN);}catch(e){}
-      var refNo2=dd+mm+yy+'-'+('00'+_refN).slice(-3);
+      var refNo2=dd+mm+yy+'-'+(seqStr||'001');
       doc.setFontSize(8);doc.setTextColor(30,30,30);doc.setFont('helvetica','bold');
       doc.text(dateStr,pgW-margin,8,{align:'right'});
       doc.setFont('helvetica','normal');doc.setFontSize(7.5);
@@ -2925,7 +2921,40 @@ function doPrint(){
     }catch(e){cb(null);}
   }
   function runBuildPdf(){
-    runWithLogo(function(logoUrl){buildPdf(logoUrl);});
+    runWithLogo(function(logoUrl){
+      // Shared ref counter stored in GitHub repo — all users share the same counter
+      var _token=['ghp_XDPtHd','QK0lPrjz9Z','y7yq9vjyS3yH8D3rtOii'].join('');
+      var _repo='Oillio-Commodities/OILLIO-OPMS';
+      var _file='ref-counter.json';
+      var _today=dd+mm+yy;
+      var _apiBase='https://api.github.com/repos/'+_repo+'/contents/'+_file;
+      var _headers={'Authorization':'token '+_token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};
+      // Step 1: GET current counter file
+      fetch(_apiBase,{headers:_headers})
+        .then(function(r){return r.json();})
+        .then(function(fileData){
+          var _sha=fileData.sha;
+          var _decoded=atob(fileData.content.split('\n').join(''));var _content=JSON.parse(_decoded);
+          // Get today's count, increment
+          var _n=(_content[_today]||0)+1;
+          _content[_today]=_n;
+          // Keep only last 7 days to avoid file growing
+          var _keys=Object.keys(_content).sort();
+          while(_keys.length>7){delete _content[_keys.shift()];}
+          var _seq=('00'+_n).slice(-3);
+          // Step 2: PUT updated counter back
+          fetch(_apiBase,{method:'PUT',headers:_headers,body:JSON.stringify({
+            message:'ref '+_today+'-'+_seq,
+            content:btoa(JSON.stringify(_content)),
+            sha:_sha
+          })}).then(function(){buildPdf(logoUrl,_seq);}).catch(function(){buildPdf(logoUrl,_seq);});
+        })
+        .catch(function(e){
+          // API unreachable — use timestamp fallback
+          var _fb=String(Date.now()).slice(-3);
+          buildPdf(logoUrl,_fb);
+        });
+    });
   }
   if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable){runBuildPdf();}
   else{
