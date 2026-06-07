@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1609';
+  var _v='v08JUN1615';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2743,7 +2743,7 @@ function doPrint(){
       var dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
       var refNo='Oillio-'+yy+mm+dd+'-01';
       // ── HEADER: plain white, logo left, black text top-right ──
-      doc.setFillColor(255,255,255);doc.rect(0,0,pgW,26,'F');
+      doc.setFillColor(255,255,255);doc.rect(0,0,pgW,32,'F');
       // Logo left
       if(_logoUrl){try{doc.addImage(_logoUrl,'PNG',margin,2,66,20);}catch(e){
         doc.setTextColor(26,107,26);doc.setFontSize(15);doc.setFont('helvetica','bold');doc.text('Oillio',margin,14);
@@ -2759,7 +2759,7 @@ function doPrint(){
       doc.text('Ref: Oillio-'+refNo2,pgW-margin,14,{align:'right'});
       doc.text('Page 1 of 1',pgW-margin,20,{align:'right'});
       // Thin grey separator line
-      doc.setDrawColor(200,200,200);doc.setLineWidth(0.4);doc.line(margin,26,pgW-margin,26);
+      doc.setDrawColor(200,200,200);doc.setLineWidth(0.4);doc.line(0,32,pgW,32);
       // Watermark logo faint centre
       if(_logoUrl){try{
         var gs1=doc.GState({opacity:0.05});doc.setGState(gs1);
@@ -2767,7 +2767,7 @@ function doPrint(){
         var gs2=doc.GState({opacity:1});doc.setGState(gs2);
       }catch(e){}}
       // ── TITLE ──
-      var y=29;
+      var y=40;
       doc.setTextColor.apply(doc,G);doc.setFontSize(13);doc.setFont('helvetica','bold');
       doc.text(hasFr?'FOB (with Freight) PRICE QUOTATION':'FOB PRICE QUOTATION',margin,y);
       // (no underline below title)
@@ -2877,19 +2877,21 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: dark green bar + orange website — EXACTLY matching reference ──
-      var footH=16;var footY=297-footH;
-      // Dark green background (same green as header/table)
-      doc.setFillColor(26,107,26);doc.rect(0,footY,pgW,footH,'F');
-      // White text — all left-side content
-      doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-      // Row 1: pin icon + address
-      doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+5.5);
-      // Row 2: phone icon + number + gap + envelope + email
-      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988',margin,footY+11.5);
-      doc.text('\u2709  export@oillio.com.my',margin+86,footY+11.5);
-      // www.oillio.com.my — ORANGE/AMBER bold, right-aligned (matching reference)
-      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,165,0);
+      // ── FOOTER: white bg, dark text, icons, green website — matches reference ──
+      var footH=18;var footY=297-footH;
+      // White/off-white background
+      doc.setFillColor(255,255,255);doc.rect(0,footY,pgW,footH,'F');
+      // Top border line
+      doc.setDrawColor(180,180,180);doc.setLineWidth(0.3);doc.line(0,footY,pgW,footY);
+      // Dark text
+      doc.setTextColor(50,50,50);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+      // Row 1: pin/location icon + address
+      doc.text('\u25BE  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',margin,footY+6);
+      // Row 2: phone icon + number | envelope icon + email  (same row, spaced)
+      doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988',margin,footY+12);
+      doc.text('   \u2709  export@oillio.com.my',margin+82,footY+12);
+      // www.oillio.com.my — BOLD DARK GREEN, right-aligned — matches reference
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(26,107,26);
       doc.text('www.oillio.com.my',pgW-margin,footY+9,{align:'right'});
       doc.save(fname+'.pdf');
       if(btn){btn.disabled=false;btn.innerHTML='\uD83D\uDCBE Save PDF';}
