@@ -581,3 +581,18 @@ TOTAL FOB                                                                       
 TOTAL FREIGHT                                                                                         USD X,XXX  
 GRAND TOTAL (FOB + Freight)                                                                           USD XX,XXX
 ```
+
+---
+
+## 07 JUN 2026 — Rev: Footer redesign + Logo header blend
+
+### Changes
+- **Footer (PDF + HTML quotation)**: Redesigned to match reference attachment
+  - Row 1: 📍 SVG pin icon + full address
+  - Row 2: 📞 SVG phone icon + number | ✉ SVG email icon + email
+  - Right side: www.oillio.com.my (bold)
+  - Green bar footer consistent across jsPDF and HTML quotation
+  - jsPDF footer height increased to 14mm to fit 2 rows cleanly
+- **Calculator header logo**: Added subtle white pill background (rgba 92%)
+  so the Oillio wordmark blends naturally on the dark navy header without
+  appearing as a harsh white rectangle
