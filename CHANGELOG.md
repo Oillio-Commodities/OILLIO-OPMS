@@ -1,6 +1,21 @@
 
 ---
 
+## [2026-06-07] — Footer & PDF header fixes
+
+### Changed
+- **PDF header**: Removed `Ref:` reference number line (top-right of PDF)
+- **PDF footer**: Orange shape now draws as a proper semicircle dome
+  - Circle centred at page bottom edge (x=193, y=297), radius 22mm
+  - Green bar covers the lower half; white diagonal triangle cuts right corner
+  - Only the orange dome protrudes above the green bar
+  - `www.oillio.com.my` text centred on the orange dome
+  - Address and phone/email text repositioned cleanly within green band
+- **HTML quotation footer**: Replaced broken/malformed inline SVG icons
+  - Pin/location icon: clean teardrop shape with centre dot
+  - Phone icon: standard handset path (Material Design)
+  - Email icon: envelope rect with chevron flap
+
 ## Rev 35 — Packaging Panel: Complete Per-Product Table (All 110 Products)
 
 ### Problem with Rev 34
