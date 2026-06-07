@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN2306';
+  var _v='v08JUN2318';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -840,7 +840,7 @@ body.user-mode #userPdfBar { display:flex !important; }
         <button onclick="setRptMode('text');window.scrollTo({top:0,behavior:'smooth'})" style="background:var(--brand);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.76rem;font-weight:700;cursor:pointer">&#x2191; Back</button>
       </div>
       <div id="rptTableDiv" style="max-height:70vh;overflow-y:auto;overflow-x:auto;border:1.5px solid var(--bdr);border-radius:8px"></div>
-      <textarea id="rptTableTxt" rows="10" spellcheck="false" style="margin-top:8px;font-family:'Courier New',monospace;font-size:.76rem;line-height:1.5;background:#fafcff;color:var(--txt);border:1.5px solid var(--bdr);border-radius:7px;padding:10px 12px"></textarea>
+      <!-- rptTableTxt removed: WhatsApp text not shown in table view -->
     </div>
   </div>
 </div>
@@ -2755,7 +2755,7 @@ function doPrint(){
       var hasFr=_fr>0;
       var sd=el('qDel')?el('qDel').value||'':'';
       var dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
-      var refNo='Oillio-'+yy+mm+dd+'-01';
+      var refNo=pdfFname||('OillioCommodities_'+cust2+'_'+dd+mm+yy+'_'+hh+mi);
       // ── HEADER: plain white, logo left, black text top-right ──
       doc.setFillColor(255,255,255);doc.rect(0,0,pgW,32,'F');
       // Logo left
@@ -2891,29 +2891,27 @@ function doPrint(){
       tcY+=2;doc.setFont('helvetica','bold');doc.text('Special Clauses:',margin,tcY);tcY+=4.5;doc.setFont('helvetica','normal');
       ['GRI/PSS/PCS by shipping liner before loading charged to buyer.','Shipper to decide on shipping liner.','BL under consignee is to order unless full payment received before draft BL.','Buyer to ensure all required documents informed to seller prior to sales contract.'].forEach(function(t,i){doc.text((i+6)+'. '+t,margin+2,tcY);tcY+=4.2;});
       // ── FOOTER ──
-      // ── FOOTER: green parallelogram + orange circle ──
-      // Measured from reference image: image 1260x223px, A4=210mm wide
-      // White background for footer zone
+      // ── FOOTER: pixel-exact from reference (1260x223px image -> A4 mm) ──
+      // Circle centre fitted from arc points: (202.9, 303.3), r=38.2mm
+      // Green: TL(0,276.6) TR(171.5,276.6) BR(147.7,297) BL(0,297)
+      // White gap: y=260 to y=276.6
       doc.setFillColor(255,255,255);
-      doc.rect(0,262,210,35,'F');
-      // ORANGE circle: in reference, large circle on right side
-      // Centre at page right edge x=210, y=277.5 (top of green bar), radius=59mm
-      // Only the left portion is visible — the dome above green
+      doc.rect(0,260,210,37,'F');
+      // Orange circle drawn FIRST — centre is BELOW page bottom, dome protrudes up
       doc.setFillColor(242,146,0);
-      doc.circle(210,277.5,24,'F');
-      // GREEN parallelogram using triangle pairs (definitely works in jsPDF)
-      // Shape: TL(0,277.5) TR(171,277.5) BR(147,297) BL(0,297)
+      doc.circle(202.9,303.3,38.2,'F');
+      // Green parallelogram drawn ON TOP using two triangles
       doc.setFillColor(39,105,43);
-      doc.triangle(0,277.5, 171,277.5, 0,297,'F');
-      doc.triangle(171,277.5, 147,297, 0,297,'F');
-      // White text on green — row 1
+      doc.triangle(0,276.6, 171.5,276.6, 0,297,'F');
+      doc.triangle(171.5,276.6, 147.7,297, 0,297,'F');
+      // White text — row 1: pin + address
       doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
       doc.text('\u25CF  No 11A-1, Jalan Putra Mahkota 7/6C, Putra Heights, 47650 Subang Jaya, Selangor.',4,283);
-      // Row 2
+      // Row 2: phone + email
       doc.text('\u260E  (O)+603 5888 8339 / (M) +6012 326 3988     \u2709  export@oillio.com.my',4,291);
-      // www.oillio.com.my — white bold, on orange area right side
+      // www.oillio.com.my white bold — positioned on orange dome (above green, right side)
       doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(255,255,255);
-      doc.text('www.oillio.com.my',207,275,{align:'right'});
+      doc.text('www.oillio.com.my',208,272,{align:'right'});
       // Log this quote generation
       try{
         var _items=QITEMS.map(function(it){
@@ -4070,7 +4068,7 @@ function generatePDF(){
     var dn=new Date();
     var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var ds=dn.getDate()+' '+MO[dn.getMonth()]+' '+dn.getFullYear();
-    var ref_='Oillio-'+dn.getFullYear()+('0'+(dn.getMonth()+1)).slice(-2)+('0'+dn.getDate()).slice(-2)+'-01';
+    var ref_=pdfFname||('OillioCommodities_Quotation_'+dn.getFullYear())
     var allSameOil=QITEMS.every(function(x){return x.oilName===QITEMS[0].oilName;});
     var safeCust=(cust||'Quotation').replace(/[^a-zA-Z0-9 ]/g,'').trim();
     var fname='For Reference Only - '+safeCust+' - '+dn.getDate()+MO[dn.getMonth()]+dn.getFullYear()+'.html';
