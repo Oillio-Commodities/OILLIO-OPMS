@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN2325';
+  var _v='v08JUN2341';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2188,8 +2188,9 @@ function buildTxtTable(){
     var tfob=round4(tu*p.fs),tFr=round4(tu*frUnit),tCif=round4(tu*cifUnit);
     gFob+=tfob;gFr+=tFr;gMt+=tm;gFcl+=item.fcl;
     r+=SEP+NL;
-    r+='*Item '+(i+1)+': '+item.oilName+'*'+NL;
+    r+='*Item '+(i+1)+': '+itemDisplayName(item)+'*'+NL;
     if(item.supplier==='apical')r+='Origin    : FOB '+(item.apicalOrigin==='JKT'?'Tj Priok, Jakarta':'Port Klang, Malaysia')+NL;
+    if(item.oilName&&itemDisplayName(item)!==item.oilName)r+='Oil       : '+item.oilName+NL;
     r+='FCL       : '+item.fcl+' | SKU/FCL: '+fmt(item.sku.sku_fcl,0)+' | Volume: '+fmt(tm,3)+' MT'+NL;
     r+=NL;
     r+='FOB Price/SKU : USD '+fmt(p.fs,2)+NL;
