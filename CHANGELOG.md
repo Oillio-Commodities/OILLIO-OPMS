@@ -1,6 +1,17 @@
 
 ---
 
+## [2026-06-08] — PDF footer replaced with embedded PNG
+
+### Fixed
+- **PDF footer**: Abandoned jsPDF shape drawing (circle was not rendering as proper semicircle)
+- Now embeds a pre-rendered 1260×148px JPEG footer image (43KB) generated with PIL
+- Orange semicircle dome is mathematically exact
+- Green parallelogram with diagonal right edge
+- White address, phone, email text cleanly on green bar
+- www.oillio.com.my bold white centred on orange dome
+- Cache bumped to v08JUN0144
+
 ## [2026-06-07] — Footer & PDF header fixes
 
 ### Changed
