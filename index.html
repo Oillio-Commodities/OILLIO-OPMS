@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1321';
+  var _v='v08JUN1327';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1578,7 +1578,7 @@ function calcApicalItemP(item){
   var fr_ctn=sku.sku_fcl>0?fr/sku.sku_fcl:0;
   var _isFx=isFlex(sku.type||sku.packing||'');
   var fob_ctn=_isFx?(price+(item.add||0))*sku.net_wt*(1+((item.mgn||0)/100)):(price+(item.add||0))*sku.net_wt/1000*(1+((item.mgn||0)/100));
-  var fob_mt=_isFx?price+(item.add||0):sku.net_wt>0?fob_ctn/sku.net_wt*1000:0;
+  var fob_mt=_isFx?(price+(item.add||0))*(1+((item.mgn||0)/100)):sku.net_wt>0?fob_ctn/sku.net_wt*1000:0;
   var cif_ctn=fob_ctn+fr_ctn;
   var cif_mt=_isFx?cif_ctn/sku.net_wt:sku.net_wt>0?cif_ctn/sku.net_wt*1000:0;
   var d=APICAL_DEDUCT[sku.deductGroup]||0;
@@ -1587,7 +1587,7 @@ function calcApicalItemP(item){
     fs:fob_ctn,fm:fob_mt,cs:cif_ctn,cm:cif_mt,
     fs_:fob_ctn,fm_:fob_mt,ff:fr,
     pkgM:pkg_mt,pkgS:sku.pkg||0,
-    oil:price,oilS:price*sku.net_wt/1000,
+    oil:price,oilS:_isFx?price*sku.net_wt:price*sku.net_wt/1000,
     add:item.add||0,mgn:item.mgn||0
   };
 }
