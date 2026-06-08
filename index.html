@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN0834';
+  var _v='v08JUN0908';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1539,6 +1539,8 @@ function el(id){return document.getElementById(id);}
       }
     });
     if(typeof svRenderTable==='function')svRenderTable();
+    if(typeof svRenderRefPanel==='function')svRenderRefPanel();
+    if(typeof svRenderPkgFields==='function')svRenderPkgFields();
   }
 
   function _logActivity(payload){
@@ -5886,7 +5888,7 @@ function svRenderRefPanel(){
   else return;
   var fld=document.getElementById('svRefFields');
   if(!fld)return;
-  var isEd=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0 && s==='apical';// WingAgro and KLK ref panels are always read-only
+  var isEd=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;// User 0 can edit all supplier ref panels
   var LABS={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',
     pk_olein:'RBD Palm Kernel Olein (USD/MT)',pk_oil:'RBD Palm Kernel Oil (USD/MT)',
     pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',
