@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1532';
+  var _v='v08JUN2214';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -431,8 +431,8 @@ body.user-mode #userPdfBar { display:flex !important; }
     window.IS_ADMIN=(lvl<=1);
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
-    // Load latest ref prices from GitHub (permanent cross-device solution)
-    try{_loadRefFromGitHub(function(d){_applyLoadedRef(d);});}catch(e){}
+    // Load latest ref prices from server for all users
+    try{_loadRef(function(d){_applyRef(d);});}catch(e){}
     var badge=document.getElementById('roleBadge');
     if(badge){
       badge.textContent=['User 0','User 1','User 2'][lvl];
@@ -1496,78 +1496,80 @@ function _loadSupItems(s){
 function el(id){return document.getElementById(id);}
   // ── Activity Logger (Google Sheets via Apps Script) ──
   var _GAS_URL='https://script.google.com/macros/s/AKfycbyw5caY7fUZUt9NVrlHm2fQm9s8cIeb_B8Y19Q5S3De3gEumbgwys63QIv2N-Q31gcSnA/exec';
-  // ── GitHub-based ref price storage (permanent, cross-device) ──
-  var _GH_RAW='https://raw.githubusercontent.com/Oillio-Commodities/OILLIO-OPMS/main/ref_prices.json';
-  var _GH_API='https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_prices.json';
-  var _GH_T='ghp_XDPtHd'+'QK0lPrjz9Z'+'y7yq9vjyS3yH8D3rtOii';
 
-  // ── WRITE: User 0 saves ref prices to GitHub ──
-  function _saveRefToGitHub(refData, callback){
-    // First GET the current file SHA (required for update)
-    fetch(_GH_API,{
-      headers:{'Authorization':'token '+_GH_T,'Accept':'application/vnd.github.v3+json'}
+  // ── WRITE: POST with text/plain — no CORS preflight, always works ──
+  function _saveRef(supplier, ref, pkg) {
+    if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) return;
+    var payload = JSON.stringify({
+      supplier: supplier,
+      ref: ref,
+      pkg: pkg,
+      ts: new Date().toISOString(),
+      user: 'User 0'
+    });
+    fetch(_GAS_URL, {
+      method: 'POST',
+      // text/plain does NOT trigger CORS preflight — this is the key
+      headers: { 'Content-Type': 'text/plain' },
+      body: payload
     })
-    .then(function(r){return r.json();})
-    .then(function(meta){
-      var sha=meta.sha;
-      var content=btoa(unescape(encodeURIComponent(JSON.stringify(refData,null,2))));
-      return fetch(_GH_API,{
-        method:'PUT',
-        headers:{'Authorization':'token '+_GH_T,'Content-Type':'application/json'},
-        body:JSON.stringify({
-          message:'Ref prices updated by User 0 — '+refData._lastSaved,
-          content:content,
-          sha:sha
-        })
-      });
-    })
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.commit){
-        showToast('✓ Prices saved to cloud — all users will see update');
-        if(callback)callback(true);
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.status === 'saved') {
+        showToast('✓ Prices saved — all users will see this on next login');
       } else {
-        showToast('⚠ Save failed: '+JSON.stringify(d).slice(0,80));
-        if(callback)callback(false);
+        showToast('⚠ Save error: ' + JSON.stringify(d).slice(0, 60));
       }
     })
-    .catch(function(e){
-      showToast('⚠ Network error saving prices');
-      if(callback)callback(false);
+    .catch(function(e) {
+      showToast('⚠ Could not reach server: ' + e.toString().slice(0, 50));
     });
   }
 
-  // ── READ: All users load ref prices from GitHub on login ──
-  function _loadRefFromGitHub(callback){
-    // Cache-bust with timestamp so we always get latest
-    fetch(_GH_RAW+'?t='+Date.now(),{cache:'no-store'})
-      .then(function(r){return r.json();})
-      .then(function(d){callback(d);})
-      .catch(function(){callback(null);});
+  // ── READ: GET latest prices — no auth needed ──
+  function _loadRef(callback) {
+    if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) { callback(null); return; }
+    fetch(_GAS_URL + '?t=' + Date.now(), { method: 'GET', cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { callback(d); })
+      .catch(function() { callback(null); });
   }
 
-  // ── Apply loaded ref data to live arrays ──
-  function _applyLoadedRef(d){
-    if(!d)return;
-    var suppliers={apical:{ref:APC_REF,def:APC_REF_DEF,key:APC_REF_KEY,klkMap:true},
-                    klk:{ref:KLK_REF,def:KLK_REF_DEF,key:KLK_REF_KEY},
-                    wingagro:{ref:WA_REF,def:WA_REF_DEF,key:WA_REF_KEY}};
-    Object.keys(suppliers).forEach(function(sup){
-      var s=suppliers[sup],src=d[sup];
-      if(!src)return;
-      Object.keys(s.def).forEach(function(k){
-        if(k in src&&src[k]!==undefined&&!isNaN(parseFloat(src[k])))
-          s.ref[k]=parseFloat(src[k]);
+  // ── Apply fetched prices to live ref objects ──
+  function _applyRef(d) {
+    if (!d) return;
+    // Apical
+    if (d.apical && d.apical.ref) {
+      var r = d.apical.ref;
+      Object.keys(APC_REF_DEF).forEach(function(k) {
+        if (k in r && !isNaN(parseFloat(r[k]))) APC_REF[k] = parseFloat(r[k]);
       });
-      // Sync KLK cp10 from apical malaysia_cp10 if not set separately
-      if(sup==='klk'&&d.apical&&d.apical.malaysia_cp10)
-        KLK_REF.cp10=parseFloat(d.apical.malaysia_cp10);
-    });
-    if(typeof svRenderTable==='function')svRenderTable();
-    if(typeof svRenderRefPanel==='function')svRenderRefPanel();
+      // Propagate to WingAgro
+      ['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'].forEach(function(f) {
+        if (f in APC_REF && f in WA_REF) WA_REF[f] = APC_REF[f];
+      });
+    }
+    // KLK
+    if (d.klk && d.klk.ref) {
+      var rk = d.klk.ref;
+      Object.keys(KLK_REF_DEF).forEach(function(k) {
+        if (k in rk && !isNaN(parseFloat(rk[k]))) KLK_REF[k] = parseFloat(rk[k]);
+      });
+      // Also sync cp10 from apical if klk doesn't have its own
+      if (d.apical && d.apical.ref && d.apical.ref.malaysia_cp10)
+        KLK_REF.cp10 = parseFloat(d.apical.ref.malaysia_cp10);
+    }
+    // WingAgro
+    if (d.wingagro && d.wingagro.ref) {
+      var rw = d.wingagro.ref;
+      Object.keys(WA_REF_DEF).forEach(function(k) {
+        if (k in rw && !isNaN(parseFloat(rw[k]))) WA_REF[k] = parseFloat(rw[k]);
+      });
+    }
+    if (typeof svRenderTable === 'function') svRenderTable();
+    if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
   }
 
-  // ── Keep _logActivity for GAS fallback ──
   function _logActivity(payload){
     if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;
     var userLabel=['User 0','User 1','User 2'][window.USER_LEVEL]||'Unknown';
@@ -6017,24 +6019,10 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
   localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
-  // Save to GitHub so ALL users on ALL devices see the update
-  var _ts=new Date().toISOString();
-  // Build complete ref_prices.json
-  var _refData={
-    _info:'OILLIO-OPMS Reference Prices',
-    _lastSaved:_ts,
-    _savedBy:'User 0',
-    apical:{malaysia_cp10:APC_REF.malaysia_cp10,indonesia_cp10:APC_REF.indonesia_cp10,
-      pk_olein:APC_REF.pk_olein,pk_oil:APC_REF.pk_oil,pk_stearin:APC_REF.pk_stearin,
-      stearin:APC_REF.stearin,coconut:APC_REF.coconut,
-      oillio_margin:APC_REF.oillio_margin,supplier_margin:APC_REF.supplier_margin},
-    klk:{cp10:KLK_REF.cp10,supplier_margin:KLK_REF.supplier_margin,oillio_margin:KLK_REF.oillio_margin},
-    wingagro:{malaysia_cp10:WA_REF.malaysia_cp10,indonesia_cp10:WA_REF.indonesia_cp10,
-      pk_olein:WA_REF.pk_olein,pk_oil:WA_REF.pk_oil,pk_stearin:WA_REF.pk_stearin,
-      stearin:WA_REF.stearin,coconut:WA_REF.coconut,
-      oillio_margin:WA_REF.oillio_margin,supplier_margin:WA_REF.supplier_margin}
-  };
-  _saveRefToGitHub(_refData,null);
+  // Save to server — all users see update on next login
+  _saveRef(s, Object.assign({}, ref), pkgArr.map(function(r){
+    return {id:r.id, pkg_cost:r.pkg_cost, premium:r.premium};
+  }));
 }function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){var fobLog=[],refLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}try{refLog=JSON.parse(localStorage.getItem("oillio_ref_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog.filter(function(e){return e.date>=cutoffStr;});var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History — Last 30 Working Days</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>From "+cutoffStr+" to today. Saved on this device.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices ("+refF.length+" entries)</div>";[].concat(refF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#fffde7;border-radius:7px;border-left:3px solid #f9a825'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#fff8dc;color:#b45309;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";var ref=e.ref||{},parts=[];for(var k in ref)if(k!=="oillio_margin")parts.push(k.replace(/_/g," ").toUpperCase()+": "+ref[k]);html+="<div style='color:var(--mut);margin-top:2px;font-size:.72rem'>"+parts.slice(0,4).join(" | ")+"</div>";html+="</div>";});}html+="<div style='margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr);display:flex;gap:8px;flex-wrap:wrap'>";html+="<button onclick='svExportLog()' style='background:var(--olv);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x2B07; Download Report (CSV — opens in Excel)</button>";html+="<button onclick='svClearLog()' style='background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer'>&#x1F5D1; Clear All</button>";html+="</div>";html+="<div style='margin-top:8px;font-size:.69rem;color:var(--mut);font-style:italic'>ὍD Draft version. Official recording starts when confirmed. Export = full unlimited history.</div>";html+="</div>";var modal=document.getElementById("fullModal"),body=document.getElementById("fmBody"),title=document.getElementById("fmTitle");if(modal&&body&&title){title.textContent="Price History Log";body.innerHTML=html;modal.className="open";}else showToast("FOB: "+fobLog.length+" | Ref: "+refLog.length+" entries");}function svExportLog(){
