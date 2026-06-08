@@ -1,6 +1,16 @@
 
 ---
 
+## [2026-06-08] — Footer: headless render + watermark verified
+
+### Fixed
+- **PDF footer**: Now rendered from the actual HTML quotation footer via Playwright/Chromium
+  - Exact same SVG icons as the HTML print preview (pin, phone, envelope)
+  - Proper orange semicircle dome
+  - Green parallelogram with diagonal edge
+  - www.oillio.com.my on orange dome
+  - Ref line still removed; watermark confirmed intact
+
 ## [2026-06-08] — PDF footer replaced with embedded PNG
 
 ### Fixed
