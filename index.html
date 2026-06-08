@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1327';
+  var _v='v08JUN1335';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -2875,13 +2875,29 @@ function doPrint(){
         var descLine=fobl+' | Net '+nwFmt(nw,(item.sku&&item.sku.type)||'',1);
         if(hasFr){
           // Row A: FOB line
-          body.push([(itemIdx+1).toString(),productName+'\n'+descLine,fmt(lc_,0)+' ctns',(isFlex(item.sku&&item.sku.type||'')?nw.toFixed(1)+' MT':nw.toFixed(1)+' kg'),'FOB:  USD '+fmt(fob_sku,2)+'  /  USD '+fmt(fob_tot,2)]);
+          var _isFxPdf=isFlex(item.sku&&item.sku.type||'');
+          var _fobPriceCell=_isFxPdf
+            ?'FOB:  USD '+fmt(fob_sku,2)+'/unit  |  USD '+fmt(p.fm,2)+'/MT  /  USD '+fmt(fob_tot,2)
+            :'FOB:  USD '+fmt(fob_sku,2)+'  /  USD '+fmt(fob_tot,2);
+          body.push([(itemIdx+1).toString(),productName+'\n'+descLine,fmt(lc_,0)+' ctns',(isFlex(item.sku&&item.sku.type||'')?nw.toFixed(1)+' MT':nw.toFixed(1)+' kg'),_fobPriceCell]);
           // Row B: Freight line (no #, no load/wt)
-          body.push(['','  + Freight','','','+Fr:    USD '+fmt(frU,2)+'  /  USD '+fmt(round4(frU*lc_),2)]);
+          var _frMt=_isFxPdf&&nw>0?round4(frU/nw):0;
+          var _frPriceCell=_isFxPdf
+            ?'+Fr:    USD '+fmt(frU,2)+'/unit  |  USD '+fmt(_frMt,2)+'/MT  /  USD '+fmt(round4(frU*lc_),2)
+            :'+Fr:    USD '+fmt(frU,2)+'  /  USD '+fmt(round4(frU*lc_),2);
+          body.push(['','  + Freight','','',_frPriceCell]);
           // Row C: Total line
-          body.push(['','  = Total','','','Total: USD '+fmt(total_sku,2)+'  /  USD '+fmt(total_tot,2)]);
+          var _totMt=_isFxPdf&&nw>0?round4(total_sku/nw):0;
+          var _totPriceCell=_isFxPdf
+            ?'Total: USD '+fmt(total_sku,2)+'/unit  |  USD '+fmt(_totMt,2)+'/MT  /  USD '+fmt(total_tot,2)
+            :'Total: USD '+fmt(total_sku,2)+'  /  USD '+fmt(total_tot,2);
+          body.push(['','  = Total','','',_totPriceCell]);
         } else {
-          body.push([(itemIdx+1).toString(),productName+'\n'+descLine,fmt(lc_,0)+' ctns',(isFlex(item.sku&&item.sku.type||'')?nw.toFixed(1)+' MT':nw.toFixed(1)+' kg'),'USD '+fmt(fob_sku,2)+'  /  USD '+fmt(fob_tot,2)]);
+          var _isFxPdf2=isFlex(item.sku&&item.sku.type||'');
+          var _priceCell2=_isFxPdf2
+            ?'USD '+fmt(fob_sku,2)+'/unit  |  USD '+fmt(p.fm,2)+'/MT  /  USD '+fmt(fob_tot,2)
+            :'USD '+fmt(fob_sku,2)+'  /  USD '+fmt(fob_tot,2);
+          body.push([(itemIdx+1).toString(),productName+'\n'+descLine,fmt(lc_,0)+' ctns',(isFlex(item.sku&&item.sku.type||'')?nw.toFixed(1)+' MT':nw.toFixed(1)+' kg'),_priceCell2]);
         }
       });
       // Summary rows — only GRAND TOTAL when freight; plain total when no freight
