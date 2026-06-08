@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN0732';
+  var _v='v08JUN0834';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1492,7 +1492,7 @@ function _loadSupItems(s){
 
 function el(id){return document.getElementById(id);}
   // ── Activity Logger (Google Sheets via Apps Script) ──
-  var _GAS_URL='https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_ID_HERE/exec';
+  var _GAS_URL='https://script.google.com/macros/s/AKfycbyw5caY7fUZUt9NVrlHm2fQm9s8cIeb_B8Y19Q5S3De3gEumbgwys63QIv2N-Q31gcSnA/exec';
 
   // ── Write ref prices to Google Sheets (User 0 save) ──
   function _pushRefToSheets(supplier, ref, pkg){
