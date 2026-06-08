@@ -188,3 +188,81 @@ All changes to the GitHub Pages app are recorded here.
   in orange zone with 20px margin from right edge.
 - **Watermark**: Repositioned to upper-right (x=134mm, y=4mm) — no longer obscures body.
 - **Ref number**: Removed from PDF header top-right.
+
+---
+
+## [2026-06-08] — Flexibag calculations fixed across all outputs
+
+### Fixed
+- **Flexibag /1000 bug**: `net_wt` for flexibag is in MT (21.4 MT), not kg.
+  All formulas previously divided by 1000 again giving wrong tiny prices.
+  - `svCalc()`: added `isFlexibag` 4th param — skips `/1000` when true
+  - `calcApicalItemP()`: `fob_ctn = price * nw` (not `/1000`) for flexibag
+  - `calcP()` / `calcKlkP()`: `fs = fm * w` (not `/1000`) for flexibag
+  - All 7 `svCalc()` call sites updated to pass `isFlex(p.packing)`
+  - Added `isFlex()` and `nwLabel()` / `nwFmt()` helper functions
+- **Vol(MT)**: `tm = tu * nw` (not `/1000`) — was showing 0.021 instead of 21.4
+- **Net Wt label**: All views now show `21.4 MT` not `21.4 kg` for flexibag
+- **Cart fob_sku**: Fixed in quotation cart render
+- **CIF/MT back-calc**: `/nw` only (not `/nw*1000`) for flexibag
+- **PDF USD/MT column**: `fob_mt` in `calcApicalItemP` now includes margin
+- **PDF price rows**: Flexibag now shows `USD X/unit | USD Y/MT / USD Z total`
+  on FOB row, freight row, and total row separately
+- **Table header**: `Net Wt(kg)` → `Net Wt` (unit shown in cell now)
+
+---
+
+## [2026-06-08] — Ref price persistence fixed (root cause found)
+
+### Fixed
+- **Root cause**: `loadRef()` had a sanity check `Math.abs(saved - default) > 30 → reject`
+  Any FCPO change >30 USD from the hardcoded default was silently rejected on load,
+  reverting prices back to default. This affected ALL users (0, 1, 2) on every login.
+- **Fix**: Removed the ±30 sanity check entirely. Saved values now always load if
+  `_savedByUser === true` is set.
+- **Google Sheets sync**: Already implemented — User 0 saves → pushes to Sheets →
+  all users pull on login via `_pullRefFromSheets()` → `_applySheetRef()`
+- **Cross-supplier propagation**: Apical save propagates `malaysia_cp10` etc to
+  `WA_REF` and `KLK_REF` (and their localStorage keys) automatically
+
+---
+
+## [2026-06-08] — Login reliability fix
+
+### Fixed
+- `applyLevel()` now hides auth overlay **before** firing the GAS fetch (async)
+  — previously overlay could get stuck if fetch threw synchronously
+- `_pullRefFromSheets()` now uses `r.text()` then `JSON.parse()` instead of
+  `r.json()` directly — handles GAS returning `"Host not in allowlist"` safely
+
+---
+
+## [2026-06-08] — Apical ref propagates to KLK + WingAgro
+
+### Fixed
+- When User 0 saves Apical ref panel, shared oil price fields
+  (`malaysia_cp10`, `indonesia_cp10`, `pk_olein`, `pk_oil`, `pk_stearin`,
+  `stearin`, `coconut`) are immediately copied to `WA_REF` and `KLK_REF`
+- `malaysia_cp10` → `KLK_REF.cp10` (different field name in KLK)
+- `WA_REF` and `KLK_REF` also saved to their localStorage keys
+
+---
+
+## [2026-06-08] — User 0 can edit all supplier ref panels
+
+### Fixed
+- `svRenderRefPanel()` had `isEd = (USER_LEVEL===0) && s==='apical'`
+  — KLK and WingAgro panels were always read-only even for User 0
+- Removed the `&& s==='apical'` restriction
+
+---
+
+## [2026-06-08] — Google Sheets ref price database
+
+### Added
+- `gas_ref_db.js`: Google Apps Script with `doGet` (getRef) and `doPost` (saveRef)
+- `_pushRefToSheets()`: called after every User 0 save
+- `_pullRefFromSheets()`: called for all users on login
+- `_applySheetRef()`: merges Sheets data into live ref objects + localStorage
+- Live GAS URL configured: `AKfycbyw5...` deployment
+
