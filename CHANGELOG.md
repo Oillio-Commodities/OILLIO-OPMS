@@ -170,3 +170,21 @@ All changes to the GitHub Pages app are recorded here.
 
 *OILLIO-OPMS is hosted at: https://oillio-commodities.github.io/OILLIO-OPMS*
 *Repository: https://github.com/Oillio-Commodities/OILLIO-OPMS*
+
+---
+
+## [2026-06-08] — PDF footer finalised ✓
+
+### Fixed (iterative footer work — final working state)
+- **Orange hill/mountain shape**: Pixel-measured from reference image at every x-column
+  to get exact curve profile — rises from x=910 (bottom), peaks at x=1170–1195 (y=37),
+  slopes back down on right side. Matches reference exactly.
+- **White gap**: 23px separation between green and orange, measured from reference.
+- **Spike removed**: Caused by patch-painting over old text with flat rectangles.
+  Fixed by full clean rebuild from scratch — no patches, no layering. Verified pixel-by-pixel
+  (x=969 top_y=170, x=970 top_y=169 — smooth, no jump).
+- **Icons aligned**: Pin and phone icons both at x=43, text at x=65 on both rows.
+- **www.oillio.com.my**: Moved to same y=182 as `export@oillio.com.my` row, right-aligned
+  in orange zone with 20px margin from right edge.
+- **Watermark**: Repositioned to upper-right (x=134mm, y=4mm) — no longer obscures body.
+- **Ref number**: Removed from PDF header top-right.
