@@ -2,90 +2,91 @@
  * OILLIO-OPMS — Google Apps Script (Ref Price Database)
  * Deploy as: Web App → Execute as Me → Anyone can access
  *
- * This script handles two actions:
- *   GET  ?action=getRef   → returns latest ref prices for all 3 suppliers
- *   POST {action:'saveRef', supplier, ref, pkg, ts, user} → saves new prices
+ * Handles:
+ *   GET ?action=getRef        → returns latest ref prices for all 3 suppliers
+ *   GET ?data={json payload}  → saves ref prices (sent from _pushRefToSheets)
  *
- * SETUP INSTRUCTIONS:
- * 1. Open https://script.google.com → New Project
- * 2. Paste this entire file as Code.gs
- * 3. Click Deploy → New Deployment → Web App
- *    - Execute as: Me
- *    - Who has access: Anyone
- * 4. Copy the deployment URL
- * 5. In index.html, replace PASTE_YOUR_DEPLOYMENT_ID_HERE with your deployment ID
- *    (the part between /macros/s/ and /exec)
+ * SETUP:
+ * 1. script.google.com → New Project → paste this file
+ * 2. Deploy → New Deployment → Web App
+ *    Execute as: Me | Who has access: Anyone
+ * 3. Copy deployment URL ID into index.html _GAS_URL
  */
 
 var SHEET_NAME = 'RefPrices';
 var LOG_SHEET  = 'RefLog';
 
 function doGet(e) {
-  var action = e && e.parameter && e.parameter.action;
-  if (action === 'getRef') {
+  var params = e && e.parameter ? e.parameter : {};
+
+  // ── Save ref prices (from _pushRefToSheets via GET ?data=...) ──
+  if (params.data) {
+    try {
+      var payload = JSON.parse(decodeURIComponent(params.data));
+      if (payload.action === 'saveRef') {
+        saveRef(payload);
+        return jsonResponse({status:'saved', supplier:payload.supplier, ts:payload.ts});
+      }
+    } catch(err) {
+      return jsonResponse({status:'error', msg: err.toString()});
+    }
+  }
+
+  // ── Return latest ref prices ──
+  if (params.action === 'getRef' || !params.action) {
     return getRef();
   }
-  return ContentService.createTextOutput(JSON.stringify({status:'ok',info:'OILLIO-OPMS Ref DB'}))
-    .setMimeType(ContentService.MimeType.JSON);
+
+  return jsonResponse({status:'ok', info:'OILLIO-OPMS Ref DB v2'});
 }
 
+// Keep doPost for any future POST calls
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     if (data.action === 'saveRef') {
-      return saveRef(data);
-    }
-    if (data.action === 'logActivity') {
-      return logActivity(data);
+      saveRef(data);
+      return jsonResponse({status:'saved'});
     }
   } catch(err) {}
-  return ContentService.createTextOutput(JSON.stringify({status:'error'}))
-    .setMimeType(ContentService.MimeType.JSON);
+  return jsonResponse({status:'error'});
 }
 
-// ── GET: return latest ref prices for all suppliers ──
+// ── Return latest ref prices for all suppliers ──
 function getRef() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    // Sheet doesn't exist yet — return empty (app will use defaults)
-    return ContentService.createTextOutput(JSON.stringify({}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+  if (!sheet) return jsonResponse({});
 
   var data = sheet.getDataRange().getValues();
-  var result = {};
+  var latest = {};
 
-  // Sheet structure: Row 1 = headers, each row = one supplier snapshot
-  // Columns: supplier | ts | ref_json | pkg_json
-  // We only care about the LATEST row per supplier
-  var latest = {}; // supplier -> row
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var sup = row[0];
-    var ts  = row[1];
+    var sup = row[0], ts = row[1];
     if (!latest[sup] || ts > latest[sup][1]) {
       latest[sup] = row;
     }
   }
 
+  var result = {};
   ['apical','klk','wingagro'].forEach(function(sup) {
     if (latest[sup]) {
       try {
         result[sup] = {
           ref: JSON.parse(latest[sup][2]),
           pkg: JSON.parse(latest[sup][3]),
-          ts:  latest[sup][1]
+          ts:  latest[sup][1],
+          savedBy: latest[sup][4] || 'User 0'
         };
       } catch(e) {}
     }
   });
 
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
+  return jsonResponse(result);
 }
 
-// ── POST: save ref prices ──
+// ── Save ref prices (appends a new row, keeping full history) ──
 function saveRef(data) {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME);
@@ -93,45 +94,35 @@ function saveRef(data) {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(['supplier','ts','ref_json','pkg_json','saved_by']);
+    sheet.getRange(1,1,1,5).setFontWeight('bold');
   }
 
+  var ts = data.ts || new Date().toISOString();
   sheet.appendRow([
-    data.supplier,
-    data.ts || new Date().toISOString(),
+    data.supplier || '',
+    ts,
     JSON.stringify(data.ref  || {}),
     JSON.stringify(data.pkg  || []),
     data.user || 'User 0'
   ]);
 
-  // Also write to log sheet
+  // Also write to human-readable log sheet
   var logSheet = ss.getSheetByName(LOG_SHEET);
   if (!logSheet) {
     logSheet = ss.insertSheet(LOG_SHEET);
-    logSheet.appendRow(['date','ts','supplier','user','ref_json','pkg_json']);
+    logSheet.appendRow(['Date','Time','Supplier','Saved By','Ref Prices (JSON)']);
+    logSheet.getRange(1,1,1,5).setFontWeight('bold');
   }
-  var today = new Date().toISOString().slice(0,10);
-  logSheet.appendRow([today, data.ts, data.supplier, data.user,
-    JSON.stringify(data.ref||{}), JSON.stringify(data.pkg||[])]);
 
-  return ContentService.createTextOutput(JSON.stringify({status:'saved'}))
-    .setMimeType(ContentService.MimeType.JSON);
+  var d = new Date(ts);
+  var dateStr = d.toLocaleDateString('en-MY', {timeZone:'Asia/Kuala_Lumpur'});
+  var timeStr = d.toLocaleTimeString('en-MY', {timeZone:'Asia/Kuala_Lumpur'});
+  logSheet.appendRow([dateStr, timeStr, data.supplier, data.user||'User 0',
+    JSON.stringify(data.ref||{})]);
 }
 
-// ── POST: log general activity ──
-function logActivity(data) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('ActivityLog');
-  if (!sheet) {
-    sheet = ss.insertSheet('ActivityLog');
-    sheet.appendRow(['ts','user','device','action','detail']);
-  }
-  sheet.appendRow([
-    new Date().toISOString(),
-    data.user    || '',
-    data.device  || '',
-    data.action  || '',
-    JSON.stringify(data)
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({status:'logged'}))
+function jsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }

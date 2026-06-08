@@ -4,10 +4,13 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN1446';
+  var _v='v08JUN1512';
   if(!window.location.search.includes(_v)){
-    // Clear ALL oillio localStorage to remove stale pkg_cost values
-    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
+    // Clear stale pkg_cost values but PRESERVE saved ref prices
+    var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
+    Object.keys(localStorage).filter(function(k){
+      return k.indexOf('oillio')===0 && _keepKeys.indexOf(k)===-1;
+    }).forEach(function(k){localStorage.removeItem(k);});
     window.location.replace(window.location.pathname+'?v='+_v);
   }
 })();
@@ -1498,10 +1501,13 @@ function el(id){return document.getElementById(id);}
   function _pushRefToSheets(supplier, ref, pkg){
     if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;
     try{
-      fetch(_GAS_URL,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'saveRef',supplier:supplier,ref:ref,pkg:pkg,
-          ts:new Date().toISOString(),user:'User 0'})});
+      // Use GET with encoded params — avoids CORS preflight entirely
+      var payload=encodeURIComponent(JSON.stringify({
+        action:'saveRef',supplier:supplier,ref:ref,pkg:pkg,
+        ts:new Date().toISOString(),user:'User 0'
+      }));
+      fetch(_GAS_URL+'?data='+payload,{method:'GET',mode:'no-cors'})
+        .catch(function(){});
     }catch(e){}
   }
 
