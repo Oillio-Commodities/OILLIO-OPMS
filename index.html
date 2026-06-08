@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN0908';
+  var _v='v08JUN0915';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -5951,7 +5951,20 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}var today=new Date().toISOString().slice(0,10);var _saveObj=Object.assign({},ref,{_savedByUser:true});localStorage.setItem(key,JSON.stringify(_saveObj));
+function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+  // Propagate Apical oil price fields to WA_REF and KLK_REF
+  if(s==='apical'){
+    var _sf=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'];
+    _sf.forEach(function(fld){
+      if(fld in APC_REF){
+        if(fld in WA_REF)WA_REF[fld]=APC_REF[fld];
+        if(fld==='malaysia_cp10'&&'cp10' in KLK_REF)KLK_REF.cp10=APC_REF[fld];
+      }
+    });
+    localStorage.setItem(WA_REF_KEY,JSON.stringify(Object.assign({},WA_REF,{_savedByUser:true})));
+    localStorage.setItem(KLK_REF_KEY,JSON.stringify(Object.assign({},KLK_REF,{_savedByUser:true})));
+  }
+  var today=new Date().toISOString().slice(0,10);var _saveObj=Object.assign({},ref,{_savedByUser:true});localStorage.setItem(key,JSON.stringify(_saveObj));
   // Also save packaging costs/premiums
   var pkgArr=getPkgArr(s);
   var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
