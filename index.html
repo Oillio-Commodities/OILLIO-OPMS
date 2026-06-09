@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0054';
+  var _v='v09JUN0428';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1607,6 +1607,17 @@ function el(id){return document.getElementById(id);}
       _note.style.color = '#1a7a4a';
     }
     if (typeof svRenderTable === 'function') svRenderTable();
+    // Force-update visible ref input values in DOM directly
+    // (panel may already be rendered with old values)
+    var _flds = document.getElementById('svRefFields');
+    if (_flds) {
+      _flds.querySelectorAll('[data-ref]').forEach(function(inp) {
+        var k = inp.getAttribute('data-ref');
+        var s = typeof SV_SUP !== 'undefined' ? SV_SUP : 'apical';
+        var refObj = s==='klk' ? KLK_REF : s==='wingagro' ? WA_REF : APC_REF;
+        if (k in refObj) inp.value = refObj[k];
+      });
+    }
     if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
     console.log('[OILLIO] _applyRef done. APC_REF.malaysia_cp10='+APC_REF.malaysia_cp10);
   }
