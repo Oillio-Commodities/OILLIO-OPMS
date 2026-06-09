@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0048';
+  var _v='v09JUN0054';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1546,10 +1546,16 @@ function el(id){return document.getElementById(id);}
   // ── READ: fetch ref_prices.json from GitHub raw (public, no CORS) ──
   function _loadRef(callback) {
     var rawUrl = 'https://raw.githubusercontent.com/Oillio-Commodities/OILLIO-OPMS/main/ref_prices.json?t=' + Date.now();
+    console.log('[OILLIO] Fetching ref prices from GitHub...');
     fetch(rawUrl, {cache:'no-store'})
       .then(function(r){return r.json();})
-      .then(function(d){callback(d);})
-      .catch(function(){callback(null);});
+      .then(function(d){
+        console.log('[OILLIO] Got ref prices: malaysia_cp10='+((d.apical||{}).malaysia_cp10));
+        callback(d);
+      })
+      .catch(function(e){
+        console.warn('[OILLIO] Failed to load ref prices:',e);
+        callback(null);});
   }
 
   // ── Apply fetched prices to live ref objects ──
@@ -1589,8 +1595,20 @@ function el(id){return document.getElementById(id);}
     // Store last-saved info for display in ref panel
     if (d._lastSaved) window._refLastSaved = d._lastSaved;
     if (d._savedBy)   window._refSavedBy   = d._savedBy;
+    // Update the visible "last updated" notice immediately
+    var _note = document.getElementById('svRefNote');
+    if (_note && window._refLastSaved) {
+      var _d = new Date(window._refLastSaved);
+      var _dStr = _d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',
+        day:'2-digit',month:'short',year:'numeric'});
+      var _tStr = _d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',
+        hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      _note.textContent = '🌐 Cloud prices loaded — last saved: '+_dStr+' '+_tStr+' by User 0';
+      _note.style.color = '#1a7a4a';
+    }
     if (typeof svRenderTable === 'function') svRenderTable();
     if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
+    console.log('[OILLIO] _applyRef done. APC_REF.malaysia_cp10='+APC_REF.malaysia_cp10);
   }
 
   function _logActivity(payload){
@@ -6274,7 +6292,34 @@ window.addEventListener('beforeunload',function(){sessionStorage.removeItem('oil
   initDeductions();
   // Always load latest ref prices from GitHub on page load
   // This ensures all users see current prices regardless of localStorage state
-  try{_loadRef(function(d){if(d)_applyRef(d);});}catch(e){}
+  // Load ref prices from GitHub - show banner when done
+  try{
+    _loadRef(function(d){
+      if(d){
+        _applyRef(d);
+        // Show global banner confirming cloud prices are loaded
+        var banner = document.getElementById('_cloudBanner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = '_cloudBanner';
+          banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1a7a4a;'
+            +'color:#fff;text-align:center;padding:6px;font-size:12px;font-weight:600;'
+            +'z-index:99999;transition:opacity 1s';
+          document.body.appendChild(banner);
+        }
+        var _d = new Date(d._lastSaved||Date.now());
+        var _s = _d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',
+          day:'2-digit',month:'short',year:'numeric'})
+          +' '+_d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',
+          hour:'2-digit',minute:'2-digit'});
+        banner.textContent = '✓ Cloud prices loaded — Malaysia CP10: USD '
+          +((d.apical||{}).malaysia_cp10||'?')+' | Last saved: '+_s;
+        setTimeout(function(){banner.style.opacity='0';
+          setTimeout(function(){if(banner.parentNode)banner.parentNode.removeChild(banner);},1000);
+        }, 4000);
+      }
+    });
+  }catch(e){}
   // Apply user role mode
   if(!IS_ADMIN){
     document.body.classList.add('user-mode');
