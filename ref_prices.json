@@ -1,33 +1,31 @@
 {
-  "_info": "OILLIO-OPMS Reference Prices \u2014 edited by User 0 only",
-  "_lastSaved": "",
-  "_savedBy": "",
+  "_lastSaved": "2026-06-09T00:33:40.660Z",
+  "_savedBy": "User 0",
   "apical": {
-    "malaysia_cp10": 1170.0,
-    "indonesia_cp10": 1050.0,
-    "pk_olein": 1955.0,
-    "pk_oil": 2110.0,
-    "pk_stearin": 2275.0,
-    "stearin": 1140.0,
-    "coconut": 2060.0,
-    "oillio_margin": 5.0,
+    "malaysia_cp10": 1170,
+    "indonesia_cp10": 1050,
+    "pk_olein": 1955,
+    "pk_oil": 2110,
+    "pk_stearin": 2275,
+    "stearin": 1140,
+    "coconut": 2060,
+    "oillio_margin": 5,
     "supplier_margin": 0.96
   },
   "klk": {
-    "cp10": 1170.0,
+    "cp10": 1170,
     "supplier_margin": 0.975,
-    "oillio_margin": 5.0
+    "oillio_margin": 5
   },
   "wingagro": {
-    "malaysia_cp10": 1170.0,
-    "indonesia_cp10": 1050.0,
-    "pk_olein": 1955.0,
-    "pk_oil": 2110.0,
-    "pk_stearin": 2275.0,
-    "stearin": 1140.0,
-    "coconut": 2060.0,
-    "oillio_margin": 5.0,
+    "malaysia_cp10": 1170,
+    "indonesia_cp10": 1050,
+    "pk_olein": 1955,
+    "pk_oil": 2110,
+    "pk_stearin": 2275,
+    "stearin": 1140,
+    "coconut": 2060,
+    "oillio_margin": 5,
     "supplier_margin": 0.955
-  },
-  "log": []
+  }
 }
