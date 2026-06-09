@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0028';
+  var _v='v09JUN0043';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1555,34 +1555,40 @@ function el(id){return document.getElementById(id);}
   // ── Apply fetched prices to live ref objects ──
   function _applyRef(d) {
     if (!d) return;
-    // Apical
-    if (d.apical && d.apical.ref) {
-      var r = d.apical.ref;
+    // ref_prices.json structure: { apical:{malaysia_cp10:..}, klk:{cp10:..}, wingagro:{..} }
+    // Support both flat (new) and nested .ref (old GAS format)
+    var ra = (d.apical && d.apical.ref) ? d.apical.ref : d.apical;
+    var rk = (d.klk    && d.klk.ref)    ? d.klk.ref    : d.klk;
+    var rw = (d.wingagro && d.wingagro.ref) ? d.wingagro.ref : d.wingagro;
+
+    // Apply Apical
+    if (ra) {
       Object.keys(APC_REF_DEF).forEach(function(k) {
-        if (k in r && !isNaN(parseFloat(r[k]))) APC_REF[k] = parseFloat(r[k]);
-      });
-      // Propagate to WingAgro
-      ['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'].forEach(function(f) {
-        if (f in APC_REF && f in WA_REF) WA_REF[f] = APC_REF[f];
+        if (k in ra && !isNaN(parseFloat(ra[k]))) APC_REF[k] = parseFloat(ra[k]);
       });
     }
-    // KLK
-    if (d.klk && d.klk.ref) {
-      var rk = d.klk.ref;
+    // Apply KLK
+    if (rk) {
       Object.keys(KLK_REF_DEF).forEach(function(k) {
         if (k in rk && !isNaN(parseFloat(rk[k]))) KLK_REF[k] = parseFloat(rk[k]);
       });
-      // Also sync cp10 from apical if klk doesn't have its own
-      if (d.apical && d.apical.ref && d.apical.ref.malaysia_cp10)
-        KLK_REF.cp10 = parseFloat(d.apical.ref.malaysia_cp10);
     }
-    // WingAgro
-    if (d.wingagro && d.wingagro.ref) {
-      var rw = d.wingagro.ref;
+    // Apply WingAgro
+    if (rw) {
       Object.keys(WA_REF_DEF).forEach(function(k) {
         if (k in rw && !isNaN(parseFloat(rw[k]))) WA_REF[k] = parseFloat(rw[k]);
       });
     }
+    // Apical malaysia_cp10 always drives KLK cp10
+    if (APC_REF.malaysia_cp10) KLK_REF.cp10 = APC_REF.malaysia_cp10;
+    // Apical shared fields propagate to WingAgro
+    ['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'].forEach(function(f) {
+      if (f in APC_REF && f in WA_REF) WA_REF[f] = APC_REF[f];
+    });
+
+    // Store last-saved info for display in ref panel
+    if (d._lastSaved) window._refLastSaved = d._lastSaved;
+    if (d._savedBy)   window._refSavedBy   = d._savedBy;
     if (typeof svRenderTable === 'function') svRenderTable();
     if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
   }
@@ -5960,6 +5966,15 @@ function svRenderRefPanel(){
     coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)',
     supplier_margin:'Supplier Margin Factor'};
   var html='';
+  // Last-saved timestamp banner (visible to all users)
+  if(window._refLastSaved){
+    var _d=new Date(window._refLastSaved);
+    var _ds=_d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+    var _ts2=_d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});
+    html+='<div style="background:#e8f5e9;border:1px solid #4caf50;border-radius:4px;padding:4px 8px;margin-bottom:6px;font-size:10px;color:#1a5c1a">'+
+      '🕐 <b>Last updated:</b> '+_ds+' '+_ts2+(window._refSavedBy?' by '+window._refSavedBy:'')+
+      '</div>';
+  }
   if('supplier_margin' in def){
     var smv=ref.supplier_margin!=null?ref.supplier_margin:def.supplier_margin;
     html+='<div style="grid-column:1/-1;background:#e8f4fd;border:2px solid #2980b9;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
