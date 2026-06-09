@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0535';
+  var _v='v09JUN0538';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1513,8 +1513,8 @@ function el(id){return document.getElementById(id);}
       var raw=meta.content.replace(/\n/g,'');
       var txt=decodeURIComponent(escape(atob(raw)));
 
-      // Update APC_REF_DEF
-      txt=txt.replace(/var APC_REF_DEF={malaysia_cp10:1157.5,indonesia_cp10:1035.0,pk_olein:1920.0,pk_oil:2070.0,pk_stearin:2240.0,stearin:1130.0,coconut:2020.0,oillio_margin:5.0,supplier_margin:0.96};/,
+      // Update APC_REF_DEF — flexible regex matches any values
+      txt=txt.replace(/var APC_REF_DEF=\{[^;]+\};/,
         'var APC_REF_DEF={malaysia_cp10:'+APC_REF.malaysia_cp10
         +',indonesia_cp10:'+APC_REF.indonesia_cp10
         +',pk_olein:'+APC_REF.pk_olein
@@ -1525,8 +1525,8 @@ function el(id){return document.getElementById(id);}
         +',oillio_margin:'+APC_REF.oillio_margin
         +',supplier_margin:'+APC_REF.supplier_margin+'};');
 
-      // Update WA_REF_DEF (same oil prices, different supplier margin)
-      txt=txt.replace(/var WA_REF_DEF={malaysia_cp10:1157.5,indonesia_cp10:1035.0,pk_olein:1920.0,pk_oil:2070.0,pk_stearin:2240.0,stearin:1130.0,coconut:2020.0,oillio_margin:5.0,supplier_margin:0.955};/,
+      // Update WA_REF_DEF
+      txt=txt.replace(/var WA_REF_DEF=\{[^;]+\};/,
         'var WA_REF_DEF={malaysia_cp10:'+WA_REF.malaysia_cp10
         +',indonesia_cp10:'+WA_REF.indonesia_cp10
         +',pk_olein:'+WA_REF.pk_olein
@@ -1538,7 +1538,7 @@ function el(id){return document.getElementById(id);}
         +',supplier_margin:'+WA_REF.supplier_margin+'};');
 
       // Update KLK_REF_DEF
-      txt=txt.replace(/var KLK_REF_DEF={cp10:1157.5,supplier_margin:0.975,oillio_margin:5.0};/,
+      txt=txt.replace(/var KLK_REF_DEF=\{[^;]+\};/,
         'var KLK_REF_DEF={cp10:'+KLK_REF.cp10
         +',supplier_margin:'+KLK_REF.supplier_margin
         +',oillio_margin:'+KLK_REF.oillio_margin+'};');
