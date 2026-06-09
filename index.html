@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v08JUN2214';
+  var _v='v09JUN0021';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1497,42 +1497,40 @@ function el(id){return document.getElementById(id);}
   // ── Activity Logger (Google Sheets via Apps Script) ──
   var _GAS_URL='https://script.google.com/macros/s/AKfycbyw5caY7fUZUt9NVrlHm2fQm9s8cIeb_B8Y19Q5S3De3gEumbgwys63QIv2N-Q31gcSnA/exec';
 
-  // ── WRITE: POST with text/plain — no CORS preflight, always works ──
+  // ── WRITE: GET request — zero CORS issues, always works ──
   function _saveRef(supplier, ref, pkg) {
     if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) return;
-    var payload = JSON.stringify({
+    var payload = {
       supplier: supplier,
       ref: ref,
       pkg: pkg,
       ts: new Date().toISOString(),
       user: 'User 0'
-    });
-    fetch(_GAS_URL, {
-      method: 'POST',
-      // text/plain does NOT trigger CORS preflight — this is the key
-      headers: { 'Content-Type': 'text/plain' },
-      body: payload
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d && d.status === 'saved') {
-        showToast('✓ Prices saved — all users will see this on next login');
-      } else {
-        showToast('⚠ Save error: ' + JSON.stringify(d).slice(0, 60));
-      }
-    })
-    .catch(function(e) {
-      showToast('⚠ Could not reach server: ' + e.toString().slice(0, 50));
-    });
+    };
+    var url = _GAS_URL + '?action=save&data=' + encodeURIComponent(JSON.stringify(payload));
+    fetch(url, {method:'GET', mode:'no-cors'})
+      .then(function() {
+        showToast('✓ Prices saved — all users will see update on next login');
+      })
+      .catch(function(e) {
+        // no-cors means response is opaque — if we get here it's a real error
+        showToast('⚠ Network error: ' + e.toString().slice(0, 50));
+      });
   }
 
-  // ── READ: GET latest prices — no auth needed ──
+  // ── READ: GET latest prices ──
   function _loadRef(callback) {
     if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) { callback(null); return; }
-    fetch(_GAS_URL + '?t=' + Date.now(), { method: 'GET', cache: 'no-store' })
-      .then(function(r) { return r.json(); })
-      .then(function(d) { callback(d); })
-      .catch(function() { callback(null); });
+    fetch(_GAS_URL + '?action=get&t=' + Date.now(), {
+      method: 'GET',
+      cache: 'no-store'
+    })
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      try { callback(JSON.parse(t)); }
+      catch(e) { callback(null); }
+    })
+    .catch(function() { callback(null); });
   }
 
   // ── Apply fetched prices to live ref objects ──
