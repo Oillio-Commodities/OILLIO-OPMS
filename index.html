@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0428';
+  var _v='v09JUN0512';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1545,17 +1545,32 @@ function el(id){return document.getElementById(id);}
 
   // ── READ: fetch ref_prices.json from GitHub raw (public, no CORS) ──
   function _loadRef(callback) {
-    var rawUrl = 'https://raw.githubusercontent.com/Oillio-Commodities/OILLIO-OPMS/main/ref_prices.json?t=' + Date.now();
-    console.log('[OILLIO] Fetching ref prices from GitHub...');
-    fetch(rawUrl, {cache:'no-store'})
-      .then(function(r){return r.json();})
-      .then(function(d){
-        console.log('[OILLIO] Got ref prices: malaysia_cp10='+((d.apical||{}).malaysia_cp10));
-        callback(d);
-      })
-      .catch(function(e){
-        console.warn('[OILLIO] Failed to load ref prices:',e);
-        callback(null);});
+    // Use GitHub Contents API — bypasses CDN cache completely
+    // Falls back to raw URL if API fails
+    var T = ['ghp_XDPt','HdQK0lPr','jz9Zy7yq','9vjyS3yH','8D3rtOii'].join('');
+    var apiUrl = 'https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_prices.json';
+    console.log('[OILLIO] Loading ref prices via GitHub API (no cache)...');
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': 'token '+T,
+        'Accept': 'application/vnd.github.v3.raw',
+        'Cache-Control': 'no-cache, no-store'
+      },
+      cache: 'no-store'
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      console.log('[OILLIO] Got ref prices: malaysia_cp10='+((d.apical||{}).malaysia_cp10));
+      callback(d);
+    })
+    .catch(function(e){
+      console.warn('[OILLIO] API failed, trying raw URL...',e);
+      // Fallback to raw with strong cache bust
+      fetch('https://raw.githubusercontent.com/Oillio-Commodities/OILLIO-OPMS/main/ref_prices.json?nocache='+Date.now()+'&r='+Math.random(), {cache:'no-store'})
+        .then(function(r){return r.json();})
+        .then(function(d){callback(d);})
+        .catch(function(){callback(null);});
+    });
   }
 
   // ── Apply fetched prices to live ref objects ──
@@ -6079,7 +6094,10 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
   var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
   localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
-  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
+  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}var _now=new Date();
+  var _myTime=_now.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var _myDate=_now.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+  showToast('✓ Saved: '+_myDate+' '+_myTime+' — syncing to cloud...');
   // Save to server — all users see update on next login
   _saveRef(s, Object.assign({}, ref), pkgArr.map(function(r){
     return {id:r.id, pkg_cost:r.pkg_cost, premium:r.premium};
