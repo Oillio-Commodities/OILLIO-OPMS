@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0043';
+  var _v='v09JUN0048';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -6265,13 +6265,16 @@ function clearLogs(){
 }
 
 window.addEventListener('beforeunload',function(){sessionStorage.removeItem('oillio_level');});
-(function(){var V='EXCEL_1170_05JUN2026';if(localStorage.getItem('oillio_ref_ver')!==V){['oillio_apc_ref','oillio_wa_ref','oillio_klk_ref'].forEach(function(k){localStorage.removeItem(k);});localStorage.setItem('oillio_ref_ver',V);}})();
+// ref price version check removed — GitHub is source of truth
 // Sync margin input to loaded SV_CFG value
 (function(){var mg=document.getElementById("suppMargin");if(mg&&SV_CFG&&SV_CFG.margin!=null)mg.value=SV_CFG.margin;})();
 // ─── APP INIT ───
 (function(){
   initRole();
   initDeductions();
+  // Always load latest ref prices from GitHub on page load
+  // This ensures all users see current prices regardless of localStorage state
+  try{_loadRef(function(d){if(d)_applyRef(d);});}catch(e){}
   // Apply user role mode
   if(!IS_ADMIN){
     document.body.classList.add('user-mode');
