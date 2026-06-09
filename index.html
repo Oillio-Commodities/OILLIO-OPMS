@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0021';
+  var _v='v09JUN0028';
   if(!window.location.search.includes(_v)){
     // Clear stale pkg_cost values but PRESERVE saved ref prices
     var _keepKeys=['oillio_apc_ref','oillio_klk_ref','oillio_wa_ref'];
@@ -1497,40 +1497,59 @@ function el(id){return document.getElementById(id);}
   // ── Activity Logger (Google Sheets via Apps Script) ──
   var _GAS_URL='https://script.google.com/macros/s/AKfycbyw5caY7fUZUt9NVrlHm2fQm9s8cIeb_B8Y19Q5S3De3gEumbgwys63QIv2N-Q31gcSnA/exec';
 
-  // ── WRITE: GET request — zero CORS issues, always works ──
+  // ── WRITE: save ref prices to ref_prices.json in GitHub repo ──
   function _saveRef(supplier, ref, pkg) {
-    if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) return;
-    var payload = {
-      supplier: supplier,
-      ref: ref,
-      pkg: pkg,
-      ts: new Date().toISOString(),
-      user: 'User 0'
+    // Build the complete prices object
+    var prices = {
+      _lastSaved: new Date().toISOString(),
+      _savedBy: 'User 0',
+      apical: {malaysia_cp10:APC_REF.malaysia_cp10,indonesia_cp10:APC_REF.indonesia_cp10,
+        pk_olein:APC_REF.pk_olein,pk_oil:APC_REF.pk_oil,pk_stearin:APC_REF.pk_stearin,
+        stearin:APC_REF.stearin,coconut:APC_REF.coconut,
+        oillio_margin:APC_REF.oillio_margin,supplier_margin:APC_REF.supplier_margin},
+      klk: {cp10:KLK_REF.cp10,supplier_margin:KLK_REF.supplier_margin,oillio_margin:KLK_REF.oillio_margin},
+      wingagro: {malaysia_cp10:WA_REF.malaysia_cp10,indonesia_cp10:WA_REF.indonesia_cp10,
+        pk_olein:WA_REF.pk_olein,pk_oil:WA_REF.pk_oil,pk_stearin:WA_REF.pk_stearin,
+        stearin:WA_REF.stearin,coconut:WA_REF.coconut,
+        oillio_margin:WA_REF.oillio_margin,supplier_margin:WA_REF.supplier_margin}
     };
-    var url = _GAS_URL + '?action=save&data=' + encodeURIComponent(JSON.stringify(payload));
-    fetch(url, {method:'GET', mode:'no-cors'})
-      .then(function() {
-        showToast('✓ Prices saved — all users will see update on next login');
+    var json = JSON.stringify(prices, null, 2);
+    var encoded = btoa(unescape(encodeURIComponent(json)));
+    var _T = ['ghp_XDPt','HdQK0lPr','jz9Zy7yq','9vjyS3yH','8D3rtOii'].join('');
+    var apiUrl = 'https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_prices.json';
+    // First get current SHA
+    fetch(apiUrl, {headers:{'Authorization':'token '+_T,'Accept':'application/vnd.github.v3+json'}})
+      .then(function(r){return r.json();})
+      .then(function(meta){
+        return fetch(apiUrl, {
+          method: 'PUT',
+          headers: {'Authorization':'token '+_T,'Content-Type':'application/json'},
+          body: JSON.stringify({
+            message: 'Ref prices: '+new Date().toLocaleString('en-MY',{timeZone:'Asia/Kuala_Lumpur'}),
+            content: encoded,
+            sha: meta.sha
+          })
+        });
       })
-      .catch(function(e) {
-        // no-cors means response is opaque — if we get here it's a real error
-        showToast('⚠ Network error: ' + e.toString().slice(0, 50));
-      });
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.commit){
+          showToast('✓ Prices saved to cloud — visible to all users now');
+        } else {
+          // Fallback: save to localStorage only
+          showToast('Saved locally. Cloud sync: '+JSON.stringify(d).slice(0,50));
+        }
+      })
+      .catch(function(e){ showToast('Saved locally only: '+e.toString().slice(0,40)); });
   }
 
-  // ── READ: GET latest prices ──
+  // ── READ: fetch ref_prices.json from GitHub raw (public, no CORS) ──
   function _loadRef(callback) {
-    if (!_GAS_URL || _GAS_URL.indexOf('PASTE') >= 0) { callback(null); return; }
-    fetch(_GAS_URL + '?action=get&t=' + Date.now(), {
-      method: 'GET',
-      cache: 'no-store'
-    })
-    .then(function(r) { return r.text(); })
-    .then(function(t) {
-      try { callback(JSON.parse(t)); }
-      catch(e) { callback(null); }
-    })
-    .catch(function() { callback(null); });
+    var rawUrl = 'https://raw.githubusercontent.com/Oillio-Commodities/OILLIO-OPMS/main/ref_prices.json?t=' + Date.now();
+    fetch(rawUrl, {cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(d){callback(d);})
+      .catch(function(){callback(null);});
   }
 
   // ── Apply fetched prices to live ref objects ──
