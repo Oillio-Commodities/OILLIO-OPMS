@@ -266,3 +266,26 @@ All changes to the GitHub Pages app are recorded here.
 - `_applySheetRef()`: merges Sheets data into live ref objects + localStorage
 - Live GAS URL configured: `AKfycbyw5...` deployment
 
+
+---
+
+## [2026-06-11] — Ref price sync working + permanent log
+
+### Fixed
+- **Ref price sync root cause**: `_pullRefFromSheets` (dead GAS code) was running AFTER
+  `_syncApply` and overwriting correct values with nothing. Removed entirely.
+- **30-second auto-poll**: All logged-in users auto-check GitHub every 30s.
+  If `_lastSaved` timestamp changed, prices update immediately — no refresh needed.
+- **CORS fix**: Read uses GitHub Pages URL (no auth header = no preflight = no CORS error).
+  Write uses GitHub API with auth (PUT works fine with preflight).
+- **Supplier margin** included in sync for all three suppliers (Apical, KLK, WingAgro).
+
+### Added
+- **`ref_log.json`** in GitHub repo — permanent price change audit trail
+  - Never wiped by cache busters or code updates
+  - Each User 0 save appends timestamped entry
+  - Shows: date/time (MY), all oil prices, all supplier margins per supplier
+  - Newest entries shown first
+- **View Log** accessible to User 0 AND User 1 (not User 2)
+- Log entries include: Apical/WingAgro prices, KLK prices, all supplier margin factors
+
