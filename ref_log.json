@@ -1,0 +1,27 @@
+[
+  {
+    "date": "11/06/2026, 10:07:36 pm",
+    "ts": "2026-06-11T14:07:36.246Z",
+    "apical": {
+      "malaysia_cp10": 1170,
+      "indonesia_cp10": 1050,
+      "pk_olein": 1955,
+      "pk_oil": 2110,
+      "pk_stearin": 2275,
+      "stearin": 1140,
+      "coconut": 2060,
+      "oillio_margin": 5,
+      "supplier_margin": 0.96
+    },
+    "klk": {
+      "cp10": 1170,
+      "supplier_margin": 0.975,
+      "oillio_margin": 5
+    },
+    "wingagro": {
+      "malaysia_cp10": 1170,
+      "supplier_margin": 0.955,
+      "oillio_margin": 5
+    }
+  }
+]
