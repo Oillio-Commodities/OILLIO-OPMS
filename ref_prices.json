@@ -1,15 +1,15 @@
 {
-  "_lastSaved": "2026-06-11T14:15:30.848Z",
-  "_lastSavedMY": "11/06/2026, 10:15:30 pm",
+  "_lastSaved": "2026-06-11T14:18:21.173Z",
+  "_lastSavedMY": "11/06/2026, 10:18:21 pm",
   "_savedBy": "User 0",
   "apical": {
     "malaysia_cp10": 1150,
     "indonesia_cp10": 1030,
-    "pk_olein": 1895,
-    "pk_oil": 2045,
-    "pk_stearin": 2215,
-    "stearin": 1117.5,
-    "coconut": 2000,
+    "pk_olein": 1890,
+    "pk_oil": 2040,
+    "pk_stearin": 2210,
+    "stearin": 1120,
+    "coconut": 1995,
     "oillio_margin": 5,
     "supplier_margin": 0.96
   },
@@ -21,11 +21,11 @@
   "wingagro": {
     "malaysia_cp10": 1150,
     "indonesia_cp10": 1030,
-    "pk_olein": 1895,
-    "pk_oil": 2045,
-    "pk_stearin": 2215,
-    "stearin": 1117.5,
-    "coconut": 2000,
+    "pk_olein": 1890,
+    "pk_oil": 2040,
+    "pk_stearin": 2210,
+    "stearin": 1120,
+    "coconut": 1995,
     "oillio_margin": 5,
     "supplier_margin": 0.955
   }
