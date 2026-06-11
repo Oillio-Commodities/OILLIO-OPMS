@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0750';
+  var _v='v09JUN0756';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1510,9 +1510,19 @@ function el(id){return document.getElementById(id);}
       },
       cache: 'no-store'
     })
-    .then(function(r) { return r.json(); })
-    .then(function(d) { if (d && d.apical) callback(d); else callback(null); })
-    .catch(function() { callback(null); });
+    .then(function(r) {
+      alert('HTTP status: ' + r.status + ' ok:' + r.ok);
+      return r.text();
+    })
+    .then(function(t) {
+      alert('Response (first 100): ' + t.slice(0,100));
+      try {
+        var d = JSON.parse(t);
+        if (d && d.apical) callback(d);
+        else { alert('No apical in response: ' + JSON.stringify(d).slice(0,100)); callback(null); }
+      } catch(e) { alert('Parse error: ' + e); callback(null); }
+    })
+    .catch(function(e) { alert('FETCH FAILED: ' + e.toString()); callback(null); });
   }
 
   // APPLY — update live ref objects and re-render panel
