@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0820';
+  var _v='v09JUN0823';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -5953,6 +5953,7 @@ function isFlex(packing){return (packing||'').toUpperCase().indexOf('FLEXIBAG')>
 function nwLabel(nw,packing){return isFlex(packing)?(nw)+' MT':(nw)+' kg';}
 function nwFmt(nw,packing,dec){var v=isFlex(packing)?nw:nw;return fmt(v,dec!=null?dec:1)+(isFlex(packing)?' MT':' kg');}
 function setSupplier(s){
+  if(s==='apical') alert('TAB TAPPED: APC_REF.malaysia_cp10='+APC_REF.malaysia_cp10);
   // Save current supplier's freight before switching
   if(SV_SUP&&_SUP_ITEMS[SV_SUP]!==undefined){
     saveSupFR(SV_SUP);saveSupQuote(SV_SUP);
