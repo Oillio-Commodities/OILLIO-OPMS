@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0757';
+  var _v='v09JUN0759';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1502,17 +1502,12 @@ function el(id){return document.getElementById(id);}
 
   // READ — called on every login for all users
   function _syncLoad(callback) {
-    fetch(_REF_API, {
-      headers: {
-        'Authorization': 'token ' + _T,
-        'Accept': 'application/vnd.github.v3.raw',
-        'Cache-Control': 'no-cache'
-      },
-      cache: 'no-store'
-    })
-    .then(function(r) { alert('Status:'+r.status); return r.text(); })
-    .then(function(t) { alert('Data:'+t.slice(0,100)); try{var d=JSON.parse(t);callback(d&&d.apical?d:null);}catch(e){alert('Err:'+e);callback(null);} })
-    .catch(function(e) { alert('FAIL:'+e); callback(null); });
+    // Read via GitHub Pages URL - public, no auth, no CORS issues
+    var url = 'https://oillio-commodities.github.io/OILLIO-OPMS/ref_prices.json?t=' + Date.now();
+    fetch(url, { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { callback(d && d.apical ? d : null); })
+      .catch(function() { callback(null); });
   }
 
   // APPLY — update live ref objects and re-render panel
