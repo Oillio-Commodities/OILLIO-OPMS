@@ -1511,18 +1511,15 @@ function el(id){return document.getElementById(id);}
       cache: 'no-store'
     })
     .then(function(r) {
-      alert('HTTP status: ' + r.status + ' ok:' + r.ok);
+      alert('Fetch status: ' + r.status + ' | ok: ' + r.ok);
       return r.text();
     })
     .then(function(t) {
-      alert('Response (first 100): ' + t.slice(0,100));
-      try {
-        var d = JSON.parse(t);
-        if (d && d.apical) callback(d);
-        else { alert('No apical in response: ' + JSON.stringify(d).slice(0,100)); callback(null); }
-      } catch(e) { alert('Parse error: ' + e); callback(null); }
+      alert('Got: ' + t.slice(0,120));
+      try { var d=JSON.parse(t); callback(d && d.apical ? d : null); }
+      catch(e) { alert('Parse error: '+e); callback(null); }
     })
-    .catch(function(e) { alert('FETCH FAILED: ' + e.toString()); callback(null); });
+    .catch(function(e) { alert('FAILED: ' + e.toString()); callback(null); });
   }
 
   // APPLY — update live ref objects and re-render panel
