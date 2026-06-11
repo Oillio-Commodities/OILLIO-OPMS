@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0806';
+  var _v='v09JUN0820';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1511,7 +1511,19 @@ function el(id){return document.getElementById(id);}
 
   // APPLY — update live ref objects and re-render panel
   function _syncApply(d) {
-    if (!d) return;
+    if (!d) { 
+      var b=document.createElement('div');
+      b.style.cssText='position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:bold;z-index:99999';
+      b.textContent='SYNC: no data received';
+      document.body.appendChild(b);
+      setTimeout(function(){b.remove();},5000);
+      return; 
+    }
+    var b=document.createElement('div');
+    b.style.cssText='position:fixed;top:0;left:0;right:0;background:#1a7a4a;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:bold;z-index:99999';
+    b.textContent='SYNC OK: CP10='+d.apical.malaysia_cp10+' saved='+d._lastSavedMY;
+    document.body.appendChild(b);
+    setTimeout(function(){b.remove();},6000);
     // Apply to APC_REF
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
