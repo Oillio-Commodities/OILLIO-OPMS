@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN0823';
+  var _v='v09JUN0828';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -429,7 +429,9 @@ body.user-mode #userPdfBar { display:flex !important; }
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
     // Load latest ref prices from GitHub for all users
-    try { _syncLoad(function(d) { _syncApply(d); }); } catch(e) {}
+    try { _syncLoad(function(d) { if(d){_lastRefTs=d._lastSaved||'';_syncApply(d);} }); } catch(e) {}
+    // Poll every 30s for updates
+    try { _startSyncPoll(); } catch(e) {}
 
     var badge=document.getElementById('roleBadge');
     if(badge){
@@ -1500,30 +1502,32 @@ function el(id){return document.getElementById(id);}
   var _REF_API = 'https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_prices.json';
 
   // READ — called on every login for all users
+  var _lastRefTs = '';
   function _syncLoad(callback) {
-    // Read via GitHub Pages URL - public, no auth, no CORS issues
     var url = 'https://oillio-commodities.github.io/OILLIO-OPMS/ref_prices.json?t=' + Date.now();
     fetch(url, { cache: 'no-store' })
       .then(function(r) { return r.json(); })
       .then(function(d) { callback(d && d.apical ? d : null); })
       .catch(function() { callback(null); });
   }
+  // Poll every 30 seconds — if prices changed, apply immediately
+  function _startSyncPoll() {
+    setInterval(function() {
+      _syncLoad(function(d) {
+        if (!d) return;
+        var ts = d._lastSaved || '';
+        if (ts && ts !== _lastRefTs) {
+          _lastRefTs = ts;
+          _syncApply(d);
+        }
+      });
+    }, 30000);
+  }
 
   // APPLY — update live ref objects and re-render panel
   function _syncApply(d) {
-    if (!d) { 
-      var b=document.createElement('div');
-      b.style.cssText='position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:bold;z-index:99999';
-      b.textContent='SYNC: no data received';
-      document.body.appendChild(b);
-      setTimeout(function(){b.remove();},5000);
-      return; 
-    }
-    var b=document.createElement('div');
-    b.style.cssText='position:fixed;top:0;left:0;right:0;background:#1a7a4a;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:bold;z-index:99999';
-    b.textContent='SYNC OK: CP10='+d.apical.malaysia_cp10+' saved='+d._lastSavedMY;
-    document.body.appendChild(b);
-    setTimeout(function(){b.remove();},6000);
+    if (!d) return;
+    _lastRefTs = d._lastSaved || '';
     // Apply to APC_REF
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
@@ -5953,7 +5957,6 @@ function isFlex(packing){return (packing||'').toUpperCase().indexOf('FLEXIBAG')>
 function nwLabel(nw,packing){return isFlex(packing)?(nw)+' MT':(nw)+' kg';}
 function nwFmt(nw,packing,dec){var v=isFlex(packing)?nw:nw;return fmt(v,dec!=null?dec:1)+(isFlex(packing)?' MT':' kg');}
 function setSupplier(s){
-  if(s==='apical') alert('TAB TAPPED: APC_REF.malaysia_cp10='+APC_REF.malaysia_cp10);
   // Save current supplier's freight before switching
   if(SV_SUP&&_SUP_ITEMS[SV_SUP]!==undefined){
     saveSupFR(SV_SUP);saveSupQuote(SV_SUP);
