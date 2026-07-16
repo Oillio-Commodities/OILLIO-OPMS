@@ -313,3 +313,20 @@ All changes to the GitHub Pages app are recorded here.
   public repo, access governed by table Row Level Security policies
 - Secret key never committed to repository
 
+
+---
+
+## [2026-06-11] — Per-SKU packaging cost & premium/discount editing (User 0 only)
+
+### Added
+- **Real editing UI** for premium/discount and packaging cost per product SKU,
+  for all three suppliers (Apical 26 products, KLK 80 products, WingAgro 4 products)
+- Formula verified against `Apical_Price_List_25May2026.xlsx` exactly:
+  `FCPO_cost = base_ref + premium/discount`, `supplier_cost = FCPO_cost + packaging_cost`,
+  `FOB/MT = supplier_cost / supplier_margin`, `Price/SKU = FOB/MT × net_wt(kg) / 1000`
+- Section restricted to **User 0 only** via new `.u0-only` CSS class — hidden for
+  both User 1 and User 2 (stricter than the ref-price panel, which User 1 can view)
+- Synced via Supabase (`ref_prices.apical_pkg/klk_pkg/wingagro_pkg` jsonb columns)
+  so User 0's changes are consistent across their own devices
+- Included in permanent `ref_log` audit trail
+
