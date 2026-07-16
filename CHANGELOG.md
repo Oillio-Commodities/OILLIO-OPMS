@@ -289,3 +289,27 @@ All changes to the GitHub Pages app are recorded here.
 - **View Log** accessible to User 0 AND User 1 (not User 2)
 - Log entries include: Apical/WingAgro prices, KLK prices, all supplier margin factors
 
+
+---
+
+## [2026-06-11] — Migrated ref price sync from GitHub files to Supabase
+
+### Changed
+- **Backend**: Replaced GitHub-file-based sync (ref_prices.json + 30s polling)
+  with proper Supabase Postgres database
+- **New tables**: `ref_prices` (current live prices, single row) and
+  `ref_log` (permanent append-only audit trail, one row per save)
+- **Real-time**: WebSocket subscription pushes price updates to all logged-in
+  users instantly on save — no more 30-second polling delay
+  (15s poll kept as fallback if websocket disconnects)
+- **View Log**: now reads from `ref_log` table (last 200 entries, newest first)
+  instead of a GitHub-hosted JSON file — fully permanent, unaffected by any
+  future code/cache changes
+- Removed all dead GitHub-sync code (`_pullRefFromSheets`, `_applySheetRef`,
+  `_LOG_API`, `_LOG_PAGES`, `_startSyncPoll`, `_appendLog`, `_lastRefTs`)
+
+### Security
+- Only Supabase **publishable (anon) key** used in frontend code — safe for
+  public repo, access governed by table Row Level Security policies
+- Secret key never committed to repository
+
