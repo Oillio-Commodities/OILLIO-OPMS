@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v09JUN1307';
+  var _v='v11JUN0306';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -429,10 +429,9 @@ body.user-mode #userPdfBar { display:flex !important; }
     window.IS_ADMIN=(lvl<=1);
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
-    // Load latest ref prices from GitHub for all users
-    try { _syncLoad(function(d) { if(d){_lastRefTs=d._lastSaved||'';_syncApply(d);} }); } catch(e) {}
-    // Poll every 30s for updates
-    try { _startSyncPoll(); } catch(e) {}
+    // Load latest ref prices from Supabase (instant, real-time)
+    try { _syncLoad(function(d) { if(d) _syncApply(d); }); } catch(e) {}
+    try { _startRealtimeSync(); } catch(e) {}
 
     var badge=document.getElementById('roleBadge');
     if(badge){
@@ -1497,206 +1496,129 @@ function _loadSupItems(s){
 
 function el(id){return document.getElementById(id);}
   // ── Activity Logger (Google Sheets via Apps Script) ──
-  var _GAS_URL='https://script.google.com/macros/s/AKfycbyw5caY7fUZUt9NVrlHm2fQm9s8cIeb_B8Y19Q5S3De3gEumbgwys63QIv2N-Q31gcSnA/exec';
+  var _SB_URL = 'https://oqljeueohqyzhslceakj.supabase.co';
+  var _SB_KEY = 'sb_publishable_pzlKbPZl6jjMU2f9ta7mYQ_FRXW2ama';
+  var _SB_HEADERS = {
+    'apikey': _SB_KEY,
+    'Authorization': 'Bearer ' + _SB_KEY,
+    'Content-Type': 'application/json'
+  };
 
-  // ── REF PRICE SYNC via GitHub API ──
-  var _T = ['ghp_XDPt','HdQK0lPr','jz9Zy7yq','9vjyS3yH','8D3rtOii'].join('');
-  var _REF_API = 'https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_prices.json';
-
-  // READ — called on every login for all users
-  var _lastRefTs = '';
+  // ── READ: get latest ref prices — instant, no CORS issues, no cache problems ──
   function _syncLoad(callback) {
-    var url = 'https://oillio-commodities.github.io/OILLIO-OPMS/ref_prices.json?t=' + Date.now();
-    fetch(url, { cache: 'no-store' })
-      .then(function(r) { return r.json(); })
-      .then(function(d) { callback(d && d.apical ? d : null); })
-      .catch(function() { callback(null); });
-  }
-  // Poll every 30 seconds — if prices changed, apply immediately
-  var _LOG_API = 'https://api.github.com/repos/Oillio-Commodities/OILLIO-OPMS/contents/ref_log.json';
-  var _LOG_PAGES = 'https://oillio-commodities.github.io/OILLIO-OPMS/ref_log.json';
-
-  function _appendLog(myTime, prices) {
-    // Read current log, append entry, write back
-    fetch(_LOG_API, {
-      headers:{'Authorization':'token '+_T,'Accept':'application/vnd.github.v3+json'}
+    fetch(_SB_URL + '/rest/v1/ref_prices?id=eq.1&select=*', {
+      headers: _SB_HEADERS,
+      cache: 'no-store'
     })
-    .then(function(r){return r.json();})
-    .then(function(meta){
-      var log=[];
-      try{log=JSON.parse(atob(meta.content.replace(/\n/g,'')));}catch(e){}
-      log.push({
-        date: myTime,
-        ts: prices._lastSaved,
-        apical: {
-          malaysia_cp10: prices.apical.malaysia_cp10,
-          indonesia_cp10: prices.apical.indonesia_cp10,
-          pk_olein: prices.apical.pk_olein,
-          pk_oil: prices.apical.pk_oil,
-          pk_stearin: prices.apical.pk_stearin,
-          stearin: prices.apical.stearin,
-          coconut: prices.apical.coconut,
-          oillio_margin: prices.apical.oillio_margin,
-          supplier_margin: prices.apical.supplier_margin
-        },
-        klk: {cp10:prices.klk.cp10, supplier_margin:prices.klk.supplier_margin, oillio_margin:prices.klk.oillio_margin},
-        wingagro: {malaysia_cp10:prices.wingagro.malaysia_cp10, supplier_margin:prices.wingagro.supplier_margin, oillio_margin:prices.wingagro.oillio_margin}
-      });
-      var encoded=btoa(unescape(encodeURIComponent(JSON.stringify(log,null,2))));
-      return fetch(_LOG_API,{
-        method:'PUT',
-        headers:{'Authorization':'token '+_T,'Content-Type':'application/json'},
-        body:JSON.stringify({
-          message:'Ref log: '+myTime,
-          content:encoded,
-          sha:meta.sha
-        })
-      });
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      var d = rows && rows[0];
+      callback(d && d.apical ? d : null);
     })
-    .catch(function(){});
+    .catch(function() { callback(null); });
   }
 
-  function _startSyncPoll() {
-    setInterval(function() {
-      _syncLoad(function(d) {
-        if (!d) return;
-        var ts = d._lastSaved || '';
-        if (ts && ts !== _lastRefTs) {
-          _lastRefTs = ts;
-          _syncApply(d);
-        }
-      });
-    }, 30000);
-  }
-
-  // APPLY — update live ref objects and re-render panel
+  // ── APPLY: update live ref objects + re-render panel/inputs ──
   function _syncApply(d) {
     if (!d) return;
-    _lastRefTs = d._lastSaved || '';
-    // Apply to APC_REF
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
     });
-    // Apply to KLK_REF
     if (d.klk) Object.keys(KLK_REF_DEF).forEach(function(k) {
       if (k in d.klk) KLK_REF[k] = parseFloat(d.klk[k]) || KLK_REF[k];
     });
-    // Apply to WA_REF
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
-    // Store last-saved info
-    window._refLastSaved = d._lastSavedMY || d._lastSaved || '';
-    // Update DOM inputs if panel already open
+    window._refLastSaved = d.last_saved || '';
+    window._refSavedBy = d.saved_by || 'User 0';
     var flds = document.getElementById('svRefFields');
     if (flds) flds.querySelectorAll('[data-ref]').forEach(function(inp) {
       var k = inp.getAttribute('data-ref');
       var s = typeof SV_SUP !== 'undefined' ? SV_SUP : 'apical';
-      var obj = s==='klk'?KLK_REF:s==='wingagro'?WA_REF:APC_REF;
+      var obj = s==='klk' ? KLK_REF : s==='wingagro' ? WA_REF : APC_REF;
       if (k in obj) inp.value = obj[k];
     });
     if (typeof svRenderTable === 'function') svRenderTable();
     if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
   }
 
-  // WRITE — called when User 0 saves
+  // ── WRITE: User 0 saves — updates row + appends to log ──
   function _syncSave() {
     var myTime = new Date().toLocaleString('en-MY', {
       timeZone:'Asia/Kuala_Lumpur',
       year:'numeric',month:'2-digit',day:'2-digit',
       hour:'2-digit',minute:'2-digit',second:'2-digit'
     });
-    var prices = {
-      _lastSaved: new Date().toISOString(),
-      _lastSavedMY: myTime,
-      _savedBy: 'User 0',
+    var payload = {
       apical: Object.assign({}, APC_REF),
       klk: Object.assign({}, KLK_REF),
-      wingagro: Object.assign({}, WA_REF)
+      wingagro: Object.assign({}, WA_REF),
+      last_saved: new Date().toISOString(),
+      saved_by: 'User 0'
     };
-    var body = JSON.stringify(prices, null, 2);
-    var encoded = btoa(unescape(encodeURIComponent(body)));
-    // Get current SHA
-    fetch(_REF_API, {
-      headers: {'Authorization':'token '+_T, 'Accept':'application/vnd.github.v3+json'}
+    // Update the single ref_prices row
+    fetch(_SB_URL + '/rest/v1/ref_prices?id=eq.1', {
+      method: 'PATCH',
+      headers: _SB_HEADERS,
+      body: JSON.stringify(payload)
     })
-    .then(function(r) { return r.json(); })
-    .then(function(meta) {
-      return fetch(_REF_API, {
-        method: 'PUT',
-        headers: {'Authorization':'token '+_T, 'Content-Type':'application/json'},
-        body: JSON.stringify({
-          message: 'Ref prices: ' + myTime + ' by User 0',
-          content: encoded,
-          sha: meta.sha
-        })
-      });
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d && d.commit) {
-        showToast('✓ Saved ' + myTime + ' (MY) — syncing to all users');
+    .then(function(r) {
+      if (r.ok) {
+        showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
-        if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color='#1a7a4a'; }
-        // Append to permanent log on GitHub
-        _appendLog(myTime, prices);
+        if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
+        // Append to permanent log
+        fetch(_SB_URL + '/rest/v1/ref_log', {
+          method: 'POST',
+          headers: _SB_HEADERS,
+          body: JSON.stringify({
+            apical: payload.apical, klk: payload.klk, wingagro: payload.wingagro,
+            saved_by: 'User 0'
+          })
+        }).catch(function(){});
       } else {
-        showToast('⚠ Save error: ' + (d && d.message || 'unknown').slice(0, 60));
+        showToast('⚠ Save failed: HTTP ' + r.status);
       }
     })
-    .catch(function(e) { showToast('⚠ Network error saving prices'); });
+    .catch(function(e) { showToast('⚠ Network error: ' + e.toString().slice(0,50)); });
   }
 
-
-  // ── Write ref prices to Google Sheets (User 0 save) ──
-  function _pushRefToSheets(supplier, ref, pkg){
-    if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;
-    try{
-      fetch(_GAS_URL,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'saveRef',supplier:supplier,ref:ref,pkg:pkg,
-          ts:new Date().toISOString(),user:'User 0'})});
-    }catch(e){}
-  }
-
-  // ── Read ref prices from Google Sheets (all users on login) ──
-  function _pullRefFromSheets(callback){
-    if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0){callback(null);return;}
-    try{
-      fetch(_GAS_URL+'?action=getRef',{method:'GET',cache:'no-store'})
-        .then(function(r){return r.text();})
-        .then(function(t){try{callback(JSON.parse(t));}catch(e){callback(null);}})
-        .catch(function(){callback(null);});
-    }catch(e){callback(null);}
-  }
-
-  // ── Apply loaded ref data to live arrays + localStorage ──
-  function _applySheetRef(d){
-    if(!d)return;
-    ['apical','klk','wingagro'].forEach(function(sup){
-      var refKey=sup==='apical'?APC_REF_KEY:sup==='klk'?KLK_REF_KEY:WA_REF_KEY;
-      var refObj=sup==='apical'?APC_REF:sup==='klk'?KLK_REF:WA_REF;
-      var defObj=sup==='apical'?APC_REF_DEF:sup==='klk'?KLK_REF_DEF:WA_REF_DEF;
-      var pkgKey=sup==='apical'?APC_PKG_KEY:sup==='klk'?KLK_PKG_KEY:WA_PKG_KEY;
-      var pkgArr=sup==='apical'?APC_PKG:sup==='klk'?KLK_PKG:WA_PKG;
-      if(d[sup]&&d[sup].ref){
-        var r=d[sup].ref;
-        Object.keys(defObj).forEach(function(k){if(k in r&&!isNaN(parseFloat(r[k])))refObj[k]=parseFloat(r[k]);});
-        var saveObj=Object.assign({},refObj,{_savedByUser:true});
-        localStorage.setItem(refKey,JSON.stringify(saveObj));
-      }
-      if(d[sup]&&d[sup].pkg&&Array.isArray(d[sup].pkg)){
-        var saved=d[sup].pkg;
-        pkgArr.forEach(function(row){
-          var s=saved.find(function(x){return x.id===row.id;});
-          if(s){if(s.pkg_cost!=null)row.pkg_cost=s.pkg_cost;if(s.premium!=null)row.premium=s.premium;}
-        });
-        localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
-      }
-    });
-    if(typeof svRenderTable==='function')svRenderTable();
-    if(typeof svRenderRefPanel==='function')svRenderRefPanel();
-    if(typeof svRenderPkgFields==='function')svRenderPkgFields();
+  // ── REAL-TIME: subscribe to changes — instant update, no polling delay ──
+  function _startRealtimeSync() {
+    // Supabase Realtime via WebSocket
+    try {
+      var wsUrl = _SB_URL.replace('https://','wss://') + '/realtime/v1/websocket?apikey=' + _SB_KEY + '&vsn=1.0.0';
+      var ws = new WebSocket(wsUrl);
+      var ref = 1;
+      ws.onopen = function() {
+        ws.send(JSON.stringify({
+          topic: 'realtime:public:ref_prices',
+          event: 'phx_join',
+          payload: {},
+          ref: ref++
+        }));
+      };
+      ws.onmessage = function(evt) {
+        try {
+          var msg = JSON.parse(evt.data);
+          if (msg.event === 'UPDATE' && msg.payload && msg.payload.record) {
+            _syncApply(msg.payload.record);
+          }
+        } catch(e) {}
+      };
+      ws.onerror = function() {}; // fall back to polling below
+      // Heartbeat to keep connection alive
+      setInterval(function() {
+        if (ws.readyState === 1) {
+          ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:ref++}));
+        }
+      }, 25000);
+    } catch(e) {}
+    // Fallback: poll every 15s in case websocket fails/disconnects
+    setInterval(function() {
+      _syncLoad(function(d) { if (d) _syncApply(d); });
+    }, 15000);
   }
 
   function _logActivity(payload){
@@ -6153,15 +6075,23 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
 }function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
-  // Load ref log from GitHub (permanent storage)
-  fetch(_LOG_PAGES+'?t='+Date.now(),{cache:'no-store'})
+  // Load ref log from Supabase (permanent, ordered newest first)
+  fetch(_SB_URL+'/rest/v1/ref_log?select=*&order=saved_at.desc&limit=200',{
+    headers:_SB_HEADERS,cache:'no-store'
+  })
   .then(function(r){return r.json();})
-  .then(function(refLog){
-    _showRefLog(refLog||[]);
+  .then(function(rows){
+    var refLog=(rows||[]).map(function(row){
+      var d=new Date(row.saved_at);
+      var myDate=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+      var myTime=d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});
+      return {date:myDate+' '+myTime,ts:row.saved_at,apical:row.apical,klk:row.klk,wingagro:row.wingagro};
+    });
+    _showRefLog(refLog);
   })
   .catch(function(){_showRefLog([]);});
 }
-function _showRefLog(refLog){var fobLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog.filter(function(e){return e.date>=cutoffStr;});var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History — Last 30 Working Days</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>From "+cutoffStr+" to today. Saved on this device.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices ("+refF.length+" entries)</div>";[].concat(refF).reverse().forEach(function(e){
+function _showRefLog(refLog){var fobLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog.filter(function(e){return e.ts&&e.ts.slice(0,10)>=cutoffStr;});var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History — Last 30 Working Days</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>From "+cutoffStr+" to today. Saved on this device.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices ("+refF.length+" entries)</div>";[].concat(refF).reverse().forEach(function(e){
   html+="<div style='padding:8px 10px;margin-bottom:6px;background:#fffde7;border-radius:7px;border-left:3px solid #f9a825'>";
   html+="<div style='display:flex;justify-content:space-between;margin-bottom:4px'>";
   html+="<b style='color:#1a5c1a'>⏰ "+e.date+"</b>";
