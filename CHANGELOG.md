@@ -347,3 +347,20 @@ All changes to the GitHub Pages app are recorded here.
 - Lightweight by design: no daily quote/report logging included — kept to
   customer master data only, to minimize Supabase storage usage
 
+
+---
+
+## [2026-07-18] — Customers moved to standalone tab, mix-and-match suppliers
+
+### Changed
+- Customer profile management is now its own top-level tab (👥 Customers),
+  independent of any single supplier page
+- Data model upgraded: each customer can now hold a list of products, each
+  independently sourced from Apical, KLK, or WingAgro — no longer locked
+  to one preferred supplier
+- New Customers tab: searchable customer list + edit panel with dynamic
+  product rows (add/remove freely), each row picks its own supplier and SKU
+- Product dropdowns pull live from the actual pricing SKU lists, so a saved
+  customer's quote always reflects the current day's prices automatically
+- Requires new `products jsonb` column in the Supabase `customers` table
+
