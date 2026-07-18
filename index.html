@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v18JUL0653';
+  var _v='v18JUL0712';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -5846,7 +5846,9 @@ var APC_PKG_DEF=[
 {id:11,cat:"SPECIALTY — KL Only",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-228.42},
 {id:12,cat:"SPECIALTY — KL Only",name:"20kg Hpko 35/37",packing:"20kg carton",pkg_cost:82.0,premium:-280.0},
 {id:13,cat:"SPECIALTY — KL Only",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:-253.33},
+{id:26,cat:"SPECIALTY — KL Only",name:"20kg Hpko 40/42",packing:"20kg carton",pkg_cost:82.0,premium:-12},
 {id:14,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/44",packing:"20kg carton",pkg_cost:82.0,premium:-225.0},
+{id:27,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/43",packing:"20kg carton",pkg_cost:82.0,premium:23},
 {id:15,cat:"SPECIALTY — JKT Only",name:"20kg RCNO",packing:"20kg BIB",pkg_cost:100.0,premium:-100.42},
 {id:16,cat:"SPECIALTY — JKT Only",name:"20kg HCNO",packing:"20kg carton",pkg_cost:82.0,premium:100.62},
 {id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:54.0},
@@ -5996,7 +5998,9 @@ var APICAL_DATA=[
 {cat:'SPECIALTY — KL Only',name:'20kg Hpks 33.5/35.5',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2510,fcpo_default:2367.0,premium:-228.42,pkg_cost:82.0,fcpo_ref:'pk_stearin',fcpo_delta:-43.0,fob_delta_jkt:null,fob_delta_kl:289.42,fob_delta:289.42},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpko 35/37',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2147.9167,fcpo_default:1980.0,premium:-280.0,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:25.0,fob_delta_jkt:null,fob_delta_kl:365.9167,fob_delta:365.9167},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpko 38/40',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2305,fcpo_default:2120.0,premium:-253.33,pkg_cost:82.0,fcpo_ref:'pk_oil',fcpo_delta:-120.0,fob_delta_jkt:null,fob_delta_kl:356.33,fob_delta:356.33},
+{cat:'SPECIALTY — KL Only',name:'20kg Hpko 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2310,fcpo_default:2240.0,premium:-12,pkg_cost:82.0,fcpo_ref:'pk_oil',fcpo_delta:0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpkl 41/44',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2043.75,fcpo_default:1880.0,premium:-225.0,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:-75.0,fob_delta_jkt:null,fob_delta_kl:306.75,fob_delta:306.75},
+{cat:'SPECIALTY — KL Only',name:'20kg Hpkl 41/43',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2155,fcpo_default:2050.0,premium:23,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'20kg RCNO',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2240,fob_kl:null,fcpo_default:2045.0,premium:-100.42,pkg_cost:100.0,fcpo_ref:'pk_olein',fcpo_delta:-5.0,fob_delta_jkt:195.42,fob_delta_kl:null,fob_delta:195.42},
 {cat:'SPECIALTY — JKT Only',name:'20kg HCNO',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:2300,fob_kl:null,fcpo_default:1985.0,premium:100.62,pkg_cost:82.0,fcpo_ref:'coconut',fcpo_delta:-45.0,fob_delta_jkt:132.38,fob_delta_kl:null,fob_delta:132.38},
 {cat:'SPECIALTY — JKT Only',name:'RPKO BIB 20kg',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2358.3333,fob_kl:null,fcpo_default:2164.0,premium:54.0,pkg_cost:100.0,fcpo_ref:'pk_oil',fcpo_delta:54.0,fob_delta_jkt:40.3333,fob_delta_kl:null,fob_delta:40.3333},
