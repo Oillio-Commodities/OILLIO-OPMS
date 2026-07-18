@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v18JUL0028';
+  var _v='v18JUL0037';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -828,8 +828,17 @@ body.user-mode #userPdfBar { display:flex !important; }
   <div class="qs-meta" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:6px">
     <div class="field"><label>Country</label><input type="text" id="custCountry" placeholder="e.g. Nigeria"></div>
     <div class="field"><label>Port</label><input type="text" id="custPort" placeholder="e.g. Lagos"></div>
-    <div class="field"><label>Oil Type</label><input type="text" id="custOilType" placeholder="e.g. RBD Palm Olein CP10"></div>
-    <div class="field"><label>Packaging</label><input type="text" id="custPackaging" placeholder="e.g. 20L Jerry Can"></div>
+    <div class="field"><label>Preferred Supplier</label>
+      <select id="custSupplier" onchange="svPopulateCustProducts()">
+        <option value="">-- Select --</option>
+        <option value="apical">Apical</option>
+        <option value="klk">KLK</option>
+        <option value="wingagro">Wing Agro</option>
+      </select>
+    </div>
+    <div class="field"><label>Preferred Product (SKU)</label>
+      <select id="custProduct"><option value="">-- Select supplier first --</option></select>
+    </div>
   </div>
   <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
     <button class="btn-s" onclick="svSaveCustomer()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">💾 Save Customer Profile</button>
@@ -1681,12 +1690,28 @@ function el(id){return document.getElementById(id);}
     if (match) {
       var cc = document.getElementById('custCountry'); if (cc) cc.value = match.country || '';
       var cp = document.getElementById('custPort'); if (cp) cp.value = match.port || '';
-      var co = document.getElementById('custOilType'); if (co) co.value = match.oil_type || '';
-      var cpk = document.getElementById('custPackaging'); if (cpk) cpk.value = match.packaging || '';
+      var cs = document.getElementById('custSupplier');
+      if (cs) { cs.value = match.preferred_supplier || ''; svPopulateCustProducts(); }
+      var cpr = document.getElementById('custProduct');
+      if (cpr && match.preferred_product) { cpr.value = match.preferred_product; }
       if (noteEl) { noteEl.textContent = '✓ Loaded saved profile for ' + match.name; noteEl.style.color = '#1a7a4a'; }
     } else {
+      var cs2 = document.getElementById('custSupplier'); if (cs2) cs2.value = '';
+      var cpr2 = document.getElementById('custProduct'); if (cpr2) cpr2.innerHTML = '<option value="">-- Select supplier first --</option>';
       if (noteEl) { noteEl.textContent = 'New customer — fill details and click Save'; noteEl.style.color = '#888'; }
     }
+  }
+
+  function svPopulateCustProducts() {
+    var s = (document.getElementById('custSupplier')||{}).value;
+    var sel = document.getElementById('custProduct');
+    if (!sel) return;
+    var arr = s === 'apical' ? APC_PKG : s === 'klk' ? KLK_PKG : s === 'wingagro' ? WA_PKG : [];
+    if (!arr.length) { sel.innerHTML = '<option value="">-- Select supplier first --</option>'; return; }
+    sel.innerHTML = '<option value="">-- Select --</option>' + arr.map(function(p) {
+      var label = (p.name||'') + (p.packing ? ' — ' + p.packing : '');
+      return '<option value="' + label.replace(/"/g,'&quot;') + '">' + label + '</option>';
+    }).join('');
   }
 
   function svSaveCustomer() {
@@ -1696,8 +1721,8 @@ function el(id){return document.getElementById(id);}
       name: name.trim(),
       country: (document.getElementById('custCountry')||{}).value || '',
       port: (document.getElementById('custPort')||{}).value || '',
-      oil_type: (document.getElementById('custOilType')||{}).value || '',
-      packaging: (document.getElementById('custPackaging')||{}).value || '',
+      preferred_supplier: (document.getElementById('custSupplier')||{}).value || '',
+      preferred_product: (document.getElementById('custProduct')||{}).value || '',
       updated_at: new Date().toISOString()
     };
     var existing = _custCache.find(function(c) {
