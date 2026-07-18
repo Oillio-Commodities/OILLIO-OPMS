@@ -364,3 +364,20 @@ All changes to the GitHub Pages app are recorded here.
   customer's quote always reflects the current day's prices automatically
 - Requires new `products jsonb` column in the Supabase `customers` table
 
+
+---
+
+## [2026-07-18] — Validated: Apical oil pricing auto-sync scope (no code change)
+
+### Confirmed behavior (documented, not modified)
+- Editing the 7 oil/fat commodity prices under **Apical's** yellow reference
+  (Malaysia CP10, Indonesia CP10, PK Olein, PK Oil, PK Stearin, Stearin, Coconut)
+  automatically propagates to **KLK** and **WingAgro**'s yellow reference —
+  both while typing live and on Save & Log.
+- **Oillio Margin %** and **Supplier Margin Factor** remain fully independent
+  per supplier and are NOT synced from Apical — intentional, confirmed correct.
+- **Packaging Cost & Premium/Discount** (per-SKU) remain fully independent
+  per supplier — intentional, confirmed correct.
+- No freezing/read-only lock applied to KLK/WingAgro reference panels —
+  all fields remain editable per supplier as before.
+
