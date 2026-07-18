@@ -381,3 +381,27 @@ All changes to the GitHub Pages app are recorded here.
 - No freezing/read-only lock applied to KLK/WingAgro reference panels —
   all fields remain editable per supplier as before.
 
+
+---
+
+## [2026-07-18] — Apical 17-July-2026 price update
+
+### Changed
+- Base commodity reference prices updated to 17-July-2026 levels (propagated
+  to KLK and WingAgro per existing auto-sync): Malaysia CP10 1170→1150,
+  Indonesia CP10 1050→1030, PK Oil 2110→2240, PK Olein 1955→2050,
+  PK Stearin 2275→2410, Coconut 2060→2030, Stearin 1140→1107.50
+- Premium/discount recalibrated for 12 Apical products (packaging cost held
+  constant) so live pricing exactly reproduces the published 17-July FOB
+  prices — verified against all 12 targets before deployment:
+  Shortening 36/39, 38/40 & 40/42, 43/47, 46/48, 48/52, BIB Spread Fat,
+  RCNO, HCNO, HPS Flakes, Hpks 33.5/35.5, Hpko 38/40, CBR 37/40
+
+### Fixed
+- **20kg Hpko 38/40** was incorrectly referencing PK Olein instead of PK Oil
+  (HPKO = Hydrogenated Palm Kernel **Oil**). Corrected reference + recalibrated.
+
+### Not yet resolved
+- HPKO 40/42 — new SKU from 17-July list, no prior product to match; pending
+- HPKL 41/43 vs app's existing "Hpkl 41/44" — same product or different spec, pending confirmation
+
