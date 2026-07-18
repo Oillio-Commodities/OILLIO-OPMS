@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v18JUL0037';
+  var _v='v18JUL0044';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -498,6 +498,7 @@ body.user-mode #userPdfBar { display:flex !important; }
   <button class="sup-btn" id="supAble" onclick="setSupplier('ableperfect')">&#x1F4C4; For Reference Only</button>
   <button class="sup-btn" id="supWing" onclick="setSupplier('wingagro')">&#x1F33F; Wing Agro</button>
   <button class="sup-btn" id="supCompare" onclick="setSupplier('compare')">&#x1F4CA; Compare</button>
+  <button class="sup-btn" id="supCustomers" onclick="setSupplier('customers')">&#x1F465; Customers</button>
   <span class="sup-hint">Select supplier to load pricing data &amp; SKUs</span>
 </div>
 
@@ -797,6 +798,30 @@ body.user-mode #userPdfBar { display:flex !important; }
 
 
 <!-- ═══════════════════════════════════════════════════
+     CUSTOMERS VIEW — standalone profile management
+═══════════════════════════════════════════════════ -->
+<div id="customersView" style="display:none;padding:0 24px 24px;max-width:1200px;margin:0 auto">
+  <div style="background:var(--card);border-radius:var(--rad);box-shadow:var(--shd);padding:16px;margin-bottom:14px">
+    <div style="font-size:.95rem;font-weight:700;color:var(--brand);margin-bottom:4px">👥 Customer Profiles</div>
+    <div style="font-size:.75rem;color:var(--mut);margin-bottom:12px">Save a customer's usual order — mix products from any supplier. Prices always reflect today's rates.</div>
+
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+      <!-- Left: customer list -->
+      <div>
+        <input type="text" id="custSearchBox" placeholder="🔍 Search customers..." oninput="svRenderCustList()" style="width:100%;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.8rem;margin-bottom:8px">
+        <button onclick="svNewCustomer()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;margin-bottom:10px">+ New Customer</button>
+        <div id="custListPanel" style="max-height:520px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Right: edit form -->
+      <div id="custEditPanel" style="border:1.5px solid var(--bdr);border-radius:8px;padding:14px;background:#fafbfc">
+        <div style="color:var(--mut);text-align:center;padding:40px 0">Select a customer or click "+ New Customer"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
      QUOTE SECTION
 ═══════════════════════════════════════════════════ -->
 <div id="quoteSection">
@@ -825,25 +850,7 @@ body.user-mode #userPdfBar { display:flex !important; }
       </select></div>
     </div>
   </div>
-  <div class="qs-meta" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:6px">
-    <div class="field"><label>Country</label><input type="text" id="custCountry" placeholder="e.g. Nigeria"></div>
-    <div class="field"><label>Port</label><input type="text" id="custPort" placeholder="e.g. Lagos"></div>
-    <div class="field"><label>Preferred Supplier</label>
-      <select id="custSupplier" onchange="svPopulateCustProducts()">
-        <option value="">-- Select --</option>
-        <option value="apical">Apical</option>
-        <option value="klk">KLK</option>
-        <option value="wingagro">Wing Agro</option>
-      </select>
-    </div>
-    <div class="field"><label>Preferred Product (SKU)</label>
-      <select id="custProduct"><option value="">-- Select supplier first --</option></select>
-    </div>
-  </div>
-  <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-    <button class="btn-s" onclick="svSaveCustomer()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">💾 Save Customer Profile</button>
-    <span id="custSaveNote" style="font-size:.7rem;color:#888"></span>
-  </div>
+
   <div id="qCards"></div>
   <div id="qTotals" class="q-totals" style="display:none"></div>
   <div id="qTcArea" style="display:none;background:#f8f9fa;border:1px solid var(--bdr);border-radius:8px;padding:12px 14px;margin:8px 0;font-size:.77rem;line-height:1.6;color:#333"></div>
@@ -1682,78 +1689,152 @@ function el(id){return document.getElementById(id);}
   }
 
   function svCustLookup(name) {
-    if (!name) { return; }
-    var match = _custCache.find(function(c) {
-      return c.name && c.name.toLowerCase() === name.trim().toLowerCase();
-    });
-    var noteEl = document.getElementById('custSaveNote');
-    if (match) {
-      var cc = document.getElementById('custCountry'); if (cc) cc.value = match.country || '';
-      var cp = document.getElementById('custPort'); if (cp) cp.value = match.port || '';
-      var cs = document.getElementById('custSupplier');
-      if (cs) { cs.value = match.preferred_supplier || ''; svPopulateCustProducts(); }
-      var cpr = document.getElementById('custProduct');
-      if (cpr && match.preferred_product) { cpr.value = match.preferred_product; }
-      if (noteEl) { noteEl.textContent = '✓ Loaded saved profile for ' + match.name; noteEl.style.color = '#1a7a4a'; }
-    } else {
-      var cs2 = document.getElementById('custSupplier'); if (cs2) cs2.value = '';
-      var cpr2 = document.getElementById('custProduct'); if (cpr2) cpr2.innerHTML = '<option value="">-- Select supplier first --</option>';
-      if (noteEl) { noteEl.textContent = 'New customer — fill details and click Save'; noteEl.style.color = '#888'; }
-    }
+    // Quick lookup while building a quote — just informational, no auto-fill of products
+    if (!name) return;
   }
 
-  function svPopulateCustProducts() {
-    var s = (document.getElementById('custSupplier')||{}).value;
-    var sel = document.getElementById('custProduct');
-    if (!sel) return;
-    var arr = s === 'apical' ? APC_PKG : s === 'klk' ? KLK_PKG : s === 'wingagro' ? WA_PKG : [];
-    if (!arr.length) { sel.innerHTML = '<option value="">-- Select supplier first --</option>'; return; }
-    sel.innerHTML = '<option value="">-- Select --</option>' + arr.map(function(p) {
-      var label = (p.name||'') + (p.packing ? ' — ' + p.packing : '');
-      return '<option value="' + label.replace(/"/g,'&quot;') + '">' + label + '</option>';
+  // ── CUSTOMERS TAB: list + multi-product profile editor ──
+  var _custEditId = null;   // currently editing customer id (null = new)
+  var _custEditProducts = []; // working list of {supplier, product} for the open editor
+
+  function svRenderCustList() {
+    var panel = document.getElementById('custListPanel');
+    if (!panel) return;
+    var q = ((document.getElementById('custSearchBox')||{}).value || '').toLowerCase();
+    var list = _custCache.filter(function(c) {
+      return !q || (c.name||'').toLowerCase().indexOf(q) >= 0 || (c.country||'').toLowerCase().indexOf(q) >= 0;
+    });
+    if (!list.length) { panel.innerHTML = '<div style="color:var(--mut);font-size:.78rem;padding:10px">No customers found.</div>'; return; }
+    panel.innerHTML = list.map(function(c) {
+      var sel = c.id === _custEditId ? 'background:#e8f5e9;border-left:3px solid #1a7a4a' : 'background:#fff;border-left:3px solid transparent';
+      return '<div onclick="svOpenCustomer(' + c.id + ')" style="cursor:pointer;padding:8px 10px;margin-bottom:4px;border-radius:6px;' + sel + '">' +
+        '<div style="font-weight:700;font-size:.8rem">' + (c.name||'') + '</div>' +
+        '<div style="font-size:.68rem;color:var(--mut)">' + [c.country, c.port].filter(Boolean).join(' • ') + '</div>' +
+        '</div>';
     }).join('');
   }
 
+  function svNewCustomer() {
+    _custEditId = null;
+    _custEditProducts = [];
+    svRenderCustEditor();
+    svRenderCustList();
+  }
+
+  function svOpenCustomer(id) {
+    var c = _custCache.find(function(x) { return x.id === id; });
+    if (!c) return;
+    _custEditId = id;
+    _custEditProducts = (c.products || []).slice();
+    svRenderCustEditor(c);
+    svRenderCustList();
+  }
+
+  function svRenderCustEditor(c) {
+    c = c || {};
+    var panel = document.getElementById('custEditPanel');
+    if (!panel) return;
+    var isNew = _custEditId === null;
+    var html = '';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
+    html += '<div class="field"><label>Customer Name</label><input type="text" id="ceName" value="' + (c.name||'').replace(/"/g,'&quot;') + '" placeholder="e.g. ABC Trading Co."></div>';
+    html += '<div class="field"><label>Notes</label><input type="text" id="ceNotes" value="' + (c.notes||'').replace(/"/g,'&quot;') + '" placeholder="optional"></div>';
+    html += '<div class="field"><label>Country</label><input type="text" id="ceCountry" value="' + (c.country||'').replace(/"/g,'&quot;') + '" placeholder="e.g. Nigeria"></div>';
+    html += '<div class="field"><label>Port</label><input type="text" id="cePort" value="' + (c.port||'').replace(/"/g,'&quot;') + '" placeholder="e.g. Lagos"></div>';
+    html += '</div>';
+
+    html += '<div style="font-weight:700;font-size:.78rem;color:#b45309;margin-bottom:6px">📦 Usual Products (mix any supplier)</div>';
+    html += '<div id="ceProductRows">' + _renderCustProductRows() + '</div>';
+    html += '<button onclick="svAddCustProductRow()" style="background:#fff;border:1.5px dashed #999;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;margin-top:4px">+ Add Product</button>';
+
+    html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:center">';
+    html += '<button onclick="svSaveCustomer()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer">💾 Save Customer</button>';
+    if (!isNew) html += '<button onclick="svDeleteCustomer()" style="background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:6px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer">🗑 Delete</button>';
+    html += '<span id="custSaveNote" style="font-size:.72rem;color:#888"></span>';
+    html += '</div>';
+
+    panel.innerHTML = html;
+  }
+
+  function _renderCustProductRows() {
+    if (!_custEditProducts.length) return '<div style="color:var(--mut);font-size:.75rem;padding:6px 0">No products added yet.</div>';
+    return _custEditProducts.map(function(p, i) {
+      var arr = p.supplier === 'apical' ? APC_PKG : p.supplier === 'klk' ? KLK_PKG : p.supplier === 'wingagro' ? WA_PKG : [];
+      var opts = '<option value="">-- Select --</option>' + arr.map(function(x) {
+        var label = (x.name||'') + (x.packing ? ' — ' + x.packing : '');
+        var sel = label === p.product ? ' selected' : '';
+        return '<option value="' + label.replace(/"/g,'&quot;') + '"' + sel + '>' + label + '</option>';
+      }).join('');
+      return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">' +
+        '<select onchange="svCustRowSupplier(' + i + ',this.value)" style="width:110px;padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">' +
+          '<option value="">Supplier</option>' +
+          '<option value="apical"' + (p.supplier==='apical'?' selected':'') + '>Apical</option>' +
+          '<option value="klk"' + (p.supplier==='klk'?' selected':'') + '>KLK</option>' +
+          '<option value="wingagro"' + (p.supplier==='wingagro'?' selected':'') + '>Wing Agro</option>' +
+        '</select>' +
+        '<select onchange="svCustRowProduct(' + i + ',this.value)" style="flex:1;padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">' + opts + '</select>' +
+        '<button onclick="svRemoveCustProductRow(' + i + ')" style="background:#fff;color:#c0392b;border:1px solid #c0392b;border-radius:5px;padding:4px 8px;font-size:.7rem;cursor:pointer">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function svAddCustProductRow() {
+    _custEditProducts.push({ supplier: '', product: '' });
+    document.getElementById('ceProductRows').innerHTML = _renderCustProductRows();
+  }
+
+  function svRemoveCustProductRow(i) {
+    _custEditProducts.splice(i, 1);
+    document.getElementById('ceProductRows').innerHTML = _renderCustProductRows();
+  }
+
+  function svCustRowSupplier(i, val) {
+    _custEditProducts[i].supplier = val;
+    _custEditProducts[i].product = '';
+    document.getElementById('ceProductRows').innerHTML = _renderCustProductRows();
+  }
+
+  function svCustRowProduct(i, val) {
+    _custEditProducts[i].product = val;
+  }
+
   function svSaveCustomer() {
-    var name = (document.getElementById('qCust')||{}).value || '';
-    if (!name.trim()) { showToast('⚠ Enter a customer name first'); return; }
+    var name = (document.getElementById('ceName')||{}).value || '';
+    if (!name.trim()) { showToast('⚠ Enter a customer name'); return; }
     var payload = {
       name: name.trim(),
-      country: (document.getElementById('custCountry')||{}).value || '',
-      port: (document.getElementById('custPort')||{}).value || '',
-      preferred_supplier: (document.getElementById('custSupplier')||{}).value || '',
-      preferred_product: (document.getElementById('custProduct')||{}).value || '',
+      country: (document.getElementById('ceCountry')||{}).value || '',
+      port: (document.getElementById('cePort')||{}).value || '',
+      notes: (document.getElementById('ceNotes')||{}).value || '',
+      products: _custEditProducts.filter(function(p) { return p.supplier && p.product; }),
       updated_at: new Date().toISOString()
     };
-    var existing = _custCache.find(function(c) {
-      return c.name && c.name.toLowerCase() === name.trim().toLowerCase();
-    });
     var noteEl = document.getElementById('custSaveNote');
-    if (existing) {
-      // Update existing record
-      fetch(_SB_URL + '/rest/v1/customers?id=eq.' + existing.id, {
-        method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(payload)
+    var req = _custEditId
+      ? fetch(_SB_URL + '/rest/v1/customers?id=eq.' + _custEditId, { method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(payload) })
+      : fetch(_SB_URL + '/rest/v1/customers', { method: 'POST', headers: Object.assign({}, _SB_HEADERS, {'Prefer':'return=representation'}), body: JSON.stringify(payload) });
+    req.then(function(r) { return r.ok ? r.json().catch(function(){return null;}) : Promise.reject(r.status); })
+      .then(function(rows) {
+        if (!_custEditId && rows && rows[0]) _custEditId = rows[0].id;
+        showToast('✓ Customer saved');
+        if (noteEl) { noteEl.textContent = '✓ Saved'; noteEl.style.color = '#1a7a4a'; }
+        _loadAllCustomers(function() { _populateCustList(); svRenderCustList(); });
       })
+      .catch(function() { showToast('⚠ Save failed'); });
+  }
+
+  function svDeleteCustomer() {
+    if (!_custEditId) return;
+    if (!confirm('Delete this customer profile? This cannot be undone.')) return;
+    fetch(_SB_URL + '/rest/v1/customers?id=eq.' + _custEditId, { method: 'DELETE', headers: _SB_HEADERS })
       .then(function(r) {
         if (r.ok) {
-          if (noteEl) { noteEl.textContent = '✓ Updated profile for ' + payload.name; noteEl.style.color = '#1a7a4a'; }
-          showToast('✓ Customer profile updated');
-          _loadAllCustomers(_populateCustList);
-        } else { showToast('⚠ Update failed'); }
+          showToast('✓ Customer deleted');
+          _custEditId = null; _custEditProducts = [];
+          document.getElementById('custEditPanel').innerHTML = '<div style="color:var(--mut);text-align:center;padding:40px 0">Select a customer or click "+ New Customer"</div>';
+          _loadAllCustomers(function() { _populateCustList(); svRenderCustList(); });
+        } else { showToast('⚠ Delete failed'); }
       }).catch(function(){ showToast('⚠ Network error'); });
-    } else {
-      // Insert new record
-      fetch(_SB_URL + '/rest/v1/customers', {
-        method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(payload)
-      })
-      .then(function(r) {
-        if (r.ok) {
-          if (noteEl) { noteEl.textContent = '✓ Saved new customer: ' + payload.name; noteEl.style.color = '#1a7a4a'; }
-          showToast('✓ New customer profile saved');
-          _loadAllCustomers(_populateCustList);
-        } else { showToast('⚠ Save failed'); }
-      }).catch(function(){ showToast('⚠ Network error'); });
-    }
   }
 
 
@@ -6081,7 +6162,7 @@ function setSupplier(s){
       rQuote();rReport();
     },50);
   }
-  ["supApical","supKlk","supWing","supAble","supCompare"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
+  ["supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnFrChange(){SV_FR.portName=(document.getElementById("svFrPortName")||{value:""}).value||"";SV_FR.usd=parseFloat((document.getElementById("svFrAmt")||{}).value)||0;svRenderTable();}function svSetFreight(m){SV_FR.mode=m;["fob","manual","port"].forEach(function(k){var b=document.getElementById("frBtn"+k.charAt(0).toUpperCase()+k.slice(1));if(!b)return;b.style.background=k===m?"var(--brand)":"#fff";b.style.color=k===m?"#fff":"var(--mut)";b.style.borderColor=k===m?"var(--brand)":"var(--bdr)";});var mw=document.getElementById("svFrManual"),pw=document.getElementById("svFrPort");if(mw)mw.style.display=m==="manual"?"":"none";if(pw)pw.style.display=m==="port"?"":"none";if(m==="port"){var rs=document.getElementById("svPortRegion");if(rs&&!rs.options.length)svInitPorts();}svRenderTable();}function svInitPorts(){var rs=document.getElementById('svPortRegion');if(!rs)return;var regions=['ALL'].concat([...new Set(ALL_PORTS.map(function(p){return p.region;}))].sort());rs.innerHTML=regions.map(function(r){return'<option>'+r+'</option>';}).join('');svFilterPorts();}function svFilterPorts(){var q=((document.getElementById('svPortSearch')||{}).value||'').toLowerCase();var reg=(document.getElementById('svPortRegion')||{}).value||'ALL';var el_=document.getElementById('svPortList');if(!el_)return;var ports=ALL_PORTS.filter(function(p){if(reg!=='ALL'&&p.region!==reg)return false;if(q&&(p.port+p.country+p.region).toLowerCase().indexOf(q)<0)return false;return true;});window._svPC=ports;el_.innerHTML=ports.slice(0,200).map(function(p,i){var age=p.updated?Math.round((Date.now()-new Date(p.updated))/(1000*86400)):999;var cls=age<90?'fresh':age<180?'warn':'stale';return'<div class="pitem" data-fi="'+i+'">'+'<div class="pdot '+cls+'"></div>'+'<div class="pport">'+p.port+'</div>'+'<div class="pcty">'+p.country+'</div>'+'<div class="pfr">$'+fmt(p.freight,0)+'</div></div>';}).join('');el_.querySelectorAll('[data-fi]').forEach(function(d){d.onclick=function(){var p=window._svPC[+this.getAttribute('data-fi')];if(p)svSelectPort(p.country,p);};});}function svSelectPort(country,p){SV_FR.port={country:p.country,port:p.port,freight:p.freight};var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="";if(pl)pl.style.display="none";var nm=document.getElementById("svPortSelName"),rt=document.getElementById("svPortSelRate");if(nm)nm.textContent=p.port+", "+country;if(rt)rt.textContent="USD "+fmt(p.freight,0)+"/FCL (indicative from Able Perfect data)";svRenderTable();}function svClearPort(){SV_FR.port=null;var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="none";if(pl)pl.style.display="";svRenderTable();}
 function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var cats={};data.forEach(function(p){if(p.cat)cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c;}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
