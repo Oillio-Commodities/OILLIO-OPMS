@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11JUN0738';
+  var _v='v18JUL0028';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -433,6 +433,7 @@ body.user-mode #userPdfBar { display:flex !important; }
     // Load latest ref prices from Supabase (instant, real-time)
     try { _syncLoad(function(d) { if(d) _syncApply(d); }); } catch(e) {}
     try { _startRealtimeSync(); } catch(e) {}
+    try { _loadAllCustomers(_populateCustList); } catch(e) {}
 
     var badge=document.getElementById('roleBadge');
     if(badge){
@@ -807,7 +808,10 @@ body.user-mode #userPdfBar { display:flex !important; }
     </div>
   </div>
   <div class="qs-meta" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Customer / Attention</label><input type="text" id="qCust" placeholder="e.g. ABC Trading Co." oninput="rReport()"></div>
+    <div class="field"><label>Customer / Attention</label>
+      <input type="text" id="qCust" list="custList" placeholder="e.g. ABC Trading Co." oninput="rReport();svCustLookup(this.value)" onchange="svCustLookup(this.value)">
+      <datalist id="custList"></datalist>
+    </div>
     <div class="field"><label>Shipment / Delivery Period</label>
       <div class="sw"><select id="qDel" onchange="rReport()">
         <option value="">-- Select --</option>
@@ -820,6 +824,16 @@ body.user-mode #userPdfBar { display:flex !important; }
         <option>LH November / FH December 2026</option><option>December 2026</option>
       </select></div>
     </div>
+  </div>
+  <div class="qs-meta" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:6px">
+    <div class="field"><label>Country</label><input type="text" id="custCountry" placeholder="e.g. Nigeria"></div>
+    <div class="field"><label>Port</label><input type="text" id="custPort" placeholder="e.g. Lagos"></div>
+    <div class="field"><label>Oil Type</label><input type="text" id="custOilType" placeholder="e.g. RBD Palm Olein CP10"></div>
+    <div class="field"><label>Packaging</label><input type="text" id="custPackaging" placeholder="e.g. 20L Jerry Can"></div>
+  </div>
+  <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+    <button class="btn-s" onclick="svSaveCustomer()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">💾 Save Customer Profile</button>
+    <span id="custSaveNote" style="font-size:.7rem;color:#888"></span>
   </div>
   <div id="qCards"></div>
   <div id="qTotals" class="q-totals" style="display:none"></div>
@@ -1637,6 +1651,86 @@ function el(id){return document.getElementById(id);}
       _syncLoad(function(d) { if (d) _syncApply(d); });
     }, 15000);
   }
+
+  // ── CUSTOMER PROFILES ──
+  var _custCache = [];
+
+  function _loadAllCustomers(callback) {
+    fetch(_SB_URL + '/rest/v1/customers?select=*&order=name.asc', {
+      headers: _SB_HEADERS, cache: 'no-store'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) { _custCache = rows || []; if (callback) callback(_custCache); })
+    .catch(function() { if (callback) callback([]); });
+  }
+
+  function _populateCustList() {
+    var dl = document.getElementById('custList');
+    if (!dl) return;
+    dl.innerHTML = _custCache.map(function(c) {
+      return '<option value="' + (c.name||'').replace(/"/g,'&quot;') + '">';
+    }).join('');
+  }
+
+  function svCustLookup(name) {
+    if (!name) { return; }
+    var match = _custCache.find(function(c) {
+      return c.name && c.name.toLowerCase() === name.trim().toLowerCase();
+    });
+    var noteEl = document.getElementById('custSaveNote');
+    if (match) {
+      var cc = document.getElementById('custCountry'); if (cc) cc.value = match.country || '';
+      var cp = document.getElementById('custPort'); if (cp) cp.value = match.port || '';
+      var co = document.getElementById('custOilType'); if (co) co.value = match.oil_type || '';
+      var cpk = document.getElementById('custPackaging'); if (cpk) cpk.value = match.packaging || '';
+      if (noteEl) { noteEl.textContent = '✓ Loaded saved profile for ' + match.name; noteEl.style.color = '#1a7a4a'; }
+    } else {
+      if (noteEl) { noteEl.textContent = 'New customer — fill details and click Save'; noteEl.style.color = '#888'; }
+    }
+  }
+
+  function svSaveCustomer() {
+    var name = (document.getElementById('qCust')||{}).value || '';
+    if (!name.trim()) { showToast('⚠ Enter a customer name first'); return; }
+    var payload = {
+      name: name.trim(),
+      country: (document.getElementById('custCountry')||{}).value || '',
+      port: (document.getElementById('custPort')||{}).value || '',
+      oil_type: (document.getElementById('custOilType')||{}).value || '',
+      packaging: (document.getElementById('custPackaging')||{}).value || '',
+      updated_at: new Date().toISOString()
+    };
+    var existing = _custCache.find(function(c) {
+      return c.name && c.name.toLowerCase() === name.trim().toLowerCase();
+    });
+    var noteEl = document.getElementById('custSaveNote');
+    if (existing) {
+      // Update existing record
+      fetch(_SB_URL + '/rest/v1/customers?id=eq.' + existing.id, {
+        method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(payload)
+      })
+      .then(function(r) {
+        if (r.ok) {
+          if (noteEl) { noteEl.textContent = '✓ Updated profile for ' + payload.name; noteEl.style.color = '#1a7a4a'; }
+          showToast('✓ Customer profile updated');
+          _loadAllCustomers(_populateCustList);
+        } else { showToast('⚠ Update failed'); }
+      }).catch(function(){ showToast('⚠ Network error'); });
+    } else {
+      // Insert new record
+      fetch(_SB_URL + '/rest/v1/customers', {
+        method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(payload)
+      })
+      .then(function(r) {
+        if (r.ok) {
+          if (noteEl) { noteEl.textContent = '✓ Saved new customer: ' + payload.name; noteEl.style.color = '#1a7a4a'; }
+          showToast('✓ New customer profile saved');
+          _loadAllCustomers(_populateCustList);
+        } else { showToast('⚠ Save failed'); }
+      }).catch(function(){ showToast('⚠ Network error'); });
+    }
+  }
+
 
   function _logActivity(payload){
     if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;
