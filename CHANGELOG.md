@@ -330,3 +330,20 @@ All changes to the GitHub Pages app are recorded here.
   so User 0's changes are consistent across their own devices
 - Included in permanent `ref_log` audit trail
 
+
+---
+
+## [2026-07-18] — Customer profile auto-fill (Supabase)
+
+### Added
+- **Customer Profiles**: new `customers` table in Supabase (name, country, port,
+  oil type, packaging, notes)
+- Typing a customer name in the quote form's "Customer / Attention" field now
+  auto-fills their previously saved Country, Port, Oil Type, and Packaging
+- All fields fully editable — add new customers or update existing ones anytime
+- "Save Customer Profile" button creates a new record or updates the matching
+  existing one (matched by name, case-insensitive)
+- Datalist autocomplete suggests saved customer names as you type
+- Lightweight by design: no daily quote/report logging included — kept to
+  customer master data only, to minimize Supabase storage usage
+
