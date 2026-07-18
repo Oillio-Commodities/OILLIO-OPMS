@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v18JUL0044';
+  var _v='v18JUL0112';
   if(!window.location.search.includes(_v)){
     // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
@@ -1747,11 +1747,13 @@ function el(id){return document.getElementById(id);}
     html += '<div id="ceProductRows">' + _renderCustProductRows() + '</div>';
     html += '<button onclick="svAddCustProductRow()" style="background:#fff;border:1.5px dashed #999;border-radius:6px;padding:6px 12px;font-size:.75rem;font-weight:700;cursor:pointer;margin-top:4px">+ Add Product</button>';
 
-    html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:center">';
+    html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
     html += '<button onclick="svSaveCustomer()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer">💾 Save Customer</button>';
+    if (!isNew) html += '<button onclick="svLoadCustomerToQuote()" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer">📋 Load into Quote</button>';
     if (!isNew) html += '<button onclick="svDeleteCustomer()" style="background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:6px;padding:8px 16px;font-size:.78rem;font-weight:700;cursor:pointer">🗑 Delete</button>';
     html += '<span id="custSaveNote" style="font-size:.72rem;color:#888"></span>';
     html += '</div>';
+    html += '<div style="font-size:.68rem;color:var(--mut);margin-top:6px">Loading into Quote always uses today\'s live prices — never the price from when this customer was saved.</div>';
 
     panel.innerHTML = html;
   }
@@ -1821,6 +1823,38 @@ function el(id){return document.getElementById(id);}
         _loadAllCustomers(function() { _populateCustList(); svRenderCustList(); });
       })
       .catch(function() { showToast('⚠ Save failed'); });
+  }
+
+  function svLoadCustomerToQuote() {
+    var c = _custCache.find(function(x) { return x.id === _custEditId; });
+    if (!c || !c.products || !c.products.length) { showToast('⚠ This customer has no saved products'); return; }
+    var added = 0, skipped = 0;
+    c.products.forEach(function(pr) {
+      var parts = (pr.product || '').split(' — ');
+      var pname = parts[0], ppacking = parts.slice(1).join(' — ');
+      var dataArr = pr.supplier === 'apical' ? APICAL_DATA : pr.supplier === 'klk' ? KLK_DATA : pr.supplier === 'wingagro' ? WA_DATA : [];
+      var row = dataArr.find(function(x) { return x.name === pname && x.packing === ppacking; });
+      if (!row) { skipped++; return; }
+      var fob = getLiveFob(row, pr.supplier);
+      if (!fob) { skipped++; return; }
+      if (QITEMS.length >= 50) return;
+      var nw = row.net_wt || 20, lc = row.load_ctn || 1;
+      var skuName = (pr.supplier === 'klk' && row.packing) ? row.packing + ' – ' + row.name : row.name;
+      QITEMS.push({
+        id: ++QID, supplier: pr.supplier, oilName: row.name, oilPrice: fob, cp10: fob,
+        sku: { name: skuName, type: row.packing || '', net_wt: nw, sku_fcl: lc, pkg: 0, units: 1 },
+        fcl: 1, add: 0, additiveType: '', mgn: SV_CFG.margin || 2.5,
+        mode: SV_FR.mode === 'fob' ? 'FOB' : 'CIF', port: SV_FR.port || null
+      });
+      added++;
+    });
+    var qc = document.getElementById('qCust');
+    if (qc) qc.value = c.name;
+    if (typeof rQuote === 'function') rQuote();
+    if (typeof rReport === 'function') rReport();
+    if (added && !skipped) showToast('✓ Loaded ' + added + ' product' + (added>1?'s':'') + ' for ' + c.name + ' at today\'s prices — scroll down to Quotation Cart');
+    else if (added && skipped) showToast('✓ Loaded ' + added + ', ' + skipped + ' skipped (product no longer available)');
+    else showToast('⚠ No matching products found — they may have been renamed or removed');
   }
 
   function svDeleteCustomer() {
