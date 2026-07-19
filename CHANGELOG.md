@@ -438,3 +438,14 @@ All changes to the GitHub Pages app are recorded here.
 - Old packaging cost values for all 25 core products recorded in chat
   history for audit reference before being overwritten
 
+
+---
+
+## [2026-07-18] — Correction: KLK price date is 2-July, not 17-July
+
+### Fixed
+- KLK's 31 updated product badges corrected from "17Jul26" to "02Jul26"
+  — the KLK pricing was sourced from a 2-July WhatsApp price list, a
+  different date than Apical's 17-July update. Both are now correctly
+  labelled with their true source date.
+
