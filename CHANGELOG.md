@@ -405,3 +405,36 @@ All changes to the GitHub Pages app are recorded here.
 - HPKO 40/42 — new SKU from 17-July list, no prior product to match; pending
 - HPKL 41/43 vs app's existing "Hpkl 41/44" — same product or different spec, pending confirmation
 
+
+---
+
+## [2026-07-18] — KLK 17-July-2026 price update + colour-coded update tracking
+
+### Changed
+- 31 KLK products updated to 17-July-2026 pricing (25 confirmed matches +
+  5 loading-quantity corrections + 1 new grade), verified exact against
+  the published price list
+- Methodology per instruction: premium/discount held at original rate,
+  entire price adjustment absorbed into packaging cost instead
+- Exception: Margarine Pastry — packaging cost floored at \$0 (would have
+  gone negative), remainder (-8.39) absorbed into premium for this one
+  item only
+
+### Fixed — loading quantity corrections
+- 16L YELLOW JERRY CAN renamed to "16L (18) YELLOW JERRY CAN", load 1539→1440
+- 16L BM YELLOW JERRY CAN: load 1539→1450
+- 18L BM YELLOW JERRY CAN: load 1320→1360
+- 20L YELLOW JERRY CAN (ambiguous unlabeled variant) renamed to "20L BM
+  YELLOW JERRY CAN" for clarity
+- 16L BIB: load 1300→1242
+
+### Added
+- **SHORTENING 52-56** — new grade band for KLK (does not replace 48-52)
+- **Update tracking badge**: any SKU updated in the 17-July-2026 refresh
+  (14 Apical + 31 KLK = 45 total) now shows a green "✓ 17Jul26" badge in
+  the product list, so stale (not-yet-updated) SKUs are visually distinct
+
+### Documentation
+- Old packaging cost values for all 25 core products recorded in chat
+  history for audit reference before being overwritten
+
