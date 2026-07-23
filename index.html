@@ -4,9 +4,26 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v23JUL1045';
+  var _v='v23JUL1200';
+  // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
+  // browser + CDN cache entirely). If the fetched copy has a different _v than what's
+  // running right now, we know we're on a stale cached page and must hard-reload.
+  // This works even when the currently-running cached script can't tell it's stale
+  // by comparing itself to the URL (the old bug: a stale file's own _v matches an
+  // already-set URL param from a previous successful load of that same stale file).
+  fetch(window.location.pathname + '?_fresh=' + Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.text(); })
+    .then(function(t){
+      var m = t.match(/var _v='([^']+)'/);
+      var freshV = m ? m[1] : null;
+      if (freshV && freshV !== _v) {
+        Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
+        window.location.reload(true);
+      }
+    })
+    .catch(function(){});
+  // Also keep the original query-param check as a fast-path for normal navigation
   if(!window.location.search.includes(_v)){
-    // Clear ALL oillio localStorage to remove stale pkg_cost values
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
     window.location.replace(window.location.pathname+'?v='+_v);
   }
