@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v03AUG2132';
+  var _v='v03AUG0056';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -5864,6 +5864,7 @@ var APC_PKG_DEF=[
 {id:7,cat:"SHORTENING",name:"20kg Shortening 46/48",packing:"20kg carton",pkg_cost:82.0,premium:93.0},
 {id:8,cat:"SHORTENING",name:"20kg Shortening 48/52",packing:"20kg carton",pkg_cost:82.0,premium:88.0},
 {id:9,cat:"BIB",name:"20kg BIB Spread Fat",packing:"20kg BIB",pkg_cost:100.0,premium:117.5},
+{id:28,cat:"BIB",name:"18kg BIB Spread Fat",packing:"18kg BIB",pkg_cost:100.0,premium:117.5},
 {id:10,cat:"SPECIALTY — KL Only",name:"20kg CBR 37/40",packing:"20kg carton",pkg_cost:82.0,premium:-222.0},
 {id:11,cat:"SPECIALTY — KL Only",name:"20kg Hpks 33.5/35.5",packing:"20kg carton",pkg_cost:82.0,premium:-37.0},
 {id:12,cat:"SPECIALTY — KL Only",name:"20kg Hpko 35/37",packing:"20kg carton",pkg_cost:82.0,premium:85.9167},
@@ -5872,6 +5873,7 @@ var APC_PKG_DEF=[
 {id:14,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/44",packing:"20kg carton",pkg_cost:82.0,premium:81.75},
 {id:27,cat:"SPECIALTY — KL Only",name:"20kg Hpkl 41/43",packing:"20kg carton",pkg_cost:82.0,premium:-22.0},
 {id:15,cat:"SPECIALTY — JKT Only",name:"20kg RCNO",packing:"20kg BIB",pkg_cost:100.0,premium:-115.0},
+{id:29,cat:"SPECIALTY — JKT Only",name:"18kg RCNO",packing:"18kg BIB",pkg_cost:100.0,premium:-115.0},
 {id:16,cat:"SPECIALTY — JKT Only",name:"20kg HCNO",packing:"20kg carton",pkg_cost:82.0,premium:-17.0},
 {id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:94.3333},
 {id:18,cat:"SPECIALTY — JKT Only",name:"RCNO Flexibag",packing:"Flexibag",pkg_cost:52.0,premium:81.9583},
@@ -6017,6 +6019,7 @@ var APICAL_DATA=[
 {cat:'SHORTENING',name:'20kg Shortening 46/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1205,fob_kl:null,fcpo_default:1030.0,premium:93.0,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'SHORTENING',name:'20kg Shortening 48/52',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1200,fob_kl:null,fcpo_default:1030.0,premium:88.0,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'BIB',name:'20kg BIB Spread Fat',packing:'20kg BIB',load_ctn:1058,net_wt:20.0,fob_jkt:1325,fob_kl:null,fcpo_default:1107.5,premium:117.5,pkg_cost:100.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
+{cat:'BIB',name:'18kg BIB Spread Fat',packing:'18kg BIB',load_ctn:1215,net_wt:18.0,fob_jkt:1325,fob_kl:null,fcpo_default:1107.5,premium:117.5,pkg_cost:100.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — KL Only',name:'20kg CBR 37/40',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1910,fcpo_default:2050.0,premium:-222.0,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpks 33.5/35.5',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2455,fcpo_default:2410.0,premium:-37.0,pkg_cost:82.0,fcpo_ref:'pk_stearin',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpko 35/37',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2242.9167,fcpo_default:2075.0,premium:85.9167,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:25.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
@@ -6025,6 +6028,7 @@ var APICAL_DATA=[
 {cat:'SPECIALTY — KL Only',name:'20kg Hpkl 41/44',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2138.75,fcpo_default:1975.0,premium:81.75,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:-75.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
 {cat:'SPECIALTY — KL Only',name:'20kg Hpkl 41/43',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2110,fcpo_default:2050.0,premium:-22.0,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — JKT Only',name:'20kg RCNO',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2035,fob_kl:null,fcpo_default:2050.0,premium:-115.0,pkg_cost:100.0,fcpo_ref:'pk_olein',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
+{cat:'SPECIALTY — JKT Only',name:'18kg RCNO',packing:'18kg BIB',load_ctn:1215,net_wt:18.0,fob_jkt:2035,fob_kl:null,fcpo_default:2050.0,premium:-115.0,pkg_cost:100.0,fcpo_ref:'pk_olein',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — JKT Only',name:'20kg HCNO',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:2095,fob_kl:null,fcpo_default:2030.0,premium:-17.0,pkg_cost:82.0,fcpo_ref:'coconut',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY — JKT Only',name:'RPKO BIB 20kg',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2488.3333,fob_kl:null,fcpo_default:2294.0,premium:94.3333,pkg_cost:100.0,fcpo_ref:'pk_oil',fcpo_delta:54.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'RCNO Flexibag',packing:'Flexibag',load_ctn:1,net_wt:20.0,fob_jkt:2143.9583,fob_kl:null,fcpo_default:2010.0,premium:81.9583,pkg_cost:52.0,fcpo_ref:'pk_olein',fcpo_delta:-40.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
