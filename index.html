@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11AUG2227';
+  var _v='v11AUG2237';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6476,9 +6476,13 @@ function _showLogPicker(rows){
   html+='<div><label style="font-size:.68rem;font-weight:700;color:var(--mut)">FROM (older)</label><select id="logCompareA" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem">'+opts+'</select></div>';
   html+='<div><label style="font-size:.68rem;font-weight:700;color:var(--mut)">TO (newer)</label><select id="logCompareB" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem">'+optsB+'</select></div>';
   html+='</div>';
-  html+='<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
   html+='<button onclick="svCompareLog()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">Compare</button>';
-  html+='<button onclick="svViewFullLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">View Full List Instead</button>';
+  html+='<button onclick="svViewFullLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">View Full List</button>';
+  html+='</div>';
+  html+='<div style="border-top:1px solid var(--bdr);margin:6px 0 12px;padding-top:12px">';
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Or: trend a single product across ALL its history</div>';
+  html+='<button onclick="svShowTrendPicker()" style="background:#0a3d62;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">&#x1F4C8; Trend Chart</button>';
   html+='</div>';
   html+='<div id="logCompareResult"></div>';
   html+='</div>';
@@ -6627,6 +6631,140 @@ function _showPriceLogTable(rows){
   body.innerHTML=html;
   window._priceLogRows=rows;
   modal.className='open';
+}
+
+function svShowTrendPicker(){
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Price Trend';
+  body.innerHTML='<div style="padding:14px;color:var(--mut);font-size:.78rem">Loading product list...</div>';
+
+  fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing&order=supplier.asc,product_name.asc',{
+    headers:_SB_HEADERS,cache:'no-store'
+  })
+  .then(function(r){return r.json();})
+  .then(function(rows){
+    var seen={}, list=[];
+    (rows||[]).forEach(function(r){
+      var key=r.supplier+'|'+r.product_name+'|'+r.packing;
+      if(!seen[key]){ seen[key]=1; list.push(r); }
+    });
+    var opts=list.map(function(r){
+      var key=r.supplier+'|'+r.product_name+'|'+r.packing;
+      return '<option value="'+key.replace(/"/g,'&quot;')+'">['+r.supplier+'] '+r.product_name+' &mdash; '+r.packing+'</option>';
+    }).join('');
+
+    var html='<div style="font-size:.78rem">';
+    html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Pick a product to see its full price history</div>';
+    html+='<select id="trendProductSelect" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem;margin-bottom:10px">'+opts+'</select>';
+    html+='<div style="display:flex;gap:8px">';
+    html+='<button onclick="svShowTrendChart()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">Show Trend</button>';
+    html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
+    html+='</div>';
+    html+='<div id="trendChartResult" style="margin-top:14px"></div>';
+    html+='</div>';
+    body.innerHTML=html;
+  })
+  .catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load product list.</div>'; });
+}
+
+function svShowTrendChart(){
+  var sel=document.getElementById('trendProductSelect');
+  var key=sel.value;
+  var parts=key.split('|');
+  var supplier=parts[0], name=parts[1], packing=parts[2];
+  var resultEl=document.getElementById('trendChartResult');
+  resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">Loading history...</div>';
+
+  var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)
+    +'&product_name=eq.'+encodeURIComponent(name)+'&packing=eq.'+encodeURIComponent(packing)
+    +'&order=saved_at.asc';
+
+  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
+  .then(function(r){return r.json();})
+  .then(function(rows){
+    if(!rows || !rows.length){
+      resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">No history found for this product.</div>';
+      return;
+    }
+    resultEl.innerHTML=_renderTrendChart(rows, name, packing)+_renderTrendTable(rows);
+  })
+  .catch(function(){ resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load trend.</div>'; });
+}
+
+function _renderTrendChart(rows, name, packing){
+  var W=560, H=220, padL=48, padR=14, padT=14, padB=34;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+
+  var premiums=rows.map(function(r){return r.premium!=null?Number(r.premium):null;}).filter(function(v){return v!=null;});
+  var pkgs=rows.map(function(r){return r.pkg_cost!=null?Number(r.pkg_cost):null;}).filter(function(v){return v!=null;});
+  var allVals=premiums.concat(pkgs);
+  var minV=Math.min.apply(null,allVals), maxV=Math.max.apply(null,allVals);
+  if(minV===maxV){ minV-=1; maxV+=1; }
+  var pad=(maxV-minV)*0.1; minV-=pad; maxV+=pad;
+
+  function x(i){ return padL + (rows.length<=1?0:(i/(rows.length-1))*plotW); }
+  function y(v){ return padT + plotH - ((v-minV)/(maxV-minV))*plotH; }
+
+  function pathFor(field){
+    var pts=[];
+    rows.forEach(function(r,i){
+      if(r[field]!=null) pts.push(x(i)+','+y(Number(r[field])));
+    });
+    return pts.join(' ');
+  }
+
+  var premPath=pathFor('premium');
+  var pkgPath=pathFor('pkg_cost');
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;background:#fff;border:1px solid var(--bdr);border-radius:8px">';
+  // gridlines + y labels
+  for(var g=0; g<=4; g++){
+    var gv=minV+(maxV-minV)*g/4;
+    var gy=y(gv);
+    svg+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#eee" stroke-width="1"/>';
+    svg+='<text x="'+(padL-6)+'" y="'+(gy+3)+'" font-size="9" fill="#999" text-anchor="end">'+gv.toFixed(1)+'</text>';
+  }
+  // x labels (first, middle, last)
+  [0, Math.floor((rows.length-1)/2), rows.length-1].forEach(function(i){
+    if(i<0||i>=rows.length) return;
+    var d=new Date(rows[i].saved_at);
+    var lbl=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short'});
+    svg+='<text x="'+x(i)+'" y="'+(H-10)+'" font-size="9" fill="#999" text-anchor="middle">'+lbl+'</text>';
+  });
+  // lines
+  svg+='<polyline points="'+premPath+'" fill="none" stroke="#c0392b" stroke-width="2"/>';
+  svg+='<polyline points="'+pkgPath+'" fill="none" stroke="#2980b9" stroke-width="2"/>';
+  // dots
+  rows.forEach(function(r,i){
+    if(r.premium!=null) svg+='<circle cx="'+x(i)+'" cy="'+y(Number(r.premium))+'" r="3" fill="#c0392b"/>';
+    if(r.pkg_cost!=null) svg+='<circle cx="'+x(i)+'" cy="'+y(Number(r.pkg_cost))+'" r="3" fill="#2980b9"/>';
+  });
+  svg+='</svg>';
+
+  var legend='<div style="display:flex;gap:16px;margin:8px 0;font-size:.72rem">';
+  legend+='<div><span style="display:inline-block;width:12px;height:3px;background:#c0392b;margin-right:5px"></span>Premium/Discount</div>';
+  legend+='<div><span style="display:inline-block;width:12px;height:3px;background:#2980b9;margin-right:5px"></span>Packaging Cost</div>';
+  legend+='</div>';
+
+  return '<div style="font-weight:700;color:var(--brand);margin-bottom:4px">'+name+' &mdash; '+packing+'</div>'+legend+svg;
+}
+
+function _renderTrendTable(rows){
+  var html='<div style="max-height:30vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-top:10px">';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
+  html+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:5px 8px">Date</th><th style="padding:5px 8px;text-align:right">Premium</th><th style="padding:5px 8px;text-align:right">Pkg Cost</th><th style="padding:5px 8px;text-align:right">FOB</th></tr>';
+  rows.slice().reverse().forEach(function(r,i){
+    var bg=i%2===0?'#fff':'#fafafa';
+    html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
+    html+='<td style="padding:4px 8px">'+_fmtMY(r.saved_at)+'</td>';
+    html+='<td style="padding:4px 8px;text-align:right">'+(r.premium!=null?Number(r.premium).toFixed(2):'-')+'</td>';
+    html+='<td style="padding:4px 8px;text-align:right">'+(r.pkg_cost!=null?Number(r.pkg_cost).toFixed(2):'-')+'</td>';
+    html+='<td style="padding:4px 8px;text-align:right;font-weight:700">'+(r.fob!=null?Number(r.fob).toFixed(2):'-')+'</td>';
+    html+='</tr>';
+  });
+  html+='</table></div>';
+  return html;
 }
 
 function svExportPriceLog(){
