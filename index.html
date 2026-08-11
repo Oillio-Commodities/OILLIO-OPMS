@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11AUG1405';
+  var _v='v11AUG2227';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6436,6 +6436,114 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
 }function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
+  fetch(_SB_URL+'/rest/v1/price_log?select=saved_at,saved_by&order=saved_at.desc&limit=2000',{
+    headers:_SB_HEADERS,cache:'no-store'
+  })
+  .then(function(r){return r.json();})
+  .then(function(rows){ _showLogPicker(rows||[]); })
+  .catch(function(){ _showLogPicker([]); });
+}
+
+function _fmtMY(ts){
+  var d=new Date(ts);
+  return d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'})
+    +' '+d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});
+}
+
+function _showLogPicker(rows){
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Price History';
+
+  if(!rows.length){
+    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No price history yet. Entries appear here after Save &amp; Log Reference is used.</div>';
+    modal.className='open';
+    return;
+  }
+
+  // Distinct save events, newest first
+  var seen={}, events=[];
+  rows.forEach(function(r){
+    if(!seen[r.saved_at]){ seen[r.saved_at]=1; events.push(r); }
+  });
+
+  var opts=events.map(function(e,i){return '<option value="'+e.saved_at+'"'+(i===1?' selected':'')+'>'+_fmtMY(e.saved_at)+' ('+(e.saved_by||'')+')</option>';}).join('');
+  var optsB=events.map(function(e,i){return '<option value="'+e.saved_at+'"'+(i===0?' selected':'')+'>'+_fmtMY(e.saved_at)+' ('+(e.saved_by||'')+')</option>';}).join('');
+
+  var html='<div style="font-size:.78rem">';
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:10px">Compare two saved price points — see only what changed</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  html+='<div><label style="font-size:.68rem;font-weight:700;color:var(--mut)">FROM (older)</label><select id="logCompareA" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem">'+opts+'</select></div>';
+  html+='<div><label style="font-size:.68rem;font-weight:700;color:var(--mut)">TO (newer)</label><select id="logCompareB" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem">'+optsB+'</select></div>';
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html+='<button onclick="svCompareLog()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">Compare</button>';
+  html+='<button onclick="svViewFullLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">View Full List Instead</button>';
+  html+='</div>';
+  html+='<div id="logCompareResult"></div>';
+  html+='</div>';
+
+  body.innerHTML=html;
+  window._logEvents=events;
+  modal.className='open';
+}
+
+function svCompareLog(){
+  var tsA=document.getElementById('logCompareA').value;
+  var tsB=document.getElementById('logCompareB').value;
+  var resultEl=document.getElementById('logCompareResult');
+  if(tsA===tsB){ resultEl.innerHTML='<div style="color:var(--mut);padding:10px">Pick two different dates to compare.</div>'; return; }
+  resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">Loading...</div>';
+
+  Promise.all([
+    fetch(_SB_URL+'/rest/v1/price_log?select=*&saved_at=eq.'+encodeURIComponent(tsA),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/price_log?select=*&saved_at=eq.'+encodeURIComponent(tsB),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+  ]).then(function(results){
+    var rowsA=results[0]||[], rowsB=results[1]||[];
+    var mapA={};
+    rowsA.forEach(function(r){ mapA[r.supplier+'|'+r.product_name+'|'+r.packing]=r; });
+
+    var changes=[];
+    rowsB.forEach(function(rb){
+      var key=rb.supplier+'|'+rb.product_name+'|'+rb.packing;
+      var ra=mapA[key];
+      if(!ra){ changes.push({supplier:rb.supplier,name:rb.product_name,packing:rb.packing,before:null,after:rb.fob,isNew:true}); return; }
+      if(ra.fob!=null && rb.fob!=null && Math.abs(ra.fob-rb.fob)>0.005){
+        changes.push({supplier:rb.supplier,name:rb.product_name,packing:rb.packing,before:ra.fob,after:rb.fob,isNew:false});
+      }
+    });
+
+    if(!changes.length){
+      resultEl.innerHTML='<div style="padding:14px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No price changes between these two dates.</div>';
+      return;
+    }
+
+    var html='<div style="font-size:.7rem;color:var(--mut);margin-bottom:8px">'+changes.length+' product(s) changed &mdash; '+_fmtMY(tsA)+' &rarr; '+_fmtMY(tsB)+'</div>';
+    html+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px">';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
+    html+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Before</th><th style="padding:5px 8px;text-align:right">After</th><th style="padding:5px 8px;text-align:right">Change</th></tr>';
+    changes.forEach(function(c,i){
+      var bg=i%2===0?'#fff':'#fafafa';
+      var delta=c.isNew?null:(c.after-c.before);
+      var color=c.isNew?'#2980b9':(delta>0?'#1a7a3c':'#c0392b');
+      var arrow=c.isNew?'NEW':((delta>0?'&#x25B2; +':'&#x25BC; ')+delta.toFixed(2));
+      html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
+      html+='<td style="padding:4px 8px">'+c.supplier+'</td>';
+      html+='<td style="padding:4px 8px">'+c.name+'</td>';
+      html+='<td style="padding:4px 8px;color:#888">'+c.packing+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right">'+(c.before!=null?c.before.toFixed(2):'-')+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right;font-weight:700">'+c.after.toFixed(2)+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right;color:'+color+';font-weight:700;white-space:nowrap">'+arrow+'</td>';
+      html+='</tr>';
+    });
+    html+='</table></div>';
+    resultEl.innerHTML=html;
+  }).catch(function(){
+    resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load comparison.</div>';
+  });
+}
+
+function svViewFullLog(){
   fetch(_SB_URL+'/rest/v1/price_log?select=*&order=saved_at.desc&limit=2000',{
     headers:_SB_HEADERS,cache:'no-store'
   })
@@ -6444,33 +6552,30 @@ function svViewLog(){
   .catch(function(){ _showPriceLogTable([]); });
 }
 
+
 function _showPriceLogTable(rows){
   var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(!modal||!body||!title) return;
-  title.textContent='Price History Log';
+  title.textContent='Price History Log — Full List';
 
   if(!rows.length){
-    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No price history yet. Entries appear here after Save &amp; Log Reference is used.</div>';
+    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No price history yet.</div>';
     modal.className='open';
     return;
   }
 
-  // Compute day-over-day change per product: walk chronologically (oldest first),
-  // tracking each product's last-seen FOB so we can diff against it.
   var ascending=rows.slice().sort(function(a,b){return new Date(a.saved_at)-new Date(b.saved_at);});
-  var lastSeen={}; // key -> fob
-  var deltaByRowKey={}; // unique row identity -> {delta, pct}
+  var lastSeen={};
+  var deltaByRowKey={};
   ascending.forEach(function(r){
     var key=r.supplier+'|'+r.product_name+'|'+r.packing;
     var rowId=r.id!=null?r.id:(r.saved_at+key);
     if(lastSeen[key]!=null && r.fob!=null){
-      var delta=r.fob-lastSeen[key];
-      deltaByRowKey[rowId]={delta:delta};
+      deltaByRowKey[rowId]={delta:r.fob-lastSeen[key]};
     }
     if(r.fob!=null) lastSeen[key]=r.fob;
   });
 
-  // Group rows by saved_at timestamp (one save event = one batch of rows)
   var bySave={};
   rows.forEach(function(r){
     var key=r.saved_at;
@@ -6482,8 +6587,10 @@ function _showPriceLogTable(rows){
   var html='<div style="font-size:.78rem">';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
   html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events</div>';
+  html+='<div style="display:flex;gap:6px">';
+  html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2190; Compare Dates</button>';
   html+='<button onclick="svExportPriceLog()" style="background:var(--olv);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2B07; Export CSV</button>';
-  html+='</div>';
+  html+='</div></div>';
   html+='<div style="font-size:.68rem;color:var(--mut);margin-bottom:10px">&#x1F7E2; green = higher than last recorded price for that item &nbsp;|&nbsp; &#x1F534; red = lower &nbsp;|&nbsp; permanent record, cannot be edited or deleted by anyone</div>';
   html+='<div style="max-height:60vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px">';
 
@@ -6518,7 +6625,7 @@ function _showPriceLogTable(rows){
   html+='</div></div>';
 
   body.innerHTML=html;
-  window._priceLogRows=rows; // for CSV export
+  window._priceLogRows=rows;
   modal.className='open';
 }
 
