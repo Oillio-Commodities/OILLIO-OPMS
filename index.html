@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11AUG0820';
+  var _v='v11AUG1405';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6455,6 +6455,21 @@ function _showPriceLogTable(rows){
     return;
   }
 
+  // Compute day-over-day change per product: walk chronologically (oldest first),
+  // tracking each product's last-seen FOB so we can diff against it.
+  var ascending=rows.slice().sort(function(a,b){return new Date(a.saved_at)-new Date(b.saved_at);});
+  var lastSeen={}; // key -> fob
+  var deltaByRowKey={}; // unique row identity -> {delta, pct}
+  ascending.forEach(function(r){
+    var key=r.supplier+'|'+r.product_name+'|'+r.packing;
+    var rowId=r.id!=null?r.id:(r.saved_at+key);
+    if(lastSeen[key]!=null && r.fob!=null){
+      var delta=r.fob-lastSeen[key];
+      deltaByRowKey[rowId]={delta:delta};
+    }
+    if(r.fob!=null) lastSeen[key]=r.fob;
+  });
+
   // Group rows by saved_at timestamp (one save event = one batch of rows)
   var bySave={};
   rows.forEach(function(r){
@@ -6465,34 +6480,42 @@ function _showPriceLogTable(rows){
   var saveKeys=Object.keys(bySave).sort().reverse();
 
   var html='<div style="font-size:.78rem">';
-  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
-  html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events — permanent, cannot be edited or deleted</div>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
+  html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events</div>';
   html+='<button onclick="svExportPriceLog()" style="background:var(--olv);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2B07; Export CSV</button>';
   html+='</div>';
+  html+='<div style="font-size:.68rem;color:var(--mut);margin-bottom:10px">&#x1F7E2; green = higher than last recorded price for that item &nbsp;|&nbsp; &#x1F534; red = lower &nbsp;|&nbsp; permanent record, cannot be edited or deleted by anyone</div>';
+  html+='<div style="max-height:60vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px">';
 
-  saveKeys.forEach(function(ts){
+  saveKeys.forEach(function(ts, gi){
     var group=bySave[ts];
     var d=new Date(ts);
     var myDate=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
     var myTime=d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    html+='<div style="margin-bottom:16px;border:1px solid var(--bdr);border-radius:8px;overflow:hidden">';
-    html+='<div style="background:#fffde7;padding:7px 10px;font-weight:700;color:#b45309;font-size:.75rem">&#x1F4C5; '+myDate+' '+myTime+' &mdash; '+(group[0].saved_by||'User 0')+'</div>';
-    html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
-    html+='<tr style="background:#f5f5f5;text-align:left"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Premium</th><th style="padding:5px 8px;text-align:right">Pkg Cost</th><th style="padding:5px 8px;text-align:right">FOB</th></tr>';
+    html+='<div style="position:sticky;top:0;background:#fffde7;padding:6px 10px;font-weight:700;color:#b45309;font-size:.72rem;border-top:'+(gi>0?'2px solid #f0dca0':'none')+';z-index:1">&#x1F4C5; '+myDate+' '+myTime+' &mdash; '+(group[0].saved_by||'User 0')+' ('+group.length+' items)</div>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:.68rem">';
     group.forEach(function(r,i){
+      var rowId=r.id!=null?r.id:(r.saved_at+r.supplier+'|'+r.product_name+'|'+r.packing);
+      var dInfo=deltaByRowKey[rowId];
+      var arrow='', color='#333';
+      if(dInfo && Math.abs(dInfo.delta)>0.005){
+        if(dInfo.delta>0){ arrow='&#x25B2; +'+dInfo.delta.toFixed(2); color='#1a7a3c'; }
+        else{ arrow='&#x25BC; '+dInfo.delta.toFixed(2); color='#c0392b'; }
+      } else if(dInfo){ arrow='&#x2014;'; color='#999'; }
       var bg=i%2===0?'#fff':'#fafafa';
       html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
-      html+='<td style="padding:4px 8px">'+(r.supplier||'')+'</td>';
-      html+='<td style="padding:4px 8px">'+(r.product_name||'')+'</td>';
-      html+='<td style="padding:4px 8px;color:#888">'+(r.packing||'')+'</td>';
-      html+='<td style="padding:4px 8px;text-align:right">'+(r.premium!=null?Number(r.premium).toFixed(2):'-')+'</td>';
-      html+='<td style="padding:4px 8px;text-align:right">'+(r.pkg_cost!=null?Number(r.pkg_cost).toFixed(2):'-')+'</td>';
-      html+='<td style="padding:4px 8px;text-align:right;font-weight:700">'+(r.fob!=null?Number(r.fob).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:3px 8px;width:60px">'+(r.supplier||'')+'</td>';
+      html+='<td style="padding:3px 8px">'+(r.product_name||'')+'</td>';
+      html+='<td style="padding:3px 8px;color:#888">'+(r.packing||'')+'</td>';
+      html+='<td style="padding:3px 8px;text-align:right">'+(r.premium!=null?Number(r.premium).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:3px 8px;text-align:right">'+(r.pkg_cost!=null?Number(r.pkg_cost).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:3px 8px;text-align:right;font-weight:700">'+(r.fob!=null?Number(r.fob).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:3px 8px;text-align:right;color:'+color+';font-weight:700;white-space:nowrap">'+arrow+'</td>';
       html+='</tr>';
     });
-    html+='</table></div>';
+    html+='</table>';
   });
-  html+='</div>';
+  html+='</div></div>';
 
   body.innerHTML=html;
   window._priceLogRows=rows; // for CSV export
