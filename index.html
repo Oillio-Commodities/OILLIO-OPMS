@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11AUG0804';
+  var _v='v11AUG0817';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -1607,6 +1607,18 @@ function el(id){return document.getElementById(id);}
   }
 
   // ── WRITE: User 0 saves — updates row + appends to log ──
+  function _buildPriceLogRows(supplier, dataArr, pkgArr, savedTs) {
+    return pkgArr.map(function(p) {
+      var match = dataArr.find(function(d) { return d.name === p.name && d.packing === p.packing; });
+      var fob = match ? getLiveFob(match, supplier) : null;
+      return {
+        saved_at: savedTs, saved_by: 'User 0', supplier: supplier,
+        product_name: p.name, packing: p.packing,
+        premium: p.premium, pkg_cost: p.pkg_cost, fob: fob
+      };
+    });
+  }
+
   function _syncSave() {
     var myTime = new Date().toLocaleString('en-MY', {
       timeZone:'Asia/Kuala_Lumpur',
@@ -1635,7 +1647,7 @@ function el(id){return document.getElementById(id);}
         showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
-        // Append to permanent log
+        // Append to permanent log (old blob-style, kept for backward compatibility)
         fetch(_SB_URL + '/rest/v1/ref_log', {
           method: 'POST',
           headers: _SB_HEADERS,
@@ -1645,6 +1657,19 @@ function el(id){return document.getElementById(id);}
             saved_by: 'User 0'
           })
         }).catch(function(){});
+        // NEW: flat, row-per-product log (Excel-like, easy day-to-day comparison)
+        try {
+          var savedTs = new Date().toISOString();
+          var rows = []
+            .concat(_buildPriceLogRows('apical', APICAL_DATA, APC_PKG, savedTs))
+            .concat(_buildPriceLogRows('klk', KLK_DATA, KLK_PKG, savedTs))
+            .concat(_buildPriceLogRows('wingagro', WA_DATA, WA_PKG, savedTs));
+          if (rows.length) {
+            fetch(_SB_URL + '/rest/v1/price_log', {
+              method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(rows)
+            }).catch(function(){});
+          }
+        } catch(e) {}
       } else {
         showToast('⚠ Save failed: HTTP ' + r.status);
       }
@@ -6411,21 +6436,85 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
 }function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
-  // Load ref log from Supabase (permanent, ordered newest first)
-  fetch(_SB_URL+'/rest/v1/ref_log?select=*&order=saved_at.desc&limit=200',{
+  fetch(_SB_URL+'/rest/v1/price_log?select=*&order=saved_at.desc&limit=2000',{
     headers:_SB_HEADERS,cache:'no-store'
   })
   .then(function(r){return r.json();})
-  .then(function(rows){
-    var refLog=(rows||[]).map(function(row){
-      var d=new Date(row.saved_at);
-      var myDate=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
-      var myTime=d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});
-      return {date:myDate+' '+myTime,ts:row.saved_at,apical:row.apical,klk:row.klk,wingagro:row.wingagro};
+  .then(function(rows){ _showPriceLogTable(rows||[]); })
+  .catch(function(){ _showPriceLogTable([]); });
+}
+
+function _showPriceLogTable(rows){
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Price History Log';
+
+  if(!rows.length){
+    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No price history yet. Entries appear here after Save &amp; Log Reference is used.</div>';
+    modal.className='open';
+    return;
+  }
+
+  // Group rows by saved_at timestamp (one save event = one batch of rows)
+  var bySave={};
+  rows.forEach(function(r){
+    var key=r.saved_at;
+    if(!bySave[key]) bySave[key]=[];
+    bySave[key].push(r);
+  });
+  var saveKeys=Object.keys(bySave).sort().reverse();
+
+  var html='<div style="font-size:.78rem">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events — permanent, cannot be edited or deleted</div>';
+  html+='<button onclick="svExportPriceLog()" style="background:var(--olv);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2B07; Export CSV</button>';
+  html+='</div>';
+
+  saveKeys.forEach(function(ts){
+    var group=bySave[ts];
+    var d=new Date(ts);
+    var myDate=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+    var myTime=d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    html+='<div style="margin-bottom:16px;border:1px solid var(--bdr);border-radius:8px;overflow:hidden">';
+    html+='<div style="background:#fffde7;padding:7px 10px;font-weight:700;color:#b45309;font-size:.75rem">&#x1F4C5; '+myDate+' '+myTime+' &mdash; '+(group[0].saved_by||'User 0')+'</div>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
+    html+='<tr style="background:#f5f5f5;text-align:left"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Premium</th><th style="padding:5px 8px;text-align:right">Pkg Cost</th><th style="padding:5px 8px;text-align:right">FOB</th></tr>';
+    group.forEach(function(r,i){
+      var bg=i%2===0?'#fff':'#fafafa';
+      html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
+      html+='<td style="padding:4px 8px">'+(r.supplier||'')+'</td>';
+      html+='<td style="padding:4px 8px">'+(r.product_name||'')+'</td>';
+      html+='<td style="padding:4px 8px;color:#888">'+(r.packing||'')+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right">'+(r.premium!=null?Number(r.premium).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right">'+(r.pkg_cost!=null?Number(r.pkg_cost).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:4px 8px;text-align:right;font-weight:700">'+(r.fob!=null?Number(r.fob).toFixed(2):'-')+'</td>';
+      html+='</tr>';
     });
-    _showRefLog(refLog);
-  })
-  .catch(function(){_showRefLog([]);});
+    html+='</table></div>';
+  });
+  html+='</div>';
+
+  body.innerHTML=html;
+  window._priceLogRows=rows; // for CSV export
+  modal.className='open';
+}
+
+function svExportPriceLog(){
+  var rows=window._priceLogRows||[];
+  if(!rows.length){showToast('No data to export');return;}
+  var csv='Date,Time,Supplier,Product,Packing,Premium,Pkg Cost,FOB,Saved By\n';
+  rows.forEach(function(r){
+    var d=new Date(r.saved_at);
+    var myDate=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur'});
+    var myTime=d.toLocaleTimeString('en-MY',{timeZone:'Asia/Kuala_Lumpur'});
+    csv+=[myDate,myTime,r.supplier,'"'+(r.product_name||'')+'"','"'+(r.packing||'')+'"',r.premium,r.pkg_cost,r.fob,r.saved_by].join(',')+'\n';
+  });
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='oillio_price_log_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 function _showRefLog(refLog){var fobLog=[];try{fobLog=JSON.parse(localStorage.getItem("oillio_fob_log")||"[]");}catch(e){}var cutoff=new Date(),wdCount=0;while(wdCount<30){cutoff.setDate(cutoff.getDate()-1);var day=cutoff.getDay();if(day!==0&&day!==6)wdCount++;}var cutoffStr=cutoff.toISOString().slice(0,10);var fobF=fobLog.filter(function(e){return e.date>=cutoffStr;});var refF=refLog;/* Ref price log is permanent & unlimited in Supabase — no date cutoff */var html="<div style='font-size:.78rem;padding:4px'>";html+="<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>";html+="<div style='font-weight:700;font-size:.85rem;color:var(--brand)'>&#x1F4C5; Price History</div>";html+="<span style='background:#fff3cd;color:#b45309;padding:3px 8px;border-radius:10px;font-size:.68rem;font-weight:700'>DRAFT</span>";html+="</div>";html+="<div style='font-size:.7rem;color:var(--mut);margin-bottom:10px'>FOB quotes: last 30 working days (this device). Reference prices: full history, unlimited, stored in cloud.</div>";if(fobF.length){html+="<div style='font-weight:700;color:var(--olv);margin-bottom:6px;font-size:.8rem'>FOB Log ("+fobF.length+" entries)</div>";[].concat(fobF).reverse().forEach(function(e){html+="<div style='padding:7px 10px;margin-bottom:5px;background:#f8fafc;border-radius:7px;border-left:3px solid var(--olv)'>";html+="<div style='display:flex;justify-content:space-between'><b>"+e.date+"</b>";html+="<span style='background:#e8f4ff;color:#0a3d8a;padding:2px 7px;border-radius:10px;font-size:.68rem;font-weight:700'>"+e.supplier+"</span></div>";html+="<div style='color:var(--mut);margin-top:2px'>Margin: "+e.margin+"% • "+(Object.keys(e.fob||{}).length)+" products</div>";html+="</div>";});}else html+="<div style='padding:12px;color:var(--mut);background:#f8fafc;border-radius:7px;margin-bottom:10px'>No FOB entries in last 30 working days.</div>";if(refF.length){html+="<div style='font-weight:700;color:#b45309;margin-top:10px;margin-bottom:6px;font-size:.8rem'>Reference Prices — Full History ("+refF.length+" of last 200 saved)</div>";[].concat(refF).reverse().forEach(function(e){
   html+="<div style='padding:8px 10px;margin-bottom:6px;background:#fffde7;border-radius:7px;border-left:3px solid #f9a825'>";
