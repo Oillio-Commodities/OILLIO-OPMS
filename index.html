@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v11AUG2237';
+  var _v='v12AUG2311';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -1669,6 +1669,17 @@ function el(id){return document.getElementById(id);}
               method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(rows)
             }).catch(function(){});
           }
+        } catch(e) {}
+        // NEW: oil base price log — one row per supplier, same timestamp as price_log rows
+        try {
+          var oilRows = [
+            {saved_at: savedTs, saved_by:'User 0', supplier:'apical', malaysia_cp10:APC_REF.malaysia_cp10, indonesia_cp10:APC_REF.indonesia_cp10, pk_olein:APC_REF.pk_olein, pk_oil:APC_REF.pk_oil, pk_stearin:APC_REF.pk_stearin, stearin:APC_REF.stearin, coconut:APC_REF.coconut, supplier_margin:APC_REF.supplier_margin},
+            {saved_at: savedTs, saved_by:'User 0', supplier:'klk', malaysia_cp10:KLK_REF.cp10, indonesia_cp10:null, pk_olein:null, pk_oil:null, pk_stearin:null, stearin:null, coconut:null, supplier_margin:KLK_REF.supplier_margin},
+            {saved_at: savedTs, saved_by:'User 0', supplier:'wingagro', malaysia_cp10:WA_REF.malaysia_cp10, indonesia_cp10:WA_REF.indonesia_cp10, pk_olein:WA_REF.pk_olein, pk_oil:WA_REF.pk_oil, pk_stearin:WA_REF.pk_stearin, stearin:WA_REF.stearin, coconut:WA_REF.coconut, supplier_margin:WA_REF.supplier_margin}
+          ];
+          fetch(_SB_URL + '/rest/v1/oil_base_log', {
+            method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(oilRows)
+          }).catch(function(){});
         } catch(e) {}
       } else {
         showToast('⚠ Save failed: HTTP ' + r.status);
@@ -6668,6 +6679,17 @@ function svShowTrendPicker(){
   .catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load product list.</div>'; });
 }
 
+function _findFcpoRef(supplier, name, packing){
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var match = arr.find(function(d){ return d.name===name && d.packing===packing; });
+  return match ? match.fcpo_ref : null;
+}
+
+var OIL_FIELD_LABELS = {
+  malaysia_cp10:'Malaysia CP10', indonesia_cp10:'Indonesia CP10', pk_olein:'PK Olein',
+  pk_oil:'PK Oil', pk_stearin:'PK Stearin', stearin:'RBD Stearin', coconut:'Coconut Oil'
+};
+
 function svShowTrendChart(){
   var sel=document.getElementById('trendProductSelect');
   var key=sel.value;
@@ -6676,20 +6698,77 @@ function svShowTrendChart(){
   var resultEl=document.getElementById('trendChartResult');
   resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">Loading history...</div>';
 
+  var fcpoRef = _findFcpoRef(supplier, name, packing);
+  var oilField = (fcpoRef && fcpoRef!=='fixed') ? fcpoRef : null;
+
   var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)
     +'&product_name=eq.'+encodeURIComponent(name)+'&packing=eq.'+encodeURIComponent(packing)
     +'&order=saved_at.asc';
 
-  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
-  .then(function(r){return r.json();})
-  .then(function(rows){
+  var oilQ = oilField ? (_SB_URL+'/rest/v1/oil_base_log?select=saved_at,'+oilField+'&supplier=eq.'+encodeURIComponent(supplier)+'&order=saved_at.asc') : null;
+
+  Promise.all([
+    fetch(q,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    oilQ ? fetch(oilQ,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}) : Promise.resolve(null)
+  ]).then(function(results){
+    var rows=results[0], oilRows=results[1];
     if(!rows || !rows.length){
       resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">No history found for this product.</div>';
       return;
     }
-    resultEl.innerHTML=_renderTrendChart(rows, name, packing)+_renderTrendTable(rows);
+    var html='<div style="display:grid;grid-template-columns:'+(oilRows?'1fr 1fr':'1fr')+';gap:12px">';
+    html+='<div>'+_renderTrendChart(rows, name, packing)+'</div>';
+    if(oilRows && oilRows.length){
+      html+='<div>'+_renderOilChart(oilRows, oilField)+'</div>';
+    } else if(oilField){
+      html+='<div style="padding:14px;color:var(--mut);font-size:.72rem;border:1px dashed var(--bdr);border-radius:8px">No base oil history logged yet for '+OIL_FIELD_LABELS[oilField]+'.</div>';
+    }
+    html+='</div>';
+    html+=_renderTrendTable(rows);
+    resultEl.innerHTML=html;
   })
   .catch(function(){ resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load trend.</div>'; });
+}
+
+function _renderOilChart(rows, field){
+  var W=560, H=220, padL=48, padR=14, padT=14, padB=34;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+
+  var vals=rows.map(function(r){return r[field]!=null?Number(r[field]):null;}).filter(function(v){return v!=null;});
+  if(!vals.length) return '<div style="padding:14px;color:var(--mut);font-size:.72rem">No data.</div>';
+  var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+  if(minV===maxV){ minV-=1; maxV+=1; }
+  var pad=(maxV-minV)*0.1; minV-=pad; maxV+=pad;
+
+  function x(i){ return padL + (rows.length<=1?0:(i/(rows.length-1))*plotW); }
+  function y(v){ return padT + plotH - ((v-minV)/(maxV-minV))*plotH; }
+
+  var pts=[];
+  rows.forEach(function(r,i){ if(r[field]!=null) pts.push(x(i)+','+y(Number(r[field]))); });
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;background:#fff;border:1px solid var(--bdr);border-radius:8px">';
+  for(var g=0; g<=4; g++){
+    var gv=minV+(maxV-minV)*g/4;
+    var gy=y(gv);
+    svg+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#eee" stroke-width="1"/>';
+    svg+='<text x="'+(padL-6)+'" y="'+(gy+3)+'" font-size="9" fill="#999" text-anchor="end">'+gv.toFixed(0)+'</text>';
+  }
+  [0, Math.floor((rows.length-1)/2), rows.length-1].forEach(function(i){
+    if(i<0||i>=rows.length) return;
+    var d=new Date(rows[i].saved_at);
+    var lbl=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short'});
+    svg+='<text x="'+x(i)+'" y="'+(H-10)+'" font-size="9" fill="#999" text-anchor="middle">'+lbl+'</text>';
+  });
+  svg+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="#f39c12" stroke-width="2"/>';
+  rows.forEach(function(r,i){
+    if(r[field]!=null) svg+='<circle cx="'+x(i)+'" cy="'+y(Number(r[field]))+'" r="3" fill="#f39c12"/>';
+  });
+  svg+='</svg>';
+
+  var legend='<div style="display:flex;gap:16px;margin:8px 0;font-size:.72rem">';
+  legend+='<div><span style="display:inline-block;width:12px;height:3px;background:#f39c12;margin-right:5px"></span>'+(OIL_FIELD_LABELS[field]||field)+' (base oil, USD/MT)</div></div>';
+
+  return '<div style="font-weight:700;color:var(--brand);margin-bottom:4px">Base Oil Reference</div>'+legend+svg;
 }
 
 function _renderTrendChart(rows, name, packing){
