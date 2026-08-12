@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v12AUG0035';
+  var _v='v12AUG0051';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6447,12 +6447,20 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
 }function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
-  fetch(_SB_URL+'/rest/v1/price_log?select=saved_at,saved_by&order=saved_at.desc&limit=2000',{
-    headers:_SB_HEADERS,cache:'no-store'
-  })
-  .then(function(r){return r.json();})
-  .then(function(rows){ _showLogPicker(rows||[]); })
-  .catch(function(){ _showLogPicker([]); });
+  Promise.all([
+    fetch(_SB_URL+'/rest/v1/price_log?select=saved_at,saved_by&order=saved_at.desc&limit=2000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return [];}),
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=saved_at,saved_by&order=saved_at.desc&limit=2000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return [];})
+  ]).then(function(results){
+    var priceRows=results[0]||[], oilRows=results[1]||[];
+    // Merge distinct save dates from BOTH tables — a date might only have oil base
+    // data (or only product data) depending on what was actually migrated/saved
+    var seen={}, merged=[];
+    priceRows.concat(oilRows).forEach(function(r){
+      if(!seen[r.saved_at]){ seen[r.saved_at]=1; merged.push(r); }
+    });
+    merged.sort(function(a,b){ return new Date(b.saved_at)-new Date(a.saved_at); });
+    _showLogPicker(merged);
+  });
 }
 
 function _fmtMY(ts){
