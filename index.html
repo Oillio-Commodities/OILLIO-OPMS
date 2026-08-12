@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v12AUG0138';
+  var _v='v12AUG0141';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6880,8 +6880,12 @@ function svShowTrendPicker(){
     }).join('');
 
     var html='<div style="font-size:.78rem">';
-    html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Pick a product to see its full price history</div>';
+    html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Pick a product, optionally narrow to a date range</div>';
     html+='<select id="trendProductSelect" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.75rem;margin-bottom:10px">'+opts+'</select>';
+    html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap">';
+    html+='<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">FROM (optional)</label><input type="date" id="trendFromDate" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
+    html+='<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">TO (optional)</label><input type="date" id="trendToDate" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
+    html+='</div>';
     html+='<div style="display:flex;gap:8px">';
     html+='<button onclick="svShowTrendChart()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">Show Trend</button>';
     html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
@@ -6909,6 +6913,8 @@ function svShowTrendChart(){
   var key=sel.value;
   var parts=key.split('|');
   var supplier=parts[0], name=parts[1], packing=parts[2];
+  var fromDate=document.getElementById('trendFromDate').value;
+  var toDate=document.getElementById('trendToDate').value;
   var resultEl=document.getElementById('trendChartResult');
   resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">Loading history...</div>';
 
@@ -6918,8 +6924,12 @@ function svShowTrendChart(){
   var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)
     +'&product_name=eq.'+encodeURIComponent(name)+'&packing=eq.'+encodeURIComponent(packing)
     +'&order=saved_at.asc';
+  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
 
   var oilQ = oilField ? (_SB_URL+'/rest/v1/oil_base_log?select=saved_at,'+oilField+'&supplier=eq.'+encodeURIComponent(supplier)+'&order=saved_at.asc') : null;
+  if(oilQ && fromDate) oilQ+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(oilQ && toDate) oilQ+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
 
   Promise.all([
     fetch(q,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
@@ -6927,10 +6937,15 @@ function svShowTrendChart(){
   ]).then(function(results){
     var rows=results[0], oilRows=results[1];
     if(!rows || !rows.length){
-      resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">No history found for this product.</div>';
+      var rangeMsg = (fromDate||toDate) ? ' in the selected date range' : '';
+      resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">No history found for this product'+rangeMsg+'.</div>';
       return;
     }
-    var html='<div style="display:grid;grid-template-columns:'+(oilRows?'1fr 1fr':'1fr')+';gap:12px">';
+    var html='';
+    if(fromDate||toDate){
+      html+='<div style="font-size:.7rem;color:var(--mut);margin-bottom:8px">Showing: '+(fromDate||'earliest')+' &rarr; '+(toDate||'latest')+' ('+rows.length+' point(s))</div>';
+    }
+    html+='<div style="display:grid;grid-template-columns:'+(oilRows?'1fr 1fr':'1fr')+';gap:12px">';
     html+='<div>'+_renderTrendChart(rows, name, packing)+'</div>';
     if(oilRows && oilRows.length){
       html+='<div>'+_renderOilChart(oilRows, oilField)+'</div>';
