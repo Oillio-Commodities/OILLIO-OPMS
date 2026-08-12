@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v12AUG0118';
+  var _v='v12AUG0129';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6691,7 +6691,8 @@ function svCompareLog(){
       });
     });
 
-    var html='<div style="font-size:.7rem;color:var(--mut);margin-bottom:10px">'+_fmtMY(tsA)+' &rarr; '+_fmtMY(tsB)+'</div>';
+    var dLabelA=_fmtMY(tsA), dLabelB=_fmtMY(tsB);
+    var html='<div style="font-size:.7rem;color:var(--mut);margin-bottom:10px">'+dLabelA+' &rarr; '+dLabelB+'</div>';
 
     html+='<div style="font-weight:700;color:var(--brand);margin-bottom:6px;font-size:.75rem">&#x1F6E2; Base Oil Reference Changes</div>';
     if(!oilChanges.length){
@@ -6699,7 +6700,7 @@ function svCompareLog(){
     } else {
       html+='<div style="border:1px solid var(--bdr);border-radius:8px;margin-bottom:14px;overflow:hidden">';
       html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
-      html+='<tr style="background:#fff3e0;text-align:left"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Oil</th><th style="padding:5px 8px;text-align:right">Before</th><th style="padding:5px 8px;text-align:right">After</th><th style="padding:5px 8px;text-align:right">Change</th></tr>';
+      html+='<tr style="background:#fff3e0;text-align:left"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Oil</th><th style="padding:5px 8px;text-align:right">'+dLabelA+'</th><th style="padding:5px 8px;text-align:right">'+dLabelB+'</th><th style="padding:5px 8px;text-align:right">Change</th></tr>';
       oilChanges.forEach(function(c,i){
         var delta=c.after-c.before;
         var color=delta>0?'#1a7a3c':'#c0392b';
@@ -6723,14 +6724,14 @@ function svCompareLog(){
       html+='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+changes.length+' product(s) changed</div>';
       html+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px">';
       html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
-      html+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Premium Before&rarr;After</th><th style="padding:5px 8px;text-align:right">Pkg Before&rarr;After</th><th style="padding:5px 8px;text-align:right">FOB Before&rarr;After</th></tr>';
+      html+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Premium<br>'+dLabelA+' &rarr; '+dLabelB+'</th><th style="padding:5px 8px;text-align:right">Pkg Cost<br>'+dLabelA+' &rarr; '+dLabelB+'</th><th style="padding:5px 8px;text-align:right">FOB<br>'+dLabelA+' &rarr; '+dLabelB+'</th></tr>';
       changes.forEach(function(c,i){
         var bg=i%2===0?'#fff':(c.isNew?'#eaf4fc':'#fafafa');
         var premChanged = !c.isNew && c.beforePrem!=null && c.afterPrem!=null && Math.abs(c.beforePrem-c.afterPrem)>0.005;
         var pkgChanged = !c.isNew && c.beforePkg!=null && c.afterPkg!=null && Math.abs(c.beforePkg-c.afterPkg)>0.005;
         function cell(before, after, changed){
           if(before==null && after==null) return '-';
-          if(c.isNew) return '<span style="color:#2980b9;font-weight:700">NEW: '+(after!=null?after.toFixed(2):'-')+'</span>';
+          if(c.isNew) return '<span style="color:#2980b9;font-weight:700" title="No record found on '+dLabelA+' for this product">No record on '+dLabelA.split(' ').slice(0,2).join(' ')+': '+(after!=null?after.toFixed(2):'-')+'</span>';
           var col = changed ? (after>before?'#1a7a3c':'#c0392b') : '#333';
           var wt = changed ? '700' : '400';
           return '<span style="color:'+col+';font-weight:'+wt+'">'+(before!=null?before.toFixed(2):'-')+' &rarr; '+(after!=null?after.toFixed(2):'-')+'</span>';
