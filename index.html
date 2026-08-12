@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v12AUG0129';
+  var _v='v12AUG0138';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6587,20 +6587,30 @@ function svBrowseDate(){
   });
 }
 
-function svViewOilBaseHistory(){
-  fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'})
+function svViewOilBaseHistory(fromDate, toDate){
+  var q=_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000';
+  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
+  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
   .then(function(r){return r.json();})
-  .then(function(rows){ _showOilBaseTable(rows||[]); })
-  .catch(function(){ _showOilBaseTable([]); });
+  .then(function(rows){ _showOilBaseTable(rows||[], fromDate, toDate); })
+  .catch(function(){ _showOilBaseTable([], fromDate, toDate); });
 }
 
-function _showOilBaseTable(rows){
+function _showOilBaseTable(rows, fromDate, toDate){
   var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(!modal||!body||!title) return;
   title.textContent='Oil Base Price History — Full List';
 
+  var filterBar='<div style="display:flex;gap:8px;align-items:end;margin-bottom:12px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">'
+    +'<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">FROM</label><input type="date" id="obFromDate" value="'+(fromDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>'
+    +'<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">TO</label><input type="date" id="obToDate" value="'+(toDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>'
+    +'<button onclick="svViewOilBaseHistory(document.getElementById(\'obFromDate\').value,document.getElementById(\'obToDate\').value)" style="background:var(--brand);color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Apply</button>'
+    +'<button onclick="svViewOilBaseHistory()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Clear</button>'
+    +'</div>';
+
   if(!rows.length){
-    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No oil base history yet.</div>';
+    body.innerHTML=filterBar+'<div style="padding:20px;text-align:center;color:var(--mut)">No oil base history in this range.</div>';
     modal.className='open';
     return;
   }
@@ -6613,7 +6623,7 @@ function _showOilBaseTable(rows){
   });
   var saveKeys=Object.keys(bySave).sort().reverse();
 
-  var html='<div style="font-size:.78rem">';
+  var html=filterBar+'<div style="font-size:.78rem">';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">';
   html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events</div>';
   html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
@@ -6754,23 +6764,31 @@ function svCompareLog(){
   });
 }
 
-function svViewFullLog(){
-  fetch(_SB_URL+'/rest/v1/price_log?select=*&order=saved_at.desc&limit=2000',{
-    headers:_SB_HEADERS,cache:'no-store'
-  })
+function svViewFullLog(fromDate, toDate){
+  var q=_SB_URL+'/rest/v1/price_log?select=*&order=saved_at.desc&limit=20000';
+  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
+  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
   .then(function(r){return r.json();})
-  .then(function(rows){ _showPriceLogTable(rows||[]); })
-  .catch(function(){ _showPriceLogTable([]); });
+  .then(function(rows){ _showPriceLogTable(rows||[], fromDate, toDate); })
+  .catch(function(){ _showPriceLogTable([], fromDate, toDate); });
 }
 
 
-function _showPriceLogTable(rows){
+function _showPriceLogTable(rows, fromDate, toDate){
   var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(!modal||!body||!title) return;
   title.textContent='Price History Log — Full List';
 
+  var filterBar='<div style="display:flex;gap:8px;align-items:end;margin-bottom:12px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">'
+    +'<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">FROM</label><input type="date" id="plFromDate" value="'+(fromDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>'
+    +'<div><label style="font-size:.65rem;font-weight:700;color:var(--mut);display:block">TO</label><input type="date" id="plToDate" value="'+(toDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>'
+    +'<button onclick="svViewFullLog(document.getElementById(\'plFromDate\').value,document.getElementById(\'plToDate\').value)" style="background:var(--brand);color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Apply</button>'
+    +'<button onclick="svViewFullLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Clear</button>'
+    +'</div>';
+
   if(!rows.length){
-    body.innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">No price history yet.</div>';
+    body.innerHTML=filterBar+'<div style="padding:20px;text-align:center;color:var(--mut)">No price history in this range.</div>';
     modal.className='open';
     return;
   }
@@ -6795,7 +6813,7 @@ function _showPriceLogTable(rows){
   });
   var saveKeys=Object.keys(bySave).sort().reverse();
 
-  var html='<div style="font-size:.78rem">';
+  var html=filterBar+'<div style="font-size:.78rem">';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
   html+='<div style="font-weight:700;color:var(--brand)">'+rows.length+' logged entries across '+saveKeys.length+' save events</div>';
   html+='<div style="display:flex;gap:6px">';
