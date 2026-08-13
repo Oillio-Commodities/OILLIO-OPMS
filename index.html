@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v12AUG0141';
+  var _v='v12AUG0257';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6397,6 +6397,7 @@ function svOnPkgChange(inp){
   var row=arr.find(function(r){return r.id===id;});
   if(row) row[field]=v;
   if(typeof svRenderTable==='function') svRenderTable();
+  if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
 }
 
 function svOnRefChange(inp){
