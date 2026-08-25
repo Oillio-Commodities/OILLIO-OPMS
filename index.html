@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0608';
+  var _v='v25AUG0620';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -5874,12 +5874,12 @@ function calcKLKItemP(item){
 var APC_REF_KEY='oillio_apc_ref';
 var WA_REF_KEY='oillio_wa_ref';
 var KLK_REF_KEY='oillio_klk_ref';
-var APC_REF_DEF={malaysia_cp10:1160.0,indonesia_cp10:1040.0,pk_olein:1860.0,pk_oil:2090.0,pk_stearin:2410.0,stearin:1120.0,coconut:1970.0,cp6:1260.0,pfad:1110.0,oillio_margin:0.0,supplier_margin:0.96};
+var APC_REF_DEF={malaysia_cp10:1160.0,indonesia_cp10:1040.0,pk_olein:1860.0,pk_oil:2090.0,pk_stearin:2410.0,stearin:1120.0,coconut:1970.0,cp6:1220.0,pfad:1110.0,oillio_margin:0.0,supplier_margin:0.96};
 
 
 
-var WA_REF_DEF={malaysia_cp10:1160.0,indonesia_cp10:1040.0,pk_olein:1860.0,pk_oil:2090.0,pk_stearin:2410.0,stearin:1120.0,coconut:1970.0,cp6:1260.0,pfad:1110.0,oillio_margin:0.0,supplier_margin:0.955};
-var KLK_REF_DEF={cp10:1160.0,cp6:1260.0,pfad:1110.0,stearin:1120.0,supplier_margin:0.975,oillio_margin:0.0};
+var WA_REF_DEF={malaysia_cp10:1160.0,indonesia_cp10:1040.0,pk_olein:1860.0,pk_oil:2090.0,pk_stearin:2410.0,stearin:1120.0,coconut:1970.0,cp6:1220.0,pfad:1110.0,oillio_margin:0.0,supplier_margin:0.955};
+var KLK_REF_DEF={cp10:1160.0,cp6:1220.0,pfad:1110.0,stearin:1120.0,supplier_margin:0.975,oillio_margin:0.0};
 function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var ok=true;if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30)ok=false;if(ok){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(parseFloat(d[k])))m[k]=parseFloat(d[k]);});return m;}localStorage.removeItem(key);}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
@@ -6097,16 +6097,16 @@ var WA_DATA=[
 {cat:'SPECIALTY',name:'20kg Hpko 38/40',packing:'20kg carton',load_ctn:1132.0,net_wt:20.0,fob_sua:2130.0,fcpo_default:2090.0,premium:-42.0,pkg_cost:82.0,fcpo_ref:'pk_oil',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'}
 ]
 var KLK_DATA=[
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'900ML X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:9.72,fob_mt:1497.83,fcpo_default:1260.0,premium:19.0368,pkg_cost:218.7932,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.5L X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:10.8,fob_mt:1471.47,fcpo_default:1260.0,premium:11.7867,pkg_cost:199.6833,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.5L X 6 PET BOTTLES PER CARTON',load_ctn:1600.0,net_wt:9.72,fob_mt:1547.15,fcpo_default:1260.0,premium:65.8022,pkg_cost:221.3478,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'2L X 6 PET BOTTLES PER CARTON',load_ctn:1450.0,net_wt:10.8,fob_mt:1485.26,fcpo_default:1260.0,premium:19.0248,pkg_cost:206.2352,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'4.5L X 6 PET BOTTLES PER CARTON',load_ctn:990.0,net_wt:16.2,fob_mt:1454.2,fcpo_default:1260.0,premium:11.355,pkg_cost:182.845,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'4L X 4 PET BOTTLES PER CARTON',load_ctn:1120.0,net_wt:14.4,fob_mt:1427.82,fcpo_default:1260.0,premium:10.7345,pkg_cost:157.0855,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'5L X 4 PET BOTTLES PER CARTON',load_ctn:1034.0,net_wt:18.0,fob_mt:1399.65,fcpo_default:1260.0,premium:6.1107,pkg_cost:133.5393,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1L X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:10.8,fob_mt:1475.71,fcpo_default:1260.0,premium:-42.29,pkg_cost:258.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.8L X 6 PET BOTTLES PER CARTON',load_ctn:1600.0,net_wt:9.72,fob_mt:1504.26,fcpo_default:1260.0,premium:-25.74,pkg_cost:270.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'3L X 6 PET BOTTLES PER CARTON',load_ctn:990.0,net_wt:16.2,fob_mt:1458.26,fcpo_default:1260.0,premium:15.415,pkg_cost:182.845,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'900ML X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:9.72,fob_mt:1457.83,fcpo_default:1220.0,premium:19.0368,pkg_cost:218.7932,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.5L X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:10.8,fob_mt:1431.47,fcpo_default:1220.0,premium:11.7867,pkg_cost:199.6833,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.5L X 6 PET BOTTLES PER CARTON',load_ctn:1600.0,net_wt:9.72,fob_mt:1507.15,fcpo_default:1220.0,premium:65.8022,pkg_cost:221.3478,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'2L X 6 PET BOTTLES PER CARTON',load_ctn:1450.0,net_wt:10.8,fob_mt:1445.26,fcpo_default:1220.0,premium:19.0248,pkg_cost:206.2352,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'4.5L X 6 PET BOTTLES PER CARTON',load_ctn:990.0,net_wt:16.2,fob_mt:1414.2,fcpo_default:1220.0,premium:11.355,pkg_cost:182.845,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'4L X 4 PET BOTTLES PER CARTON',load_ctn:1120.0,net_wt:14.4,fob_mt:1387.82,fcpo_default:1220.0,premium:10.7345,pkg_cost:157.0855,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'5L X 4 PET BOTTLES PER CARTON',load_ctn:1034.0,net_wt:18.0,fob_mt:1359.65,fcpo_default:1220.0,premium:6.1107,pkg_cost:133.5393,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1L X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:10.8,fob_mt:1435.71,fcpo_default:1220.0,premium:-42.29,pkg_cost:258.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.8L X 6 PET BOTTLES PER CARTON',load_ctn:1600.0,net_wt:9.72,fob_mt:1464.26,fcpo_default:1220.0,premium:-25.74,pkg_cost:270.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'3L X 6 PET BOTTLES PER CARTON',load_ctn:990.0,net_wt:16.2,fob_mt:1418.26,fcpo_default:1220.0,premium:15.415,pkg_cost:182.845,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1358.0,net_wt:14.4,fob_mt:1374.22,fcpo_default:1155.0,premium:66.085,pkg_cost:153.135,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4.5L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:16.2,fob_mt:1403.075,fcpo_default:1155.0,premium:34.7015,pkg_cost:213.3735,fcpo_ref:'fixed',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 TRANSPARENT JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:18.0,fob_mt:1386.75,fcpo_default:1155.0,premium:66.455,pkg_cost:165.295,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
@@ -6369,16 +6369,21 @@ function svRenderRefPanel(){
     html+='</div>';
   }
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  var AUTO_FORMULA_FIELDS={indonesia_cp10:function(r){return (r.malaysia_cp10!=null?r.malaysia_cp10:def.malaysia_cp10)-120;},
+    cp6:function(r){return (r.malaysia_cp10!=null?r.malaysia_cp10:def.malaysia_cp10)+60;}};
   Object.keys(def).forEach(function(k){
     if(k==='oillio_margin'||k==='supplier_margin')return;
     var lbl=LABS[k]||k.replace(/_/g,' ').toUpperCase();
-    var val=ref[k]!=null?ref[k]:def[k];
+    var isAuto=k in AUTO_FORMULA_FIELDS;
+    var val=isAuto?AUTO_FORMULA_FIELDS[k](ref):(ref[k]!=null?ref[k]:def[k]);
     html+='<div>';
-    html+='<div style="font-size:.6rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:2px">'+lbl+'</div>';
-    if(isEd){
+    html+='<div style="font-size:.6rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:2px">'+lbl+(isAuto?' <span style="font-weight:400;color:#999">(auto)</span>':'')+'</div>';
+    if(isEd&&!isAuto){
       html+='<input type="number" data-ref="'+k+'" value="'+val+'"';
       html+=' style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem"';
       html+=' oninput="svOnRefChange(this)">';
+    }else if(isAuto){
+      html+='<div style="padding:5px;border:1.5px dashed #999;background:#f0f0f0;border-radius:5px;font-weight:700;color:#666;font-size:.85rem" title="Auto-calculated from Malaysia CP10, not directly editable">'+val+'</div>';
     }else{
       html+='<div style="padding:5px;border:1.5px solid #ddd;background:#f8f8f8;border-radius:5px;font-weight:700;color:#666;font-size:.85rem">'+val+'</div>';
     }
@@ -6434,7 +6439,17 @@ function svOnRefChange(inp){
   var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;
   // Capture old values before update
   var _oldVals={};[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
-  [APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)r[k]=val;if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;});
+  [APC_REF,WA_REF,KLK_REF].forEach(function(r){
+    if(k in r)r[k]=val;
+    if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;
+    // Auto-formularised fields: Indonesia CP10 = Malaysia CP10 - 120, CP6 = Malaysia CP10 + 60
+    // Not directly user-editable — always derived live from whatever Malaysia CP10 currently is
+    if(k==='malaysia_cp10'){
+      if('indonesia_cp10' in r)r.indonesia_cp10=val-120;
+      if('cp6' in r)r.cp6=val+60;
+    }
+  });
+  svRenderRefPanel();
   svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
   // Log ref price change (User 0 only)
   if(window.USER_LEVEL===0){
