@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0620';
+  var _v='v25AUG0624';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6383,7 +6383,7 @@ function svRenderRefPanel(){
       html+=' style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem"';
       html+=' oninput="svOnRefChange(this)">';
     }else if(isAuto){
-      html+='<div style="padding:5px;border:1.5px dashed #999;background:#f0f0f0;border-radius:5px;font-weight:700;color:#666;font-size:.85rem" title="Auto-calculated from Malaysia CP10, not directly editable">'+val+'</div>';
+      html+='<div id="autoField_'+k+'" style="padding:5px;border:1.5px dashed #999;background:#f0f0f0;border-radius:5px;font-weight:700;color:#666;font-size:.85rem" title="Auto-calculated from Malaysia CP10, not directly editable">'+val+'</div>';
     }else{
       html+='<div style="padding:5px;border:1.5px solid #ddd;background:#f8f8f8;border-radius:5px;font-weight:700;color:#666;font-size:.85rem">'+val+'</div>';
     }
@@ -6449,7 +6449,14 @@ function svOnRefChange(inp){
       if('cp6' in r)r.cp6=val+60;
     }
   });
-  svRenderRefPanel();
+  // Surgical update only — never rebuild the whole panel here, that would
+  // destroy the input the user is actively typing in and kick their cursor out.
+  if(k==='malaysia_cp10'){
+    var _indEl=document.getElementById('autoField_indonesia_cp10');
+    if(_indEl)_indEl.textContent=(val-120);
+    var _cp6El=document.getElementById('autoField_cp6');
+    if(_cp6El)_cp6El.textContent=(val+60);
+  }
   svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
   // Log ref price change (User 0 only)
   if(window.USER_LEVEL===0){
