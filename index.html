@@ -4,43 +4,12 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0620';
-  // COOLDOWN GUARD: GitHub Pages serves through a multi-edge-node CDN. Right after
-  // a push, different edge nodes can briefly disagree on which version is "current" —
-  // this created a possible reload LOOP (fetch sees a different edge node's version,
-  // reloads, lands on yet another edge node's version, sees a mismatch again, repeats).
-  // This guard refuses to auto-reload more than once per 60 seconds, no matter what
-  // the fetch check finds, breaking any such loop completely.
-  var COOLDOWN_KEY='oillio_last_autoreload';
-  var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
-  var now=Date.now();
-  var inCooldown=(now-lastReload)<60000;
-
-  function _doReload(){
-    if(inCooldown) return; // silently skip — already reloaded recently, avoid any loop
-    sessionStorage.setItem(COOLDOWN_KEY, String(now));
-    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
-    window.location.reload(true);
-  }
-
-  if(!inCooldown){
-    fetch(window.location.pathname + '?_fresh=' + Date.now(), {cache:'no-store'})
-      .then(function(r){ return r.text(); })
-      .then(function(t){
-        var m = t.match(/var _v='([^']+)'/);
-        var freshV = m ? m[1] : null;
-        if (freshV && freshV !== _v) _doReload();
-      })
-      .catch(function(){});
-  }
-  // Also keep the original query-param check as a fast-path for normal navigation
-  if(!inCooldown && !window.location.search.includes(_v)){
-    sessionStorage.setItem(COOLDOWN_KEY, String(now));
-    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
-    window.location.replace(window.location.pathname+'?v='+_v);
-  }
-})();
-</script>
+  var _v='v25AUG0630';
+  // TEMPORARILY DISABLED ENTIRELY for diagnosis — no fetch check, no forced
+  // reload of any kind. If the scroll-jump issue stops happening with this
+  // completely removed, that confirms this mechanism was the cause. If it
+  // still happens with this gone, the cause is elsewhere entirely.
+})();</script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
