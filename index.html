@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0654';
+  var _v='v25AUG0023';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6369,8 +6369,15 @@ function svRenderRefPanel(){
     html+='</div>';
   }
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-  var AUTO_FORMULA_FIELDS={indonesia_cp10:function(r){return (r.malaysia_cp10!=null?r.malaysia_cp10:def.malaysia_cp10)-120;},
-    cp6:function(r){return (r.malaysia_cp10!=null?r.malaysia_cp10:def.malaysia_cp10)+60;}};
+  function _resolveMalaysiaCp10(r,def){
+    // KLK calls this field 'cp10', Apical/WingAgro call it 'malaysia_cp10' — check both
+    if(r.malaysia_cp10!=null)return r.malaysia_cp10;
+    if(r.cp10!=null)return r.cp10;
+    if(def.malaysia_cp10!=null)return def.malaysia_cp10;
+    return def.cp10;
+  }
+  var AUTO_FORMULA_FIELDS={indonesia_cp10:function(r){return _resolveMalaysiaCp10(r,def)-120;},
+    cp6:function(r){return _resolveMalaysiaCp10(r,def)+60;}};
   Object.keys(def).forEach(function(k){
     if(k==='oillio_margin'||k==='supplier_margin')return;
     var lbl=LABS[k]||k.replace(/_/g,' ').toUpperCase();
@@ -6430,34 +6437,47 @@ function svOnPkgChange(inp){
   if(isNaN(v))return;
   var row=arr.find(function(r){return r.id===id;});
   if(row) row[field]=v;
+  // Preserve scroll position across the re-render — rebuilding the product
+  // list below can otherwise cause the page to jump back to the top,
+  // which is disruptive while editing a field further down the page.
+  var _scrollY=window.scrollY;
   if(typeof svRenderTable==='function') svRenderTable();
   if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+  window.scrollTo(0,_scrollY);
 }
 
 function svOnRefChange(inp){
   window._refDirty = true;
   var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;
+  var isMalaysiaCp10=(k==='malaysia_cp10'||k==='cp10');
   // Capture old values before update
   var _oldVals={};[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
   [APC_REF,WA_REF,KLK_REF].forEach(function(r){
     if(k in r)r[k]=val;
     if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;
+    if(k==='cp10'&&'malaysia_cp10' in r)r.malaysia_cp10=val;
     // Auto-formularised fields: Indonesia CP10 = Malaysia CP10 - 120, CP6 = Malaysia CP10 + 60
-    // Not directly user-editable — always derived live from whatever Malaysia CP10 currently is
-    if(k==='malaysia_cp10'){
+    // Not directly user-editable — always derived live from whatever Malaysia CP10 currently is.
+    // Trigger on EITHER field name, since KLK calls this field 'cp10' while
+    // Apical/WingAgro call it 'malaysia_cp10'.
+    if(isMalaysiaCp10){
       if('indonesia_cp10' in r)r.indonesia_cp10=val-120;
       if('cp6' in r)r.cp6=val+60;
     }
   });
   // Surgical update only — never rebuild the whole panel here, that would
   // destroy the input the user is actively typing in and kick their cursor out.
-  if(k==='malaysia_cp10'){
+  if(isMalaysiaCp10){
     var _indEl=document.getElementById('autoField_indonesia_cp10');
     if(_indEl)_indEl.textContent=(val-120);
     var _cp6El=document.getElementById('autoField_cp6');
     if(_cp6El)_cp6El.textContent=(val+60);
   }
+  // Preserve scroll position — rebuilding the product list below can
+  // otherwise jump the page back to the top while editing.
+  var _scrollY=window.scrollY;
   svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+  window.scrollTo(0,_scrollY);
   // Log ref price change (User 0 only)
   if(window.USER_LEVEL===0){
     var _oldV=_oldVals[k]!==undefined?_oldVals[k]:'?';
