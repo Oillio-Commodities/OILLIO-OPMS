@@ -4,12 +4,36 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0630';
-  // TEMPORARILY DISABLED ENTIRELY for diagnosis — no fetch check, no forced
-  // reload of any kind. If the scroll-jump issue stops happening with this
-  // completely removed, that confirms this mechanism was the cause. If it
-  // still happens with this gone, the cause is elsewhere entirely.
-})();</script>
+  var _v='v25AUG0655';
+  var COOLDOWN_KEY='oillio_last_autoreload';
+  var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
+  var now=Date.now();
+  var inCooldown=(now-lastReload)<60000;
+
+  function _doReload(){
+    if(inCooldown) return;
+    sessionStorage.setItem(COOLDOWN_KEY, String(now));
+    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
+    window.location.reload(true);
+  }
+
+  if(!inCooldown){
+    fetch(window.location.pathname + '?_fresh=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.text(); })
+      .then(function(t){
+        var m = t.match(/var _v='([^']+)'/);
+        var freshV = m ? m[1] : null;
+        if (freshV && freshV !== _v) _doReload();
+      })
+      .catch(function(){});
+  }
+  if(!inCooldown && !window.location.search.includes(_v)){
+    sessionStorage.setItem(COOLDOWN_KEY, String(now));
+    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
+    window.location.replace(window.location.pathname+'?v='+_v);
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
