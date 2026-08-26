@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0028';
+  var _v='v25AUG0036';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -1602,8 +1602,10 @@ function el(id){return document.getElementById(id);}
       var obj = s==='klk' ? KLK_REF : s==='wingagro' ? WA_REF : APC_REF;
       if (k in obj) inp.value = obj[k];
     });
-    if (typeof svRenderTable === 'function') svRenderTable();
-    if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
+    _preserveScrollAcross(function(){
+      if (typeof svRenderTable === 'function') svRenderTable();
+      if (typeof svRenderRefPanel === 'function') svRenderRefPanel();
+    });
   }
 
   // ── WRITE: User 0 saves — updates row + appends to log ──
