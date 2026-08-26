@@ -4,26 +4,38 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0554';
-  // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
-  // browser + CDN cache entirely). If the fetched copy has a different _v than what's
-  // running right now, we know we're on a stale cached page and must hard-reload.
-  // This works even when the currently-running cached script can't tell it's stale
-  // by comparing itself to the URL (the old bug: a stale file's own _v matches an
-  // already-set URL param from a previous successful load of that same stale file).
-  fetch(window.location.pathname + '?_fresh=' + Date.now(), {cache:'no-store'})
-    .then(function(r){ return r.text(); })
-    .then(function(t){
-      var m = t.match(/var _v='([^']+)'/);
-      var freshV = m ? m[1] : null;
-      if (freshV && freshV !== _v) {
-        Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
-        window.location.reload(true);
-      }
-    })
-    .catch(function(){});
+  var _v='v25AUG0620';
+  // COOLDOWN GUARD: GitHub Pages serves through a multi-edge-node CDN. Right after
+  // a push, different edge nodes can briefly disagree on which version is "current" —
+  // this created a possible reload LOOP (fetch sees a different edge node's version,
+  // reloads, lands on yet another edge node's version, sees a mismatch again, repeats).
+  // This guard refuses to auto-reload more than once per 60 seconds, no matter what
+  // the fetch check finds, breaking any such loop completely.
+  var COOLDOWN_KEY='oillio_last_autoreload';
+  var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
+  var now=Date.now();
+  var inCooldown=(now-lastReload)<60000;
+
+  function _doReload(){
+    if(inCooldown) return; // silently skip — already reloaded recently, avoid any loop
+    sessionStorage.setItem(COOLDOWN_KEY, String(now));
+    Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
+    window.location.reload(true);
+  }
+
+  if(!inCooldown){
+    fetch(window.location.pathname + '?_fresh=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.text(); })
+      .then(function(t){
+        var m = t.match(/var _v='([^']+)'/);
+        var freshV = m ? m[1] : null;
+        if (freshV && freshV !== _v) _doReload();
+      })
+      .catch(function(){});
+  }
   // Also keep the original query-param check as a fast-path for normal navigation
-  if(!window.location.search.includes(_v)){
+  if(!inCooldown && !window.location.search.includes(_v)){
+    sessionStorage.setItem(COOLDOWN_KEY, String(now));
     Object.keys(localStorage).filter(function(k){return k.indexOf('oillio')===0;}).forEach(function(k){localStorage.removeItem(k);});
     window.location.replace(window.location.pathname+'?v='+_v);
   }
