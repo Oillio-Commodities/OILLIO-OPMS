@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG1357';
+  var _v='v25AUG1437';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1578,6 +1578,15 @@ function el(id){return document.getElementById(id);}
   function _syncApply(d) {
     if (!d) return;
     if (window._refDirty) return;
+    // Also skip the visual re-render entirely whenever a supplier's yellow
+    // reference panel is currently being viewed — not just while actively
+    // typing. The panel is visible whenever SV_SUP is a real supplier, and
+    // that's exactly when a background re-render risks disrupting someone
+    // just reading/reviewing values, even with no typing involved. Data
+    // stays correct either way — this only pauses the LIVE visual refresh,
+    // which resumes normally the moment they switch away or reload.
+    var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro');
+    if (_refPanelVisible) return;
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
     });
