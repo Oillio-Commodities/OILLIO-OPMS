@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0540';
+  var _v='v25AUG0554';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6470,16 +6470,22 @@ function _preserveScrollAcross(renderFn){
   var _modalBody=document.getElementById('fmBody');
   var _modalY=_modalBody?_modalBody.scrollTop:null;
   var _scrolled=_findScrollableAncestors().map(function(el){return {el:el, top:el.scrollTop};});
-  renderFn();
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      window.scrollTo(_x,_y);
-      if(_modalBody&&_modalY!=null)_modalBody.scrollTop=_modalY;
-      _scrolled.forEach(function(s){
-        if(document.body.contains(s.el)) s.el.scrollTop=s.top;
-      });
+  function _restore(){
+    window.scrollTo(_x,_y);
+    if(_modalBody&&_modalY!=null)_modalBody.scrollTop=_modalY;
+    _scrolled.forEach(function(s){
+      if(document.body.contains(s.el)) s.el.scrollTop=s.top;
     });
-  });
+  }
+  renderFn();
+  // Restore repeatedly across several delays — a single attempt right after
+  // render isn't always enough, especially for longer lists (95+ KLK rows)
+  // where the browser's own layout pass can take longer to fully settle.
+  requestAnimationFrame(function(){ requestAnimationFrame(_restore); });
+  setTimeout(_restore,50);
+  setTimeout(_restore,150);
+  setTimeout(_restore,350);
+  setTimeout(_restore,700);
 }
 
 function svOnRefChange(inp){
