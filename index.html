@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0036';
+  var _v='v25AUG0540';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6445,22 +6445,39 @@ function svOnPkgChange(inp){
   });
 }
 
+function _findScrollableAncestors(){
+  // Walk the whole DOM tree once and collect every element that is
+  // ACTUALLY scrolled right now (scrollTop>0) — this finds the real
+  // scrolling container(s) regardless of which wrapper/class/id structure
+  // is used, current or future, without needing to hardcode any specific
+  // element. Cheap enough to run on every edit since it's a simple query.
+  var all=document.querySelectorAll('*');
+  var found=[];
+  for(var i=0;i<all.length;i++){
+    if(all[i].scrollTop>0) found.push(all[i]);
+  }
+  return found;
+}
+
 function _preserveScrollAcross(renderFn){
   // Reusable for ANY supplier's yellow-reference or packaging input handler,
-  // current or future — captures scroll position (both the main window AND
-  // any modal's internal scroll container, since we don't always know which
-  // one is actually scrolling for a given view), runs the re-render, then
-  // restores AFTER the browser's own layout pass settles (double
-  // requestAnimationFrame), since restoring synchronously can be undone by
-  // the browser's own reflow happening on the next paint.
+  // current or future. Captures scroll position of the main window, any
+  // modal body, AND (critically) whichever element(s) are actually
+  // scrolled at this exact moment anywhere on the page — covers the
+  // Packaging Costs & Premiums/Discounts box and similar sub-containers
+  // without needing to know their specific id/class ahead of time.
   var _x=window.scrollX, _y=window.scrollY;
   var _modalBody=document.getElementById('fmBody');
   var _modalY=_modalBody?_modalBody.scrollTop:null;
+  var _scrolled=_findScrollableAncestors().map(function(el){return {el:el, top:el.scrollTop};});
   renderFn();
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       window.scrollTo(_x,_y);
       if(_modalBody&&_modalY!=null)_modalBody.scrollTop=_modalY;
+      _scrolled.forEach(function(s){
+        if(document.body.contains(s.el)) s.el.scrollTop=s.top;
+      });
     });
   });
 }
