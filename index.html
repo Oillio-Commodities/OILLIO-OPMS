@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v25AUG0023';
+  var _v='v25AUG0028';
   // Force a genuinely fresh network fetch of THIS SAME FILE (cache:'no-store' bypasses
   // browser + CDN cache entirely). If the fetched copy has a different _v than what's
   // running right now, we know we're on a stale cached page and must hard-reload.
@@ -6437,13 +6437,30 @@ function svOnPkgChange(inp){
   if(isNaN(v))return;
   var row=arr.find(function(r){return r.id===id;});
   if(row) row[field]=v;
-  // Preserve scroll position across the re-render — rebuilding the product
-  // list below can otherwise cause the page to jump back to the top,
-  // which is disruptive while editing a field further down the page.
-  var _scrollY=window.scrollY;
-  if(typeof svRenderTable==='function') svRenderTable();
-  if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
-  window.scrollTo(0,_scrollY);
+  _preserveScrollAcross(function(){
+    if(typeof svRenderTable==='function') svRenderTable();
+    if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+  });
+}
+
+function _preserveScrollAcross(renderFn){
+  // Reusable for ANY supplier's yellow-reference or packaging input handler,
+  // current or future — captures scroll position (both the main window AND
+  // any modal's internal scroll container, since we don't always know which
+  // one is actually scrolling for a given view), runs the re-render, then
+  // restores AFTER the browser's own layout pass settles (double
+  // requestAnimationFrame), since restoring synchronously can be undone by
+  // the browser's own reflow happening on the next paint.
+  var _x=window.scrollX, _y=window.scrollY;
+  var _modalBody=document.getElementById('fmBody');
+  var _modalY=_modalBody?_modalBody.scrollTop:null;
+  renderFn();
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      window.scrollTo(_x,_y);
+      if(_modalBody&&_modalY!=null)_modalBody.scrollTop=_modalY;
+    });
+  });
 }
 
 function svOnRefChange(inp){
@@ -6473,11 +6490,9 @@ function svOnRefChange(inp){
     var _cp6El=document.getElementById('autoField_cp6');
     if(_cp6El)_cp6El.textContent=(val+60);
   }
-  // Preserve scroll position — rebuilding the product list below can
-  // otherwise jump the page back to the top while editing.
-  var _scrollY=window.scrollY;
-  svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
-  window.scrollTo(0,_scrollY);
+  _preserveScrollAcross(function(){
+    svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+  });
   // Log ref price change (User 0 only)
   if(window.USER_LEVEL===0){
     var _oldV=_oldVals[k]!==undefined?_oldVals[k]:'?';
