@@ -5,6 +5,85 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-08-25] — Price history system, base oil tracking, KLK expansion, scroll-jump investigation
+
+### Added
+- **`price_log` table** (Supabase): permanent, immutable per-product save history —
+  supplier, product, packing, premium, pkg_cost, fob, timestamped, insert-only (no
+  update/delete policy)
+- **`oil_base_log` table**: same permanent-record pattern for all base commodity
+  reference prices (Malaysia CP10, Indonesia CP10, PK Olein, PK Oil, PK Stearin,
+  Stearin, Coconut, CP6, PFAD, supplier margin), one row per supplier per save
+- **View Log redesign**: 4 independent modes — Browse a single date, standalone
+  Product Price History, standalone Oil Base History, Compare Two Dates (shows
+  base oil changes and product changes together, colour-coded, labelled with the
+  actual selected dates rather than generic "Before/After")
+- **Trend Chart**: pick any product + optional date range, see its premium and
+  packaging cost as a line chart, base oil reference charted side-by-side
+- **Date-range filters** on the full-history list views, so a year of saves doesn't
+  need to be scrolled through when only a specific window matters
+- **CP6 and PFAD** added as live base-oil commodities under Apical's yellow
+  reference box, propagating to WingAgro and KLK automatically (same mechanism as
+  the original 7 commodities)
+- **Auto-formularised fields**: Indonesia CP10 = Malaysia CP10 − 120, CP6 =
+  Malaysia CP10 + 60 — both locked/non-editable, always derived live
+- **Packaging Costs & Premiums/Discounts editor**: rebuilt with category tabs
+  (Jerry Cans, Shortening, etc.) instead of one long mixed list, so each tab stays
+  short and switching categories doesn't require scrolling through everything else
+
+### Changed
+- **KLK catalog expanded 81 → 95 products**: full 20-Aug attachment applied — 63
+  existing products repriced, CP6 and PFAD Flexibag products switched from static
+  to live-reference pricing, 15 new SKUs added (CP6 bottle sizes, PFAD steel
+  drums, RBD Palm Oil/Stearin PE liners, Ghee 18L/20L Rec-Tin), one mislabelled
+  duplicate ("1.5L X 6" at two different loadings) consolidated into a single
+  correct entry
+- **Apical**: 24-Aug price update applied (18 products) against a newly-saved
+  base oil set (Malaysia CP10 → $1,207.50); 11 other unrelated products
+  resynced to their correct live-computed price under the new base oil
+
+### Fixed
+- **Stale Supabase snapshot masking correct code prices** — recurring issue this
+  session; root cause was a `ref_prices` row that had never been fully refreshed
+  since a much earlier save (still showing a 5% Oillio Margin no longer in use).
+  Resolved via full-field reset (`apical`/`klk`/`wingagro` → `{}`, `*_pkg` →
+  `null`) rather than the narrower single-field patches tried earlier
+- **KLK CP6 showing NaN**: the auto-formula assumed the Malaysia CP10 field is
+  always named `malaysia_cp10`, but KLK's own reference object calls it `cp10` —
+  fixed to resolve either name correctly
+- **fcpo_delta double-counting**: when CP6/PFAD products were switched from
+  static to live-reference pricing, a leftover structural delta was still being
+  added on top of the live value, silently inflating prices — caught during
+  verification and corrected across all affected products
+- **`price_log` row-limit truncation**: the View Log fetch was capped at 2,000
+  rows while the table held 2,681+, silently cutting off the oldest history;
+  raised to 20,000
+- **Compare view only detecting changes via FOB**: migrated historical rows
+  never had FOB stored (only premium/pkg_cost), so genuine premium changes were
+  invisible in Compare; fixed to compare premium and packaging directly
+
+### Investigated — background sync disrupting scroll position while viewing the
+yellow reference / packaging panels
+- Multiple rounds of scroll-preservation fixes attempted (surgical DOM updates
+  instead of full re-render, timing via double requestAnimationFrame, dynamic
+  detection of whichever element is currently scrolled, staggered multi-attempt
+  restores) — none fully resolved it
+- Ruled out: browser extensions (reproduced in Incognito with extensions
+  disabled), device-specific cause (reproduced on both desktop and mobile),
+  full page reload (confirmed via DevTools — no navigation/flash occurs)
+- **Root cause found**: the periodic background sync (keeps pricing in sync
+  across other users/devices) only paused itself while the user was actively
+  *typing* (`_refDirty` flag) — a pure scroll-and-wait session never set that
+  flag, so the sync kept re-rendering the panel underneath the user regardless
+  of how the re-render itself was made safer
+- **Fix**: `_syncApply()` now skips its visual re-render entirely whenever a
+  supplier's yellow reference panel is currently visible, not just while
+  typing — confirmed this does not affect live cross-supplier propagation
+  (`svOnRefChange`) or the Save & Log Reference flow (`svSaveRef`), which are
+  separate, untouched code paths
+
+---
+
 ## [2026-06-08] — Footer pixel-exact geometry + watermark repositioned
 
 ### Fixed
