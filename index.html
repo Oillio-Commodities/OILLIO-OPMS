@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v27AUG0226';
+  var _v='v27AUG1528';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6666,7 +6666,15 @@ function _showLogPicker(rows){
   html+='<button onclick="svBrowseDate()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">View This Date</button>';
   html+='</div>';
 
-  // Section 2: standalone full lists
+  // Section 2: clean table views (date rows, value columns — like a spreadsheet export)
+  html+='<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-bottom:12px">';
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Table view — dates as rows, values as columns</div>';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  html+='<button onclick="svViewOilBaseTable()" style="background:#0a3d62;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:.73rem;font-weight:700;cursor:pointer">&#x1F6E2; Oil Base Table</button>';
+  html+='<button onclick="svShowProductTablePicker()" style="background:#0a3d62;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:.73rem;font-weight:700;cursor:pointer">&#x1F4E6; Product Table</button>';
+  html+='</div></div>';
+
+  // Section 2b: older-style standalone lists (kept as fallback)
   html+='<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-bottom:12px">';
   html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Standalone lists (all history)</div>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
@@ -7241,6 +7249,205 @@ function _renderTrendTable(rows){
   });
   html+='</table></div>';
   return html;
+}
+
+function svViewOilBaseTable(fromDate, toDate, supplier, page){
+  supplier = supplier || 'apical';
+  page = page || 1;
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Oil Base Rates — Table View';
+  body.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
+
+  var q=_SB_URL+'/rest/v1/oil_base_log?select=*&supplier=eq.'+encodeURIComponent(supplier)+'&order=saved_at.desc&limit=5000';
+  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
+
+  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
+  .then(function(r){return r.json();})
+  .then(function(rows){ _renderOilBaseTable(rows||[], fromDate, toDate, supplier, page); })
+  .catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load.</div>'; });
+}
+
+var OIL_TABLE_COLS=[
+  {key:'malaysia_cp10',label:'Malaysia CP10'},{key:'indonesia_cp10',label:'Indonesia CP10'},
+  {key:'pk_olein',label:'PK Olein'},{key:'pk_oil',label:'PK Oil'},{key:'pk_stearin',label:'PK Stearin'},
+  {key:'stearin',label:'Stearin'},{key:'coconut',label:'Coconut'},{key:'cp6',label:'CP6'},{key:'pfad',label:'PFAD'}
+];
+
+function _renderOilBaseTable(rows, fromDate, toDate, supplier, page){
+  var body=document.getElementById('fmBody');
+  var PAGE_SIZE=10;
+  var totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
+  page=Math.min(Math.max(1,page),totalPages);
+  var pageRows=rows.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  var html='<div style="font-size:.72rem">';
+
+  // Filter bar
+  html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select id="obtSupplier" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
+  ['apical','klk','wingagro'].forEach(function(s){ html+='<option value="'+s+'"'+(s===supplier?' selected':'')+'>'+s.toUpperCase()+'</option>'; });
+  html+='</select></div>';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">FROM</label><input type="date" id="obtFrom" value="'+(fromDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">TO</label><input type="date" id="obtTo" value="'+(toDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
+  html+='<button onclick="svViewOilBaseTable(document.getElementById(\'obtFrom\').value,document.getElementById(\'obtTo\').value,document.getElementById(\'obtSupplier\').value,1)" style="background:var(--brand);color:#fff;border:none;border-radius:5px;padding:6px 14px;font-size:.7rem;font-weight:700;cursor:pointer">Apply</button>';
+  html+='<button onclick="svViewOilBaseTable()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Clear</button>';
+  html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
+  html+='</div>';
+
+  html+='<div style="color:var(--mut);margin-bottom:6px">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,rows.length)+' of '+rows.length+' results.</div>';
+
+  if(!rows.length){
+    html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No oil base history for this supplier/range.</div>';
+    body.innerHTML=html+'</div>';
+    return;
+  }
+
+  html+='<div style="overflow-x:auto;border:1px solid var(--bdr);border-radius:8px">';
+  html+='<table style="border-collapse:collapse;width:100%;white-space:nowrap">';
+  html+='<tr style="background:#2980b9;color:#fff;text-align:left">';
+  html+='<th style="padding:6px 8px;position:sticky;left:0;background:#2980b9">Date &amp; Time</th>';
+  OIL_TABLE_COLS.forEach(function(c){ html+='<th style="padding:6px 8px;text-align:right">'+c.label+'</th>'; });
+  html+='</tr>';
+  pageRows.forEach(function(r,i){
+    var bg=i%2===0?'#eaf2fb':'#fff';
+    html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+_fmtMY(r.saved_at)+'</td>';
+    OIL_TABLE_COLS.forEach(function(c){
+      var v=r[c.key];
+      html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</table></div>';
+
+  // Pagination
+  html+='<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap">';
+  html+='<span style="color:var(--mut);margin-right:6px">Go to page:</span>';
+  html+='<button onclick="svViewOilBaseTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\',\''+supplier+'\','+Math.max(1,page-1)+')" style="padding:4px 10px;border:1.5px solid var(--bdr);border-radius:5px;background:#fff;font-size:.7rem;cursor:pointer">Previous</button>';
+  var startP=Math.max(1,page-2), endP=Math.min(totalPages,startP+4);
+  for(var p=startP;p<=endP;p++){
+    html+='<button onclick="svViewOilBaseTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\',\''+supplier+'\','+p+')" style="padding:4px 10px;border:1.5px solid '+(p===page?'var(--brand)':'var(--bdr)')+';border-radius:5px;background:'+(p===page?'var(--brand)':'#fff')+';color:'+(p===page?'#fff':'#333')+';font-size:.7rem;font-weight:700;cursor:pointer">'+p+'</button>';
+  }
+  html+='<button onclick="svViewOilBaseTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\',\''+supplier+'\','+Math.min(totalPages,page+1)+')" style="padding:4px 10px;border:1.5px solid var(--bdr);border-radius:5px;background:#fff;font-size:.7rem;cursor:pointer">Next</button>';
+  html+='</div>';
+
+  html+='</div>';
+  body.innerHTML=html;
+}
+
+function svShowProductTablePicker(supplier){
+  supplier = supplier || 'apical';
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Product Rates — Table View';
+
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var cats=[];
+  arr.forEach(function(p){ if(p.cat && cats.indexOf(p.cat)===-1) cats.push(p.cat); });
+
+  var html='<div style="font-size:.75rem">';
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:10px">Pick a supplier and packaging type, optionally narrow to a date range</div>';
+  html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap">';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select id="ptSupplier" onchange="svShowProductTablePicker(this.value)" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem">';
+  ['apical','klk','wingagro'].forEach(function(s){ html+='<option value="'+s+'"'+(s===supplier?' selected':'')+'>'+s.toUpperCase()+'</option>'; });
+  html+='</select></div>';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">PACKAGING TYPE</label><select id="ptCategory" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem">';
+  cats.forEach(function(c){ html+='<option value="'+c+'">'+c+'</option>'; });
+  html+='</select></div>';
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap">';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">FROM (optional)</label><input type="date" id="ptFrom" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem"></div>';
+  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">TO (optional)</label><input type="date" id="ptTo" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem"></div>';
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html+='<button onclick="svViewProductTable()" style="background:var(--brand);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">Show Table</button>';
+  html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 16px;font-size:.75rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
+  html+='</div>';
+  html+='<div id="ptResult"></div>';
+  html+='</div>';
+
+  body.innerHTML=html;
+}
+
+function svViewProductTable(fromDate, toDate, page){
+  var supplier=document.getElementById('ptSupplier').value;
+  var category=document.getElementById('ptCategory').value;
+  if(fromDate===undefined) fromDate=document.getElementById('ptFrom').value;
+  if(toDate===undefined) toDate=document.getElementById('ptTo').value;
+  page = page || 1;
+
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var names=[];
+  arr.forEach(function(p){ if(p.cat===category && names.indexOf(p.name)===-1) names.push(p.name); });
+
+  var resultEl=document.getElementById('ptResult');
+  resultEl.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
+
+  var namesFilter=names.map(function(n){return encodeURIComponent(n);}).join(',');
+  var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)+'&product_name=in.('+names.map(function(n){return '"'+n.replace(/"/g,'\\"')+'"';}).join(',')+')&order=saved_at.desc&limit=5000';
+  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
+  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
+
+  fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
+  .then(function(r){return r.json();})
+  .then(function(rows){ _renderProductTable(rows||[], names, fromDate, toDate, page); })
+  .catch(function(){ resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load.</div>'; });
+}
+
+function _renderProductTable(rows, names, fromDate, toDate, page){
+  var resultEl=document.getElementById('ptResult');
+  var PAGE_SIZE=10;
+
+  // Group by saved_at, pick premium per product name for that date
+  var byDate={};
+  rows.forEach(function(r){
+    if(!byDate[r.saved_at]) byDate[r.saved_at]={};
+    byDate[r.saved_at][r.product_name]=r.premium;
+  });
+  var dates=Object.keys(byDate).sort().reverse();
+  var totalPages=Math.max(1,Math.ceil(dates.length/PAGE_SIZE));
+  page=Math.min(Math.max(1,page),totalPages);
+  var pageDates=dates.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,dates.length)+' of '+dates.length+' results (Premium/Discount shown).</div>';
+
+  if(!dates.length){
+    html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
+    resultEl.innerHTML=html;
+    return;
+  }
+
+  html+='<div style="overflow-x:auto;border:1px solid var(--bdr);border-radius:8px">';
+  html+='<table style="border-collapse:collapse;width:100%;white-space:nowrap;font-size:.68rem">';
+  html+='<tr style="background:#2980b9;color:#fff;text-align:left">';
+  html+='<th style="padding:6px 8px;position:sticky;left:0;background:#2980b9">Date &amp; Time</th>';
+  names.forEach(function(n){ html+='<th style="padding:6px 8px;text-align:right">'+n+'</th>'; });
+  html+='</tr>';
+  pageDates.forEach(function(ts,i){
+    var bg=i%2===0?'#eaf2fb':'#fff';
+    html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+_fmtMY(ts)+'</td>';
+    names.forEach(function(n){
+      var v=byDate[ts][n];
+      html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</table></div>';
+
+  html+='<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap">';
+  html+='<span style="color:var(--mut);margin-right:6px">Go to page:</span>';
+  html+='<button onclick="svViewProductTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\','+Math.max(1,page-1)+')" style="padding:4px 10px;border:1.5px solid var(--bdr);border-radius:5px;background:#fff;font-size:.7rem;cursor:pointer">Previous</button>';
+  var startP=Math.max(1,page-2), endP=Math.min(totalPages,startP+4);
+  for(var p=startP;p<=endP;p++){
+    html+='<button onclick="svViewProductTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\','+p+')" style="padding:4px 10px;border:1.5px solid '+(p===page?'var(--brand)':'var(--bdr)')+';border-radius:5px;background:'+(p===page?'var(--brand)':'#fff')+';color:'+(p===page?'#fff':'#333')+';font-size:.7rem;font-weight:700;cursor:pointer">'+p+'</button>';
+  }
+  html+='<button onclick="svViewProductTable(\''+(fromDate||'')+'\',\''+(toDate||'')+'\','+Math.min(totalPages,page+1)+')" style="padding:4px 10px;border:1.5px solid var(--bdr);border-radius:5px;background:#fff;font-size:.7rem;cursor:pointer">Next</button>';
+  html+='</div>';
+
+  resultEl.innerHTML=html;
 }
 
 function svExportPriceLog(){
