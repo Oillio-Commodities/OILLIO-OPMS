@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v27AUG0136';
+  var _v='v27AUG0203';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6682,11 +6682,21 @@ function _showLogPicker(rows){
   html+='<button onclick="svViewOilBaseHistory()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 14px;font-size:.73rem;font-weight:700;cursor:pointer">&#x1F6E2; Oil Base History</button>';
   html+='</div></div>';
 
-  // Section 3: compare two dates (optional)
+  // Section 3: compare two dates (optional) — by CALENDAR DAY, averaged if
+  // multiple saves happened that day, per instruction (easier to read)
   html+='<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-bottom:12px">';
-  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Compare two dates (optional)</div>';
-  var optsA=events.map(function(e,i){return '<option value="'+e.saved_at+'"'+(i===1?' selected':'')+'>'+_fmtMY(e.saved_at)+' '+_tagFor(e)+'</option>';}).join('');
-  var optsB=events.map(function(e,i){return '<option value="'+e.saved_at+'"'+(i===0?' selected':'')+'>'+_fmtMY(e.saved_at)+' '+_tagFor(e)+'</option>';}).join('');
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Compare two dates (optional) &mdash; averages a day\'s updates if more than one</div>';
+  var seenDays={}, days=[];
+  events.forEach(function(e){
+    var day=e.saved_at.slice(0,10);
+    if(!seenDays[day]){ seenDays[day]=1; days.push(day); }
+  });
+  function _dayLabel(day){
+    var d=new Date(day+'T00:00:00');
+    return d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+  }
+  var optsA=days.map(function(d,i){return '<option value="'+d+'"'+(i===1?' selected':'')+'>'+_dayLabel(d)+'</option>';}).join('');
+  var optsB=days.map(function(d,i){return '<option value="'+d+'"'+(i===0?' selected':'')+'>'+_dayLabel(d)+'</option>';}).join('');
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
   html+='<div><label style="font-size:.66rem;font-weight:700;color:var(--mut)">FROM</label><select id="logCompareA" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.73rem">'+optsA+'</select></div>';
   html+='<div><label style="font-size:.66rem;font-weight:700;color:var(--mut)">TO</label><select id="logCompareB" style="width:100%;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.73rem">'+optsB+'</select></div>';
@@ -6830,20 +6840,61 @@ function _showOilBaseTable(rows, fromDate, toDate){
 
 var OIL_COLS=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'];
 
+function _avgPriceLogByProduct(rows){
+  // Averages premium/pkg_cost/fob per (supplier,product,packing) across
+  // all rows given — used to collapse a whole day's saves into one value.
+  var map={};
+  rows.forEach(function(r){
+    var key=r.supplier+'|'+r.product_name+'|'+r.packing;
+    if(!map[key]) map[key]={supplier:r.supplier,product_name:r.product_name,packing:r.packing,_pS:0,_pC:0,_kS:0,_kC:0,_fS:0,_fC:0};
+    var g=map[key];
+    if(r.premium!=null){ g._pS+=Number(r.premium); g._pC++; }
+    if(r.pkg_cost!=null){ g._kS+=Number(r.pkg_cost); g._kC++; }
+    if(r.fob!=null){ g._fS+=Number(r.fob); g._fC++; }
+  });
+  return Object.keys(map).map(function(k){
+    var g=map[k];
+    return {supplier:g.supplier, product_name:g.product_name, packing:g.packing,
+      premium:g._pC?g._pS/g._pC:null, pkg_cost:g._kC?g._kS/g._kC:null, fob:g._fC?g._fS/g._fC:null};
+  });
+}
+
+function _avgOilBaseBySupplier(rows){
+  var map={};
+  rows.forEach(function(r){
+    if(!map[r.supplier]) map[r.supplier]={supplier:r.supplier,_sums:{},_counts:{}};
+    var g=map[r.supplier];
+    OIL_COLS.forEach(function(col){
+      if(r[col]!=null){ g._sums[col]=(g._sums[col]||0)+Number(r[col]); g._counts[col]=(g._counts[col]||0)+1; }
+    });
+  });
+  return Object.keys(map).map(function(k){
+    var g=map[k];
+    var row={supplier:g.supplier};
+    OIL_COLS.forEach(function(col){ row[col]=g._counts[col]?(g._sums[col]/g._counts[col]):null; });
+    return row;
+  });
+}
+
 function svCompareLog(){
-  var tsA=document.getElementById('logCompareA').value;
-  var tsB=document.getElementById('logCompareB').value;
+  var dayA=document.getElementById('logCompareA').value;
+  var dayB=document.getElementById('logCompareB').value;
   var resultEl=document.getElementById('logCompareResult');
-  if(tsA===tsB){ resultEl.innerHTML='<div style="color:var(--mut);padding:10px">Pick two different dates to compare.</div>'; return; }
+  if(dayA===dayB){ resultEl.innerHTML='<div style="color:var(--mut);padding:10px">Pick two different dates to compare.</div>'; return; }
   resultEl.innerHTML='<div style="padding:10px;color:var(--mut)">Loading...</div>';
 
+  var rangeA=['&saved_at=gte.'+dayA+'T00:00:00','&saved_at=lte.'+dayA+'T23:59:59'].join('');
+  var rangeB=['&saved_at=gte.'+dayB+'T00:00:00','&saved_at=lte.'+dayB+'T23:59:59'].join('');
+
   Promise.all([
-    fetch(_SB_URL+'/rest/v1/price_log?select=*&saved_at=eq.'+encodeURIComponent(tsA),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
-    fetch(_SB_URL+'/rest/v1/price_log?select=*&saved_at=eq.'+encodeURIComponent(tsB),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
-    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&saved_at=eq.'+encodeURIComponent(tsA),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
-    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&saved_at=eq.'+encodeURIComponent(tsB),{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+    fetch(_SB_URL+'/rest/v1/price_log?select=*'+rangeA,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/price_log?select=*'+rangeB,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*'+rangeA,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*'+rangeB,{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
   ]).then(function(results){
-    var rowsA=results[0]||[], rowsB=results[1]||[], oilA=results[2]||[], oilB=results[3]||[];
+    var rowsA=_avgPriceLogByProduct(results[0]||[]), rowsB=_avgPriceLogByProduct(results[1]||[]);
+    var oilA=_avgOilBaseBySupplier(results[2]||[]), oilB=_avgOilBaseBySupplier(results[3]||[]);
+    var tsA=dayA, tsB=dayB; // used below for labels
     var mapA={};
     rowsA.forEach(function(r){ mapA[r.supplier+'|'+r.product_name+'|'+r.packing]=r; });
 
@@ -6852,9 +6903,6 @@ function svCompareLog(){
       var key=rb.supplier+'|'+rb.product_name+'|'+rb.packing;
       var ra=mapA[key];
       if(!ra){ changes.push({supplier:rb.supplier,name:rb.product_name,packing:rb.packing,before:null,after:rb.fob,beforePrem:null,afterPrem:rb.premium,beforePkg:null,afterPkg:rb.pkg_cost,isNew:true}); return; }
-      // Compare premium and packaging directly (not just FOB), since some
-      // historical entries don't have FOB stored — premium/pkg_cost is
-      // always present and is the actual thing that changes
       var premChanged = ra.premium!=null && rb.premium!=null && Math.abs(ra.premium-rb.premium)>0.005;
       var pkgChanged = ra.pkg_cost!=null && rb.pkg_cost!=null && Math.abs(ra.pkg_cost-rb.pkg_cost)>0.005;
       var fobChanged = ra.fob!=null && rb.fob!=null && Math.abs(ra.fob-rb.fob)>0.005;
@@ -6863,7 +6911,6 @@ function svCompareLog(){
       }
     });
 
-    // Oil base changes: compare each supplier's snapshot at tsA vs tsB
     var oilAMap={}; oilA.forEach(function(r){ oilAMap[r.supplier]=r; });
     var oilChanges=[];
     oilB.forEach(function(rb){
@@ -6877,9 +6924,10 @@ function svCompareLog(){
       });
     });
 
-    var dLabelA=_fmtMY(tsA), dLabelB=_fmtMY(tsB);
-    var dShortA=dLabelA.split(' ').slice(0,2).join(' '), dShortB=dLabelB.split(' ').slice(0,2).join(' ');
-    var html='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+dLabelA+' &rarr; '+dLabelB+'</div>';
+    function _dOnly(day){ var d=new Date(day+'T00:00:00'); return d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'}); }
+    var dLabelA=_dOnly(dayA), dLabelB=_dOnly(dayB);
+    var dShortA=dLabelA, dShortB=dLabelB;
+    var html='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+dLabelA+' &rarr; '+dLabelB+' (each averaged if multiple updates that day)</div>';
 
     var oilHtml='<div style="font-weight:700;color:var(--brand);margin-bottom:4px;font-size:.72rem">&#x1F6E2; Base Oil ('+oilChanges.length+')</div>';
     if(!oilChanges.length){
