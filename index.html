@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v27AUG1528';
+  var _v='v27AUG0136';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6878,61 +6878,61 @@ function svCompareLog(){
     });
 
     var dLabelA=_fmtMY(tsA), dLabelB=_fmtMY(tsB);
-    var html='<div style="font-size:.7rem;color:var(--mut);margin-bottom:10px">'+dLabelA+' &rarr; '+dLabelB+'</div>';
+    var dShortA=dLabelA.split(' ').slice(0,2).join(' '), dShortB=dLabelB.split(' ').slice(0,2).join(' ');
+    var html='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+dLabelA+' &rarr; '+dLabelB+'</div>';
 
-    html+='<div style="font-weight:700;color:var(--brand);margin-bottom:6px;font-size:.75rem">&#x1F6E2; Base Oil Reference Changes</div>';
+    var oilHtml='<div style="font-weight:700;color:var(--brand);margin-bottom:4px;font-size:.72rem">&#x1F6E2; Base Oil ('+oilChanges.length+')</div>';
     if(!oilChanges.length){
-      html+='<div style="padding:10px;color:var(--mut);font-size:.72rem;border:1px dashed var(--bdr);border-radius:8px;margin-bottom:14px">No base oil changes between these two dates.</div>';
+      oilHtml+='<div style="padding:6px 8px;color:var(--mut);font-size:.66rem;border:1px dashed var(--bdr);border-radius:6px">No changes</div>';
     } else {
-      html+='<div style="border:1px solid var(--bdr);border-radius:8px;margin-bottom:14px;overflow:hidden">';
-      html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
-      html+='<tr style="background:#fff3e0;text-align:left"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Oil</th><th style="padding:5px 8px;text-align:right">'+dLabelA+'</th><th style="padding:5px 8px;text-align:right">'+dLabelB+'</th><th style="padding:5px 8px;text-align:right">Change</th></tr>';
+      oilHtml+='<div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">';
+      oilHtml+='<table style="width:100%;border-collapse:collapse;font-size:.64rem">';
+      oilHtml+='<tr style="background:#fff3e0;text-align:left"><th style="padding:3px 5px">Oil</th><th style="padding:3px 5px;text-align:right">'+dShortA+'</th><th style="padding:3px 5px;text-align:right">'+dShortB+'</th></tr>';
       oilChanges.forEach(function(c,i){
         var delta=c.after-c.before;
         var color=delta>0?'#1a7a3c':'#c0392b';
-        var arrow=(delta>0?'&#x25B2; +':'&#x25BC; ')+delta.toFixed(2);
+        var arrow=(delta>0?'&#x25B2;':'&#x25BC;');
         var bg=i%2===0?'#fff':'#fafafa';
-        html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
-        html+='<td style="padding:4px 8px">'+c.supplier+'</td>';
-        html+='<td style="padding:4px 8px">'+c.oil+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right">'+c.before.toFixed(2)+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right;font-weight:700">'+c.after.toFixed(2)+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right;color:'+color+';font-weight:700;white-space:nowrap">'+arrow+'</td>';
-        html+='</tr>';
+        oilHtml+='<tr style="background:'+bg+';border-top:1px solid #eee">';
+        oilHtml+='<td style="padding:3px 5px">'+c.oil+'<span style="color:#888"> ('+c.supplier+')</span></td>';
+        oilHtml+='<td style="padding:3px 5px;text-align:right">'+c.before.toFixed(2)+'</td>';
+        oilHtml+='<td style="padding:3px 5px;text-align:right;color:'+color+';font-weight:700;white-space:nowrap">'+c.after.toFixed(2)+' '+arrow+'</td>';
+        oilHtml+='</tr>';
       });
-      html+='</table></div>';
+      oilHtml+='</table></div>';
     }
 
-    html+='<div style="font-weight:700;color:var(--brand);margin-bottom:6px;font-size:.75rem">&#x1F4E6; Product Premium/Discount &amp; Packaging Changes</div>';
+    var prodHtml='<div style="font-weight:700;color:var(--brand);margin-bottom:4px;font-size:.72rem">&#x1F4E6; Products ('+changes.length+')</div>';
     if(!changes.length){
-      html+='<div style="padding:14px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No product changes between these two dates.</div>';
+      prodHtml+='<div style="padding:6px 8px;color:var(--mut);font-size:.66rem;border:1px dashed var(--bdr);border-radius:6px">No changes</div>';
     } else {
-      html+='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+changes.length+' product(s) changed</div>';
-      html+='<div style="max-height:50vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px">';
-      html+='<table style="width:100%;border-collapse:collapse;font-size:.7rem">';
-      html+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:5px 8px">Supplier</th><th style="padding:5px 8px">Product</th><th style="padding:5px 8px">Packing</th><th style="padding:5px 8px;text-align:right">Premium<br>'+dLabelA+' &rarr; '+dLabelB+'</th><th style="padding:5px 8px;text-align:right">Pkg Cost<br>'+dLabelA+' &rarr; '+dLabelB+'</th><th style="padding:5px 8px;text-align:right">FOB<br>'+dLabelA+' &rarr; '+dLabelB+'</th></tr>';
+      prodHtml+='<div style="max-height:44vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px">';
+      prodHtml+='<table style="width:100%;border-collapse:collapse;font-size:.64rem">';
+      prodHtml+='<tr style="background:#f5f5f5;text-align:left;position:sticky;top:0"><th style="padding:3px 5px">Product</th><th style="padding:3px 5px;text-align:right">Prem</th><th style="padding:3px 5px;text-align:right">Pkg</th><th style="padding:3px 5px;text-align:right">FOB</th></tr>';
       changes.forEach(function(c,i){
         var bg=i%2===0?'#fff':(c.isNew?'#eaf4fc':'#fafafa');
         var premChanged = !c.isNew && c.beforePrem!=null && c.afterPrem!=null && Math.abs(c.beforePrem-c.afterPrem)>0.005;
         var pkgChanged = !c.isNew && c.beforePkg!=null && c.afterPkg!=null && Math.abs(c.beforePkg-c.afterPkg)>0.005;
-        function cell(before, after, changed){
+        function cellShort(before, after, changed){
           if(before==null && after==null) return '-';
-          if(c.isNew) return '<span style="color:#2980b9;font-weight:700" title="No record found on '+dLabelA+' for this product">No record on '+dLabelA.split(' ').slice(0,2).join(' ')+': '+(after!=null?after.toFixed(2):'-')+'</span>';
-          var col = changed ? (after>before?'#1a7a3c':'#c0392b') : '#333';
-          var wt = changed ? '700' : '400';
-          return '<span style="color:'+col+';font-weight:'+wt+'">'+(before!=null?before.toFixed(2):'-')+' &rarr; '+(after!=null?after.toFixed(2):'-')+'</span>';
+          if(c.isNew) return '<span style="color:#2980b9;font-weight:700" title="New '+dShortA+'">NEW</span>';
+          if(!changed) return (after!=null?after.toFixed(2):'-');
+          var col = after>before?'#1a7a3c':'#c0392b';
+          var arrow = after>before?'&#x25B2;':'&#x25BC;';
+          return '<span style="color:'+col+';font-weight:700" title="'+before.toFixed(2)+' &rarr; '+after.toFixed(2)+'">'+after.toFixed(2)+' '+arrow+'</span>';
         }
-        html+='<tr style="background:'+bg+';border-top:1px solid #eee">';
-        html+='<td style="padding:4px 8px">'+c.supplier+'</td>';
-        html+='<td style="padding:4px 8px">'+c.name+'</td>';
-        html+='<td style="padding:4px 8px;color:#888">'+c.packing+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right;white-space:nowrap">'+cell(c.beforePrem,c.afterPrem,premChanged)+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right;white-space:nowrap">'+cell(c.beforePkg,c.afterPkg,pkgChanged)+'</td>';
-        html+='<td style="padding:4px 8px;text-align:right;white-space:nowrap">'+cell(c.before,c.after,!c.isNew)+'</td>';
-        html+='</tr>';
+        prodHtml+='<tr style="background:'+bg+';border-top:1px solid #eee">';
+        prodHtml+='<td style="padding:3px 5px" title="'+c.supplier+' | '+c.packing+'">'+c.name+'</td>';
+        prodHtml+='<td style="padding:3px 5px;text-align:right;white-space:nowrap">'+cellShort(c.beforePrem,c.afterPrem,premChanged)+'</td>';
+        prodHtml+='<td style="padding:3px 5px;text-align:right;white-space:nowrap">'+cellShort(c.beforePkg,c.afterPkg,pkgChanged)+'</td>';
+        prodHtml+='<td style="padding:3px 5px;text-align:right;white-space:nowrap;font-weight:700">'+cellShort(c.before,c.after,!c.isNew)+'</td>';
+        prodHtml+='</tr>';
       });
-      html+='</table></div>';
+      prodHtml+='</table></div>';
     }
+
+    // Side-by-side on wider screens, stacked on narrow ones
+    html+='<div style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(260px,1.6fr);gap:10px;align-items:start">'+oilHtml+prodHtml+'</div>';
 
     resultEl.innerHTML=html;
   }).catch(function(){
@@ -7275,9 +7275,43 @@ var OIL_TABLE_COLS=[
   {key:'stearin',label:'Stearin'},{key:'coconut',label:'Coconut'},{key:'cp6',label:'CP6'},{key:'pfad',label:'PFAD'}
 ];
 
-function _renderOilBaseTable(rows, fromDate, toDate, supplier, page){
+function _dailyAverage(rows, dateField, numericCols){
+  // Consolidates multiple same-day saves into ONE row per calendar day,
+  // averaging each numeric field across that day's saves. Keeps the
+  // underlying raw log untouched (this is a display-only transform) —
+  // if a value wasn't touched on a given save, it's excluded from that
+  // field's average rather than treated as zero.
+  var byDay={};
+  rows.forEach(function(r){
+    var day=r[dateField].slice(0,10); // YYYY-MM-DD
+    if(!byDay[day]) byDay[day]={_day:day, _count:0, _sums:{}, _counts:{}, _latestTs:r[dateField], _saved_by:r.saved_by};
+    var g=byDay[day];
+    g._count++;
+    if(r[dateField]>g._latestTs) g._latestTs=r[dateField];
+    numericCols.forEach(function(c){
+      var v=r[c];
+      if(v!=null){
+        g._sums[c]=(g._sums[c]||0)+Number(v);
+        g._counts[c]=(g._counts[c]||0)+1;
+      }
+    });
+  });
+  var out=Object.keys(byDay).sort().reverse().map(function(day){
+    var g=byDay[day];
+    var row={saved_at:g._latestTs, saved_by:g._saved_by, _updateCount:g._count};
+    numericCols.forEach(function(c){
+      row[c]=g._counts[c]?(g._sums[c]/g._counts[c]):null;
+    });
+    return row;
+  });
+  return out;
+}
+
+function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
   var body=document.getElementById('fmBody');
   var PAGE_SIZE=10;
+  var numericCols=OIL_TABLE_COLS.map(function(c){return c.key;});
+  var rows=_dailyAverage(rawRows, 'saved_at', numericCols);
   var totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   page=Math.min(Math.max(1,page),totalPages);
   var pageRows=rows.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -7312,8 +7346,11 @@ function _renderOilBaseTable(rows, fromDate, toDate, supplier, page){
   html+='</tr>';
   pageRows.forEach(function(r,i){
     var bg=i%2===0?'#eaf2fb':'#fff';
+    var d=new Date(r.saved_at);
+    var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+    var countBadge=r._updateCount>1?' <span style="font-weight:400;color:#888;font-size:.62rem">('+r._updateCount+' updates, avg)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
-    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+_fmtMY(r.saved_at)+'</td>';
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     OIL_TABLE_COLS.forEach(function(c){
       var v=r[c.key];
       html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
@@ -7400,20 +7437,29 @@ function _renderProductTable(rows, names, fromDate, toDate, page){
   var resultEl=document.getElementById('ptResult');
   var PAGE_SIZE=10;
 
-  // Group by saved_at, pick premium per product name for that date
-  var byDate={};
+  // Consolidate multiple same-day saves into one row, averaging each
+  // product's premium across that day's saves — same approach as the
+  // Oil Base Table, so a busy day of adjustments doesn't clutter the view.
+  var byDay={};
   rows.forEach(function(r){
-    if(!byDate[r.saved_at]) byDate[r.saved_at]={};
-    byDate[r.saved_at][r.product_name]=r.premium;
+    var day=r.saved_at.slice(0,10);
+    if(!byDay[day]) byDay[day]={_sums:{}, _counts:{}, _latestTs:r.saved_at, _updateDates:{}};
+    var g=byDay[day];
+    if(r.saved_at>g._latestTs) g._latestTs=r.saved_at;
+    if(r.premium!=null){
+      g._sums[r.product_name]=(g._sums[r.product_name]||0)+Number(r.premium);
+      g._counts[r.product_name]=(g._counts[r.product_name]||0)+1;
+    }
+    g._updateDates[r.saved_at]=1;
   });
-  var dates=Object.keys(byDate).sort().reverse();
-  var totalPages=Math.max(1,Math.ceil(dates.length/PAGE_SIZE));
+  var days=Object.keys(byDay).sort().reverse();
+  var totalPages=Math.max(1,Math.ceil(days.length/PAGE_SIZE));
   page=Math.min(Math.max(1,page),totalPages);
-  var pageDates=dates.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+  var pageDays=days.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
 
-  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,dates.length)+' of '+dates.length+' results (Premium/Discount shown).</div>';
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,days.length)+' of '+days.length+' results (Premium/Discount shown, daily average).</div>';
 
-  if(!dates.length){
+  if(!days.length){
     html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
     resultEl.innerHTML=html;
     return;
@@ -7422,15 +7468,20 @@ function _renderProductTable(rows, names, fromDate, toDate, page){
   html+='<div style="overflow-x:auto;border:1px solid var(--bdr);border-radius:8px">';
   html+='<table style="border-collapse:collapse;width:100%;white-space:nowrap;font-size:.68rem">';
   html+='<tr style="background:#2980b9;color:#fff;text-align:left">';
-  html+='<th style="padding:6px 8px;position:sticky;left:0;background:#2980b9">Date &amp; Time</th>';
+  html+='<th style="padding:6px 8px;position:sticky;left:0;background:#2980b9">Date</th>';
   names.forEach(function(n){ html+='<th style="padding:6px 8px;text-align:right">'+n+'</th>'; });
   html+='</tr>';
-  pageDates.forEach(function(ts,i){
+  pageDays.forEach(function(day,i){
+    var g=byDay[day];
     var bg=i%2===0?'#eaf2fb':'#fff';
+    var d=new Date(g._latestTs);
+    var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
+    var updCount=Object.keys(g._updateDates).length;
+    var countBadge=updCount>1?' <span style="font-weight:400;color:#888;font-size:.6rem">('+updCount+' upd, avg)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
-    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+_fmtMY(ts)+'</td>';
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     names.forEach(function(n){
-      var v=byDate[ts][n];
+      var v=g._counts[n]?(g._sums[n]/g._counts[n]):null;
       html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
     });
     html+='</tr>';
