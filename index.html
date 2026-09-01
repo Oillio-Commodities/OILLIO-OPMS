@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='v27AUG0203';
+  var _v='v27AUG1018';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6269,6 +6269,7 @@ function buildTcText(hasFr, frName, frAmt, sd, asHtml){
   tc += '7. Shipper to decide on shipping liner.' + NL;
   tc += '8. BL under consignee is to order unless full payment received before draft BL.' + NL;
   tc += '9. Buyer responsibility to ensure all required documents informed to seller prior to sales contract.' + NL;
+  tc += '10. Please note that under current shipments arrangement, the risk of loss or damage during transit transfers to the Buyer upon loading at the port of origin. To protect your investment against maritime risks, we strongly recommend securing marine cargo insurance. We can gladly arrange this coverage on your behalf and include the cost in your final invoice.' + NL;
   return tc;
 }
 function svGetFreight(perMode,perFreight,perPort){
