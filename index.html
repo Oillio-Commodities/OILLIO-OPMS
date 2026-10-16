@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16OCT0804';
+  var _v='V16OCT0850';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -515,6 +515,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 ═══════════════════════════════════════════════════ -->
 <div class="sup-bar">
   <span class="sup-label">&#x1F3ED; Supplier</span>
+  <button class="sup-btn u2-hide" id="supOilBase" onclick="setSupplier('oilbase')">&#x1F6E2; DAILY OIL BASE PRICE</button>
   <button class="sup-btn" id="supApical" onclick="setSupplier('apical')">&#x1F30F; Apical</button>
   <button class="sup-btn" id="supKlk" onclick="setSupplier('klk')">&#x1F3E2; KLK</button>
   <button class="sup-btn" id="supAble" onclick="setSupplier('ableperfect')">&#x1F4C4; For Reference Only</button>
@@ -527,9 +528,19 @@ body.user-mode #userPdfBar { display:flex !important; }
 <!-- ═══════════════════════════════════════════════════
      MAIN CALCULATOR WRAP
 ═══════════════════════════════════════════════════ -->
+<div id="oilBaseView" style="display:none;padding:0 14px 20px">
+<div id="svOilPanel" class="u2-hide" style="background:#fffde7;border:2px solid #f9a825;border-radius:var(--rad);padding:13px 16px;margin-bottom:12px">
+<div style="font-size:.95rem;font-weight:800;color:#b45309;margin-bottom:3px">&#x1F6E2; DAILY OIL BASE PRICE</div>
+<div style="font-size:.7rem;color:#8a6d1a;margin-bottom:10px">One set of base oil prices for ALL suppliers (Apical, KLK, Wing Agro) &mdash; the pricing formula is the same for every supplier. Update here when the market moves.</div>
+<div id="svOilFields" style="margin-bottom:10px"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<button onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
+<button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
+<span id="svOilNote" style="font-size:.71rem;color:var(--mut)">Changes show live in all supplier tabs. Press Save &amp; Log to keep them for everyone.</span>
+</div></div></div>
 <div id="supplierView" style="display:none;padding:0 14px 20px">
 <div id="svRefPanel" class="admin-only u2-hide" style="background:#fffde7;border:2px solid #f9a825;border-radius:var(--rad);padding:13px 16px;margin-bottom:12px">
-<div style="font-size:.82rem;font-weight:700;color:#b45309;margin-bottom:10px">&#x1F7E1; Yellow Reference Prices &mdash; update when commodity market moves</div>
+<div style="font-size:.82rem;font-weight:700;color:#b45309;margin-bottom:10px">&#x1F7E1; Supplier Pricing &mdash; margin factor, packaging costs &amp; premiums/discounts <span style="font-weight:400;font-size:.68rem;color:#8a6d1a">(base oil prices are in the DAILY OIL BASE PRICE tab)</span></div>
 <!-- Margin + JKT/KL: visible to all users -->
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px"><div style="background:#fffde7;border:2px solid #f9a825;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px"><label style="font-size:.71rem;font-weight:700;color:#b45309;margin:0">OILLIO MARGIN %</label><input type="number" id="suppMargin" value="5" min="0" max="99" step="0.1" oninput="onMarginChange()" class="margin-input" style="width:62px;font-weight:700;color:#b45309;border:1.5px solid #f9a825;background:#fffde7;text-align:center;padding:4px 5px;border-radius:5px;font-size:.92rem"></div><div id="svOriginWrap" style="display:none"><div style="display:flex;border-radius:8px;overflow:hidden;border:2px solid var(--olv)"><button id="svBtnJKT" onclick="svSetOrigin('JKT')" style="padding:6px 14px;border:none;background:var(--olv);color:#fff;font-size:.79rem;font-weight:700;cursor:pointer">JKT</button><button id="svBtnKL" onclick="svSetOrigin('KL')" style="padding:6px 14px;border:none;background:#fff;color:var(--olv);font-size:.79rem;font-weight:700;cursor:pointer">KL</button></div></div></div>
 
@@ -1584,7 +1595,7 @@ function el(id){return document.getElementById(id);}
     // just reading/reviewing values, even with no typing involved. Data
     // stays correct either way — this only pauses the LIVE visual refresh,
     // which resumes normally the moment they switch away or reload.
-    var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro');
+    var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro' || SV_SUP === 'oilbase');
     if (_refPanelVisible) return;
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
@@ -1662,6 +1673,8 @@ function el(id){return document.getElementById(id);}
         showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
+        var note2 = document.getElementById('svOilNote');
+        if (note2) { note2.textContent = 'Last saved: ' + myTime + ' by User 0'; note2.style.color = '#1a7a4a'; }
         // Append to permanent log (old blob-style, kept for backward compatibility)
         fetch(_SB_URL + '/rest/v1/ref_log', {
           method: 'POST',
@@ -1700,7 +1713,7 @@ function el(id){return document.getElementById(id);}
         showToast('⚠ Save failed: HTTP ' + r.status);
       }
     })
-    .catch(function(e) { showToast('⚠ Network error: ' + e.toString().slice(0,50)); });
+    .catch(function(e) { showToast('⚠ Not synced – database unreachable. Try again.', 6000); });
   }
 
   // ── REAL-TIME: subscribe to changes — instant update, no polling delay ──
@@ -6319,7 +6332,7 @@ function setSupplier(s){
       rQuote();rReport();
     },50);
   }
-  ["supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+((id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
+  ["supOilBase","supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+(id==="supOilBase"&&e.classList.contains("u2-hide")?" u2-hide":"")+((id==="supOilBase"&&s==="oilbase")||(id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","oilBaseView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="oilbase"){window._svSel=null;window._svSelIdx=null;var obv=document.getElementById("oilBaseView");if(obv)obv.style.display="";svRenderRefPanel();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"oilbase":"🛢 Daily Oil Base Price • applies to all suppliers","apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnFrChange(){SV_FR.portName=(document.getElementById("svFrPortName")||{value:""}).value||"";SV_FR.usd=parseFloat((document.getElementById("svFrAmt")||{}).value)||0;svRenderTable();}function svSetFreight(m){SV_FR.mode=m;["fob","manual","port"].forEach(function(k){var b=document.getElementById("frBtn"+k.charAt(0).toUpperCase()+k.slice(1));if(!b)return;b.style.background=k===m?"var(--brand)":"#fff";b.style.color=k===m?"#fff":"var(--mut)";b.style.borderColor=k===m?"var(--brand)":"var(--bdr)";});var mw=document.getElementById("svFrManual"),pw=document.getElementById("svFrPort");if(mw)mw.style.display=m==="manual"?"":"none";if(pw)pw.style.display=m==="port"?"":"none";if(m==="port"){var rs=document.getElementById("svPortRegion");if(rs&&!rs.options.length)svInitPorts();}svRenderTable();}function svInitPorts(){var rs=document.getElementById('svPortRegion');if(!rs)return;var regions=['ALL'].concat([...new Set(ALL_PORTS.map(function(p){return p.region;}))].sort());rs.innerHTML=regions.map(function(r){return'<option>'+r+'</option>';}).join('');svFilterPorts();}function svFilterPorts(){var q=((document.getElementById('svPortSearch')||{}).value||'').toLowerCase();var reg=(document.getElementById('svPortRegion')||{}).value||'ALL';var el_=document.getElementById('svPortList');if(!el_)return;var ports=ALL_PORTS.filter(function(p){if(reg!=='ALL'&&p.region!==reg)return false;if(q&&(p.port+p.country+p.region).toLowerCase().indexOf(q)<0)return false;return true;});window._svPC=ports;el_.innerHTML=ports.slice(0,200).map(function(p,i){var age=p.updated?Math.round((Date.now()-new Date(p.updated))/(1000*86400)):999;var cls=age<90?'fresh':age<180?'warn':'stale';var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';return'<div class="pitem" data-fi="'+i+'">'+'<div class="pdot '+cls+'" title="Last updated: '+dLabel+'"></div>'+'<div class="pport">'+p.port+'</div>'+'<div class="pcty">'+p.country+'</div>'+'<div class="pfr">$'+fmt(p.freight,0)+'<div style="font-size:.6rem;color:#999;font-weight:400">'+dLabel+'</div></div></div>';}).join('');el_.querySelectorAll('[data-fi]').forEach(function(d){d.onclick=function(){var p=window._svPC[+this.getAttribute('data-fi')];if(p)svSelectPort(p.country,p);};});}function svSelectPort(country,p){SV_FR.port={country:p.country,port:p.port,freight:p.freight,updated:p.updated};var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="";if(pl)pl.style.display="none";var nm=document.getElementById("svPortSelName"),rt=document.getElementById("svPortSelRate");var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';if(nm)nm.textContent=p.port+", "+country;if(rt)rt.textContent="USD "+fmt(p.freight,0)+"/FCL (updated "+dLabel+")";svRenderTable();}function svClearPort(){SV_FR.port=null;var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="none";if(pl)pl.style.display="";svRenderTable();}
 function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var cats={};data.forEach(function(p){if(p.cat)cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c;}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
@@ -6367,11 +6380,13 @@ function svPopulateCmp(){var sel=document.getElementById("cmpSel");if(!sel)retur
 
 function svRenderRefPanel(){
   var s=SV_SUP,ref,def;
+  var _oilTab=(s==='oilbase');
+  if(_oilTab)s='apical'; // Daily Oil Base Price tab edits the shared base (flows to KLK & Wing Agro)
   if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}
   else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}
   else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}
   else return;
-  var fld=document.getElementById('svRefFields');
+  var fld=document.getElementById(_oilTab?'svOilFields':'svRefFields');
   if(!fld)return;
   var isEd=(window.USER_LEVEL!=null?window.USER_LEVEL:2)===0;// User 0 can edit all supplier ref panels
   var LABS={malaysia_cp10:'Malaysia CP10 (USD/MT)',indonesia_cp10:'Indonesia CP10 (USD/MT)',
@@ -6381,7 +6396,7 @@ function svRenderRefPanel(){
     cp6:'CP6 (USD/MT)',pfad:'PFAD (USD/MT)',
     supplier_margin:'Supplier Margin Factor'};
   var html='';
-  if('supplier_margin' in def){
+  if(!_oilTab&&'supplier_margin' in def){
     var smv=ref.supplier_margin!=null?ref.supplier_margin:def.supplier_margin;
     html+='<div style="grid-column:1/-1;background:#e8f4fd;border:2px solid #2980b9;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
     html+='<div style="font-size:.62rem;font-weight:700;color:#1a5276;text-transform:uppercase;margin-bottom:3px">Supplier Margin Factor</div>';
@@ -6394,6 +6409,7 @@ function svRenderRefPanel(){
     }
     html+='</div>';
   }
+  if(!_oilTab){fld.innerHTML=html;svRenderPkgFields();return;} // supplier tabs: only margin factor + packaging/premiums
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
   function _resolveMalaysiaCp10(r,def){
     // KLK calls this field 'cp10', Apical/WingAgro call it 'malaysia_cp10' — check both
@@ -6424,7 +6440,7 @@ function svRenderRefPanel(){
   });
   html+='</div>';
   fld.innerHTML=html;
-  svRenderPkgFields();
+  if(!_oilTab)svRenderPkgFields();
 }
 
 var _pkgActiveCat={}; // remembers the selected category per supplier
@@ -6569,7 +6585,7 @@ function svOnRefChange(inp){
     if(_cp6El)_cp6El.textContent=(val+60);
   }
   _preserveScrollAcross(function(){
-    svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
+    svRenderTable();if(window._svSel&&SV_SUP!=='oilbase'){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
   });
   // Log ref price change (User 0 only)
   if(window.USER_LEVEL===0){
@@ -6587,7 +6603,7 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var s=SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById('svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
   // Propagate Apical oil price fields to WA_REF and KLK_REF
   if(s==='apical'){
     var _sf=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
@@ -6610,7 +6626,7 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
   // Push to Sheets so all devices/users get the update
   _syncSave();
-}function svResetRef(){var s=SV_SUP;if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
+}function svResetRef(){var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
   Promise.all([
