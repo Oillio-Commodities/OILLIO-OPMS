@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16OCT0930';
+  var _v='V16OCT1005';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7370,7 +7370,7 @@ function svViewLast90(){
   body.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
   modal.className='open';
   Promise.all([
-    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&supplier=eq.apical&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
     fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
   ]).then(function(res){
     window._l90={oil:Array.isArray(res[0])?res[0]:[],price:Array.isArray(res[1])?res[1]:[],tab:'oil',days:90,sup:'all',q:''};
@@ -7408,9 +7408,17 @@ function _l90Out(){
 }
 function _l90OilHtml(S,cut){
   var cols=OIL_TABLE_COLS,byDay={};
-  S.oil.forEach(function(r){
-    var d=_myDay(r.saved_at);var g=byDay[d]||(byDay[d]={s:{},n:{}});
-    cols.forEach(function(c){var v=r[c.key];if(v!=null){g.s[c.key]=(g.s[c.key]||0)+Number(v);g.n[c.key]=(g.n[c.key]||0)+1;}});
+  // Base oil is ONE shared set of prices. Each save is logged once per supplier
+  // (identical values), so collapse by save time first — taking the first non-empty
+  // value across the suppliers' rows — then average the saves within each day.
+  var saves={},rank={apical:0,wingagro:1,klk:2};
+  S.oil.slice().sort(function(a,b){return (rank[a.supplier]!=null?rank[a.supplier]:3)-(rank[b.supplier]!=null?rank[b.supplier]:3);}).forEach(function(r){
+    var sv=saves[r.saved_at]||(saves[r.saved_at]={});
+    cols.forEach(function(c){if(sv[c.key]==null&&r[c.key]!=null)sv[c.key]=Number(r[c.key]);});
+  });
+  Object.keys(saves).forEach(function(ts){
+    var d=_myDay(ts);var g=byDay[d]||(byDay[d]={s:{},n:{}});
+    cols.forEach(function(c){var v=saves[ts][c.key];if(v!=null){g.s[c.key]=(g.s[c.key]||0)+v;g.n[c.key]=(g.n[c.key]||0)+1;}});
   });
   var days=Object.keys(byDay).sort(); // oldest → newest
   var prev={},lines=[];
