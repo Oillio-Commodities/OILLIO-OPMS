@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16OCT1005';
+  var _v='V16OCT1030';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7337,13 +7337,20 @@ function svViewOilBaseTable(fromDate, toDate, supplier, page){
   title.textContent='Oil Base Rates — Table View';
   body.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
 
-  var q=_SB_URL+'/rest/v1/oil_base_log?select=*&supplier=eq.'+encodeURIComponent(supplier)+'&order=saved_at.desc&limit=5000';
-  if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
-  if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
+  var q=_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000';
 
   fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
   .then(function(r){return r.json();})
-  .then(function(rows){ _renderOilBaseTable(rows||[], fromDate, toDate, supplier, page); })
+  .then(function(rows){
+    // Base oil is one shared set of prices: each save is logged once per supplier with the
+    // same values, so merge them into one record per save (first non-empty value wins).
+    var rank={apical:0,wingagro:1,klk:2},saves={};
+    (Array.isArray(rows)?rows:[]).slice().sort(function(a,b){return (rank[a.supplier]!=null?rank[a.supplier]:3)-(rank[b.supplier]!=null?rank[b.supplier]:3);}).forEach(function(r){
+      var sv=saves[r.saved_at]||(saves[r.saved_at]={saved_at:r.saved_at,saved_by:r.saved_by});
+      OIL_TABLE_COLS.forEach(function(c){if(sv[c.key]==null&&r[c.key]!=null)sv[c.key]=Number(r[c.key]);});
+    });
+    _renderOilBaseTable(Object.keys(saves).map(function(k){return saves[k];}), '', '', '', page);
+  })
   .catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load.</div>'; });
 }
 
@@ -7501,7 +7508,7 @@ function _dailyAverage(rows, dateField, numericCols){
   // field's average rather than treated as zero.
   var byDay={};
   rows.forEach(function(r){
-    var day=r[dateField].slice(0,10); // YYYY-MM-DD
+    var day=_myDay(r[dateField]); // YYYY-MM-DD, Malaysia calendar day
     if(!byDay[day]) byDay[day]={_day:day, _count:0, _sums:{}, _counts:{}, _latestTs:r[dateField], _saved_by:r.saved_by};
     var g=byDay[day];
     g._count++;
@@ -7536,22 +7543,15 @@ function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
 
   var html='<div style="font-size:.72rem">';
 
-  // Filter bar
-  html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">';
-  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select id="obtSupplier" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
-  ['apical','klk','wingagro'].forEach(function(s){ html+='<option value="'+s+'"'+(s===supplier?' selected':'')+'>'+s.toUpperCase()+'</option>'; });
-  html+='</select></div>';
-  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">FROM</label><input type="date" id="obtFrom" value="'+(fromDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
-  html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">TO</label><input type="date" id="obtTo" value="'+(toDate||'')+'" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"></div>';
-  html+='<button onclick="svViewOilBaseTable(document.getElementById(\'obtFrom\').value,document.getElementById(\'obtTo\').value,document.getElementById(\'obtSupplier\').value,1)" style="background:var(--brand);color:#fff;border:none;border-radius:5px;padding:6px 14px;font-size:.7rem;font-weight:700;cursor:pointer">Apply</button>';
-  html+='<button onclick="svViewOilBaseTable()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">Clear</button>';
+  html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">';
   html+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
+  html+='<span style="color:var(--mut)">Base oil is one shared price for all suppliers. <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</span>';
   html+='</div>';
 
   html+='<div style="color:var(--mut);margin-bottom:6px">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,rows.length)+' of '+rows.length+' results.</div>';
 
   if(!rows.length){
-    html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No oil base history for this supplier/range.</div>';
+    html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No oil base history yet.</div>';
     body.innerHTML=html+'</div>';
     return;
   }
@@ -7563,6 +7563,7 @@ function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
   OIL_TABLE_COLS.forEach(function(c){ html+='<th style="padding:6px 8px;text-align:right">'+c.label+'</th>'; });
   html+='</tr>';
   pageRows.forEach(function(r,i){
+    var prevRow=rows[(page-1)*PAGE_SIZE+i+1]; // previous (older) day, even across pages
     var bg=i%2===0?'#eaf2fb':'#fff';
     var d=new Date(r.saved_at);
     var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
@@ -7571,7 +7572,7 @@ function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
     html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     OIL_TABLE_COLS.forEach(function(c){
       var v=r[c.key];
-      html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
+      html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2)+_l90Delta(v,prevRow?prevRow[c.key]:null):'-')+'</td>';
     });
     html+='</tr>';
   });
@@ -7634,8 +7635,12 @@ function svViewProductTable(fromDate, toDate, page){
   page = page || 1;
 
   var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
-  var names=[];
-  arr.forEach(function(p){ if(p.cat===category && names.indexOf(p.name)===-1) names.push(p.name); });
+  var names=[],cols=[],seenKey={};
+  arr.forEach(function(p){
+    if(p.cat!==category) return;
+    if(names.indexOf(p.name)===-1) names.push(p.name);
+    var k=p.name+'|'+p.packing; if(!seenKey[k]){seenKey[k]=1; cols.push({key:k,name:p.name,packing:p.packing});}
+  });
 
   var resultEl=document.getElementById('ptResult');
   resultEl.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
@@ -7647,35 +7652,34 @@ function svViewProductTable(fromDate, toDate, page){
 
   fetch(q,{headers:_SB_HEADERS,cache:'no-store'})
   .then(function(r){return r.json();})
-  .then(function(rows){ _renderProductTable(rows||[], names, fromDate, toDate, page); })
+  .then(function(rows){ _renderProductTable(Array.isArray(rows)?rows:[], cols, fromDate, toDate, page); })
   .catch(function(){ resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load.</div>'; });
 }
 
-function _renderProductTable(rows, names, fromDate, toDate, page){
+function _renderProductTable(rows, cols, fromDate, toDate, page){
   var resultEl=document.getElementById('ptResult');
   var PAGE_SIZE=10;
 
-  // Consolidate multiple same-day saves into one row, averaging each
-  // product's premium across that day's saves — same approach as the
-  // Oil Base Table, so a busy day of adjustments doesn't clutter the view.
+  // One row per Malaysia calendar day; several saves in a day are averaged.
+  // Each product (name + packing) shows BOTH its premium/discount and its packaging cost,
+  // with a green ▲ / red ▼ change versus the previous day beside the figure.
   var byDay={};
   rows.forEach(function(r){
-    var day=r.saved_at.slice(0,10);
-    if(!byDay[day]) byDay[day]={_sums:{}, _counts:{}, _latestTs:r.saved_at, _updateDates:{}};
+    var day=_myDay(r.saved_at),k=r.product_name+'|'+r.packing;
+    if(!byDay[day]) byDay[day]={_p:{}, _k:{}, _latestTs:r.saved_at, _updateDates:{}};
     var g=byDay[day];
     if(r.saved_at>g._latestTs) g._latestTs=r.saved_at;
-    if(r.premium!=null){
-      g._sums[r.product_name]=(g._sums[r.product_name]||0)+Number(r.premium);
-      g._counts[r.product_name]=(g._counts[r.product_name]||0)+1;
-    }
+    if(r.premium!=null){var a=g._p[k]||(g._p[k]={s:0,n:0});a.s+=Number(r.premium);a.n++;}
+    if(r.pkg_cost!=null){var b=g._k[k]||(g._k[k]={s:0,n:0});b.s+=Number(r.pkg_cost);b.n++;}
     g._updateDates[r.saved_at]=1;
   });
+  function _val(o){return o&&o.n?o.s/o.n:null;}
   var days=Object.keys(byDay).sort().reverse();
   var totalPages=Math.max(1,Math.ceil(days.length/PAGE_SIZE));
   page=Math.min(Math.max(1,page),totalPages);
-  var pageDays=days.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+  var from=(page-1)*PAGE_SIZE, pageDays=days.slice(from, from+PAGE_SIZE);
 
-  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+((page-1)*PAGE_SIZE+1)+'-'+Math.min(page*PAGE_SIZE,days.length)+' of '+days.length+' results (Premium/Discount shown, daily average).</div>';
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (daily average). Each cell shows <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</div>';
 
   if(!days.length){
     html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
@@ -7687,10 +7691,10 @@ function _renderProductTable(rows, names, fromDate, toDate, page){
   html+='<table style="border-collapse:collapse;width:100%;white-space:nowrap;font-size:.68rem">';
   html+='<tr style="background:#2980b9;color:#fff;text-align:left">';
   html+='<th style="padding:6px 8px;position:sticky;left:0;background:#2980b9">Date</th>';
-  names.forEach(function(n){ html+='<th style="padding:6px 8px;text-align:right">'+n+'</th>'; });
+  cols.forEach(function(c){ html+='<th style="padding:6px 8px;text-align:right">'+c.name+'<br><span style="font-weight:400;font-size:.58rem;opacity:.85">'+(c.packing||'')+'</span></th>'; });
   html+='</tr>';
   pageDays.forEach(function(day,i){
-    var g=byDay[day];
+    var g=byDay[day], pg=byDay[days[from+i+1]]; // previous (older) day, even across pages
     var bg=i%2===0?'#eaf2fb':'#fff';
     var d=new Date(g._latestTs);
     var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
@@ -7698,9 +7702,12 @@ function _renderProductTable(rows, names, fromDate, toDate, page){
     var countBadge=updCount>1?' <span style="font-weight:400;color:#888;font-size:.6rem">('+updCount+' upd, avg)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
     html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
-    names.forEach(function(n){
-      var v=g._counts[n]?(g._sums[n]/g._counts[n]):null;
-      html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2):'-')+'</td>';
+    cols.forEach(function(c){
+      var p=_val(g._p[c.key]),k=_val(g._k[c.key]);
+      var pp=pg?_val(pg._p[c.key]):null,kp=pg?_val(pg._k[c.key]):null;
+      var cell='<div><span style="color:#999;font-size:.56rem">PREM</span> '+(p!=null?Number(p).toFixed(2)+_l90Delta(p,pp):'-')+'</div>';
+      cell+='<div><span style="color:#999;font-size:.56rem">PKG</span> '+(k!=null?Number(k).toFixed(2)+_l90Delta(k,kp):'-')+'</div>';
+      html+='<td style="padding:5px 8px;text-align:right">'+cell+'</td>';
     });
     html+='</tr>';
   });
