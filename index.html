@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16OCT0850';
+  var _v='V16OCT0930';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6686,6 +6686,9 @@ function _showLogPicker(rows){
 
   var html='<div style="font-size:.78rem">';
 
+  // Section 0: NEW quick view — last 90 days, line by line, with green/red day-on-day changes
+  html+='<div style="margin-bottom:14px"><button onclick="svViewLast90()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:8px;padding:11px 14px;font-size:.8rem;font-weight:800;cursor:pointer;text-align:left">&#x1F4C5; Last 90 Days &mdash; line by line <span style="font-weight:400;font-size:.68rem;opacity:.9">&nbsp;base oil, premium/discount &amp; packaging &middot; <b>&#9650; green</b> up / <b>&#9660; red</b> down vs previous update</span></button></div>';
+
   // Section 1: click any single date to browse everything saved then
   html+='<div style="font-weight:700;color:var(--brand);margin-bottom:6px">Browse a single date</div>';
   html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
@@ -7349,6 +7352,138 @@ var OIL_TABLE_COLS=[
   {key:'pk_olein',label:'PK Olein'},{key:'pk_oil',label:'PK Oil'},{key:'pk_stearin',label:'PK Stearin'},
   {key:'stearin',label:'Stearin'},{key:'coconut',label:'Coconut'},{key:'cp6',label:'CP6'},{key:'pfad',label:'PFAD'}
 ];
+
+/* ===== LAST 90 DAYS — line-by-line change view (green ▲ up / red ▼ down vs previous logged day) ===== */
+function _myDay(ts){return new Date(new Date(ts).getTime()+8*3600000).toISOString().slice(0,10);} // Malaysia calendar day
+function _l90Num(v){return Number(Number(v).toFixed(2)).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function _l90Date(day){return new Date(day+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function _l90Delta(cur,prev){
+  if(prev==null||cur==null) return '';
+  var d=cur-prev; if(Math.abs(d)<0.005) return '';
+  var up=d>0;
+  return '<span style="color:'+(up?'#1a7a4a':'#c0392b')+';font-weight:700;font-size:.62rem;margin-left:4px;white-space:nowrap">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(d))+'</span>';
+}
+function svViewLast90(){
+  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!modal||!body||!title) return;
+  title.textContent='Last 90 Days — Changes';
+  body.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
+  modal.className='open';
+  Promise.all([
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&supplier=eq.apical&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+  ]).then(function(res){
+    window._l90={oil:Array.isArray(res[0])?res[0]:[],price:Array.isArray(res[1])?res[1]:[],tab:'oil',days:90,sup:'all',q:''};
+    _l90Shell();
+  }).catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load. Check your connection and try again.</div>'; });
+}
+function _l90Shell(){
+  var S=window._l90,body=document.getElementById('fmBody');
+  var h='<div style="font-size:.72rem">';
+  h+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">';
+  h+='<button onclick="_l90Set(\'tab\',\'oil\')" style="'+_l90TabCss(S.tab==='oil')+'">&#x1F6E2; Base Oil</button>';
+  h+='<button onclick="_l90Set(\'tab\',\'price\')" style="'+_l90TabCss(S.tab==='price')+'">&#x1F4E6; Premium / Discount &amp; Packaging</button>';
+  h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">PERIOD</label><select onchange="_l90Set(\'days\',parseInt(this.value))" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
+  [30,60,90,180,365].forEach(function(d){h+='<option value="'+d+'"'+(d===S.days?' selected':'')+'>Last '+d+' days</option>';});
+  h+='</select></div>';
+  if(S.tab==='price'){
+    h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select onchange="_l90Set(\'sup\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
+    [['all','All'],['apical','Apical'],['klk','KLK'],['wingagro','Wing Agro']].forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===S.sup?' selected':'')+'>'+o[1]+'</option>';});
+    h+='</select></div>';
+    h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SEARCH PRODUCT</label><input type="text" value="'+S.q.replace(/"/g,'&quot;')+'" oninput="window._l90.q=this.value;_l90Out()" placeholder="e.g. shortening, 18L" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem;width:150px"></div>';
+  }
+  h+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
+  h+='</div>';
+  h+='<div style="color:var(--mut);margin-bottom:6px">Newest first. Same-day updates are averaged. <span style="color:#1a7a4a;font-weight:700">&#9650; green = up</span> and <span style="color:#c0392b;font-weight:700">&#9660; red = down</span> versus the previous update, shown next to that day\'s figure.</div>';
+  h+='<div id="l90Out"></div></div>';
+  body.innerHTML=h;
+  _l90Out();
+}
+function _l90TabCss(on){return 'border:none;border-radius:6px;padding:8px 12px;font-size:.72rem;font-weight:700;cursor:pointer;'+(on?'background:#0a3d62;color:#fff':'background:#fff;color:#0a3d62;border:1.5px solid #b8d0f0');}
+function _l90Set(k,v){window._l90[k]=v;_l90Shell();}
+function _l90Out(){
+  var S=window._l90,out=document.getElementById('l90Out');if(!out)return;
+  var cut=_myDay(new Date(Date.now()-S.days*86400000));
+  out.innerHTML=(S.tab==='oil')?_l90OilHtml(S,cut):_l90PriceHtml(S,cut);
+}
+function _l90OilHtml(S,cut){
+  var cols=OIL_TABLE_COLS,byDay={};
+  S.oil.forEach(function(r){
+    var d=_myDay(r.saved_at);var g=byDay[d]||(byDay[d]={s:{},n:{}});
+    cols.forEach(function(c){var v=r[c.key];if(v!=null){g.s[c.key]=(g.s[c.key]||0)+Number(v);g.n[c.key]=(g.n[c.key]||0)+1;}});
+  });
+  var days=Object.keys(byDay).sort(); // oldest → newest
+  var prev={},lines=[];
+  days.forEach(function(d){
+    var row={day:d,v:{},p:{}};
+    cols.forEach(function(c){
+      var v=byDay[d].n[c.key]?byDay[d].s[c.key]/byDay[d].n[c.key]:null;
+      row.v[c.key]=v;row.p[c.key]=prev[c.key];
+      if(v!=null)prev[c.key]=v;
+    });
+    if(d>=cut)lines.push(row);
+  });
+  if(!lines.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No base oil updates in this period.</div>';
+  lines.reverse();
+  var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:900px"><thead><tr><th style="'+_l90Th(1)+'">Date</th>';
+  cols.forEach(function(c){h+='<th style="'+_l90Th()+'">'+c.label+'</th>';});
+  h+='</tr></thead><tbody>';
+  lines.forEach(function(r,i){
+    h+='<tr style="'+(i%2?'background:#fafafa':'')+'"><td style="'+_l90Td(1)+';font-weight:700;color:var(--brand)">'+_l90Date(r.day)+'</td>';
+    cols.forEach(function(c){
+      var v=r.v[c.key];
+      h+='<td style="'+_l90Td()+'">'+(v==null?'<span style="color:#bbb">&ndash;</span>':'<b>'+_l90Num(v)+'</b>'+_l90Delta(v,r.p[c.key]))+'</td>';
+    });
+    h+='</tr>';
+  });
+  return h+'</tbody></table></div><div style="color:var(--mut);margin-top:6px">'+lines.length+' day(s) with updates.</div>';
+}
+function _l90Th(first){return 'text-align:'+(first?'left':'right')+';padding:6px 8px;background:#0a3d62;color:#fff;font-size:.65rem;white-space:nowrap;position:sticky;top:0'+(first?';left:0':'');}
+function _l90Td(first){return 'text-align:'+(first?'left':'right')+';padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap'+(first?';position:sticky;left:0;background:inherit':'');}
+function _l90PriceHtml(S,cut){
+  var q=(S.q||'').toLowerCase().trim(),groups={};
+  S.price.forEach(function(r){
+    if(S.sup!=='all'&&r.supplier!==S.sup)return;
+    if(q&&((r.product_name||'')+' '+(r.packing||'')).toLowerCase().indexOf(q)<0)return;
+    var k=r.supplier+'|'+r.product_name+'|'+r.packing,d=_myDay(r.saved_at);
+    var g=groups[k]||(groups[k]={sup:r.supplier,name:r.product_name,packing:r.packing,days:{}});
+    var x=g.days[d]||(g.days[d]={ps:0,pn:0,ks:0,kn:0});
+    if(r.premium!=null){x.ps+=Number(r.premium);x.pn++;}
+    if(r.pkg_cost!=null){x.ks+=Number(r.pkg_cost);x.kn++;}
+  });
+  var changes=[];
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k],ds=Object.keys(g.days).sort(),prevP=null,prevK=null;
+    ds.forEach(function(d){
+      var x=g.days[d],p=x.pn?x.ps/x.pn:null,kk=x.kn?x.ks/x.kn:null;
+      var chP=(p!=null&&prevP!=null&&Math.abs(p-prevP)>=0.005),chK=(kk!=null&&prevK!=null&&Math.abs(kk-prevK)>=0.005);
+      if(d>=cut&&(chP||chK))changes.push({day:d,sup:g.sup,name:g.name,packing:g.packing,p:p,pp:prevP,k:kk,kp:prevK});
+      if(p!=null)prevP=p;if(kk!=null)prevK=kk;
+    });
+  });
+  if(!changes.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No premium / discount or packaging changes in this period.</div>';
+  changes.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
+  var CAP=400,shown=changes.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO'};
+  var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:680px"><thead><tr>';
+  ['Supplier','Product','Packing'].forEach(function(t){h+='<th style="'+_l90Th(1).replace('position:sticky;top:0;left:0','position:sticky;top:0')+'">'+t+'</th>';});
+  h+='<th style="'+_l90Th()+'">Premium / Discount</th><th style="'+_l90Th()+'">Packaging</th></tr></thead><tbody>';
+  var curDay=null,n=0;
+  shown.forEach(function(r){
+    if(r.day!==curDay){
+      curDay=r.day;n=0;
+      var cnt=shown.filter(function(x){return x.day===curDay;}).length;
+      h+='<tr><td colspan="5" style="padding:7px 8px;background:#e8f0fa;color:#0a3d62;font-weight:800;border-top:2px solid #b8d0f0">'+_l90Date(curDay)+' <span style="font-weight:400;color:var(--mut)">&middot; '+cnt+' change'+(cnt>1?'s':'')+'</span></td></tr>';
+    }
+    var tdl='padding:5px 8px;border-bottom:1px solid #eee;'+(n++%2?'background:#fafafa;':'');
+    h+='<tr><td style="'+tdl+'font-size:.62rem;font-weight:700;color:#555;white-space:nowrap">'+(supLbl[r.sup]||r.sup)+'</td>';
+    h+='<td style="'+tdl+'font-weight:600">'+(r.name||'')+'</td><td style="'+tdl+'color:#666">'+(r.packing||'')+'</td>';
+    h+='<td style="'+tdl+'text-align:right;white-space:nowrap">'+(r.p==null?'':'<b>'+_l90Num(r.p)+'</b>'+_l90Delta(r.p,r.pp))+'</td>';
+    h+='<td style="'+tdl+'text-align:right;white-space:nowrap">'+(r.k==null?'':'<b>'+_l90Num(r.k)+'</b>'+_l90Delta(r.k,r.kp))+'</td></tr>';
+  });
+  h+='</tbody></table></div><div style="color:var(--mut);margin-top:6px">'+changes.length+' change(s)'+(changes.length>CAP?' &mdash; showing the newest '+CAP+'. Narrow by supplier, search or period to see the rest.':'.')+'</div>';
+  return h;
+}
+/* ===== END LAST 90 DAYS ===== */
 
 function _dailyAverage(rows, dateField, numericCols){
   // Consolidates multiple same-day saves into ONE row per calendar day,
