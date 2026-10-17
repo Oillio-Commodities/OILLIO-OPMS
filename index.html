@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT2015';
+  var _v='V17OCT2025';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8172,7 +8172,7 @@ function svViewProductTable(fromDate, toDate, page){
   resultEl.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
 
   var namesFilter=names.map(function(n){return encodeURIComponent(n);}).join(',');
-  var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)+'&product_name=in.('+names.map(function(n){return '"'+n.replace(/"/g,'\\"')+'"';}).join(',')+')&order=saved_at.desc&limit=5000';
+  var q=_SB_URL+'/rest/v1/price_log?select=*&supplier=eq.'+encodeURIComponent(supplier)+'&product_name=in.'+encodeURIComponent('('+names.map(function(n){return '"'+n.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';}).join(',')+')')+'&order=saved_at.desc&limit=5000'; // names are URL-encoded: a name containing & (e.g. "38/40 & 40/42") used to cut the request short and return nothing
   if(fromDate) q+='&saved_at=gte.'+encodeURIComponent(fromDate);
   if(toDate) q+='&saved_at=lte.'+encodeURIComponent(toDate+'T23:59:59');
 
