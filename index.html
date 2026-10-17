@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT2026F';
+  var _v='V17OCT2026G';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -5943,12 +5943,12 @@ function calcKLKItemP(item){
 var APC_REF_KEY='oillio_apc_ref';
 var WA_REF_KEY='oillio_wa_ref';
 var KLK_REF_KEY='oillio_klk_ref';
-var APC_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.96};
+var APC_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.95};
 
 
 
-var WA_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.955};
-var KLK_REF_DEF={cp10:1207.50,rbd_my:1197.50,rbd_id:1077.50,cp6:1267.50,pfad:1100.0,stearin:1160.0,supplier_margin:0.975,oillio_margin:0.0};
+var WA_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.95};
+var KLK_REF_DEF={cp10:1207.50,rbd_my:1197.50,rbd_id:1077.50,cp6:1267.50,pfad:1100.0,stearin:1160.0,supplier_margin:0.95,oillio_margin:0.0};
 function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var ok=true;if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30)ok=false;if(ok){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(parseFloat(d[k])))m[k]=parseFloat(d[k]);});return m;}localStorage.removeItem(key);}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
@@ -6131,8 +6131,10 @@ var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
 
 // ===== AUTO BASE FIELDS: always worked out from Malaysia CP10 (never typed, never stale) =====
 // Indonesia CP10 = CP10 - 120 | CP6 = CP10 + 60 | RBD Palm Oil (Malaysia) = CP10 - 10 | RBD Palm Oil (Indonesia) = Indonesia CP10 - 10
+var SUP_MARGIN_CAP=0.95; // supplier margin factor can never exceed 0.95 (95%) for Apical, KLK and Wing Agro
 function _deriveAuto(r){
   if(!r)return r;
+  var _sm=parseFloat(r.supplier_margin);if(isNaN(_sm)||_sm>SUP_MARGIN_CAP)r.supplier_margin=SUP_MARGIN_CAP;
   var c=parseFloat(r.malaysia_cp10!=null?r.malaysia_cp10:r.cp10);
   if(isNaN(c))return r;
   if('indonesia_cp10' in r)r.indonesia_cp10=c-120;
@@ -6532,7 +6534,7 @@ function svRenderRefPanel(){
     html+='<div style="grid-column:1/-1;background:#e8f4fd;border:2px solid #2980b9;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
     html+='<div style="font-size:.62rem;font-weight:700;color:#1a5276;text-transform:uppercase;margin-bottom:3px">Supplier Margin Factor</div>';
     if(isEd){
-      html+='<input type="number" step="0.001" data-ref="supplier_margin" value="'+smv+'"';
+      html+='<input type="number" step="0.001" data-ref="supplier_margin" max="0.95" value="'+smv+'"';
       html+=' style="width:100%;padding:5px;border:2px solid #2980b9;background:#d6eaf8;border-radius:5px;font-weight:700;color:#1a5276;font-size:.9rem"';
       html+=' oninput="svOnRefChange(this)">';
     }else{
@@ -7113,6 +7115,7 @@ function _preserveScrollAcross(renderFn){
 function svOnRefChange(inp){
   _svMarkDirty();
   var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;
+  if(k==='supplier_margin'&&val>SUP_MARGIN_CAP){val=SUP_MARGIN_CAP;inp.value=SUP_MARGIN_CAP;showToast('Supplier margin factor is capped at 0.95');}
   var isMalaysiaCp10=(k==='malaysia_cp10'||k==='cp10');
   // Capture old values before update
   var _oldVals={};[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
