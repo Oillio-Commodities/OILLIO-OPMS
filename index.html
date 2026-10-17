@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1945';
+  var _v='V17OCT2000';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -387,7 +387,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 #userPdfBar p  { font-size:.82rem; opacity:.8; margin:0; }
 #authOverlay{display:none}
 /* SIMULATION LOCK: while a past date is loaded, every save / PDF / copy button is greyed out and unclickable */
-body.sim-on button[onclick*="svSaveRef"],body.sim-on button[onclick*="svResetRef"],body.sim-on button[onclick*="copyReport"],body.sim-on button[onclick*="doPrint"],body.sim-on button[onclick*="openPrintPreview"],body.sim-on button[onclick*="downloadPdf"],body.sim-on button[onclick*="generatePDF"],body.sim-on button[onclick*="copyAsImage"],body.sim-on button[onclick*="svLoadKlkList"],body.sim-on button[onclick*="svApplyKlkAll"]{opacity:.3!important;filter:grayscale(1)!important;pointer-events:none!important;cursor:not-allowed!important}
+body.sim-on button[onclick*="svSaveRef"],body.sim-on button[onclick*="svResetRef"],body.sim-on button[onclick*="copyReport"],body.sim-on button[onclick*="doPrint"],body.sim-on button[onclick*="openPrintPreview"],body.sim-on button[onclick*="downloadPdf"],body.sim-on button[onclick*="generatePDF"],body.sim-on button[onclick*="copyAsImage"],body.sim-on button[onclick*="svLoadList"],body.sim-on button[onclick*="svApplyListAll"]{opacity:.3!important;filter:grayscale(1)!important;pointer-events:none!important;cursor:not-allowed!important}
 body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 </style>
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
@@ -1634,8 +1634,10 @@ function el(id){return document.getElementById(id);}
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
     var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
     if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
-    var _savedList = (d.klk && d.klk.list_id) || '';
-    if (_savedList !== KLK_LIST_ID) { _svApplyKlkListAuto(true); window._listPending = true; } else { window._listPending = false; }
+    ['klk','apical'].forEach(function(sup){
+      var sv = (d[sup] && d[sup].list_id) || '';
+      if (sv !== SUP_LISTS[sup].id) { _svApplyListAuto(sup, true); window._listPending[sup] = true; } else { window._listPending[sup] = false; }
+    });
     try { _svModelBanner(); } catch(e) {}
     var flds = document.getElementById('svRefFields');
     if (flds) flds.querySelectorAll('[data-ref]').forEach(function(inp) {
@@ -1672,8 +1674,8 @@ function el(id){return document.getElementById(id);}
       hour:'2-digit',minute:'2-digit',second:'2-digit'
     });
     var payload = {
-      apical: Object.assign({}, APC_REF, {model_v: MODEL_V}),
-      klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: KLK_LIST_ID}),
+      apical: Object.assign({}, APC_REF, {model_v: MODEL_V, list_id: SUP_LISTS.apical.id}),
+      klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: SUP_LISTS.klk.id}),
       wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
@@ -1690,7 +1692,7 @@ function el(id){return document.getElementById(id);}
     .then(function(r) {
       if (r.ok) {
         window._refDirty = false; // save complete — safe to resume live sync
-        window._modelPending = false; window._listPending = false; try { _svModelBanner(); } catch(e) {}
+        window._modelPending = false; window._listPending = {}; try { _svModelBanner(); } catch(e) {}
         showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
@@ -6168,9 +6170,9 @@ function _migrateModelV2(oldRefs){
 function _svModelBanner(){
   // No more big banner: just a small note next to the Save button while updates are waiting to be saved
   var el=document.getElementById('modelBanner');if(el){el.style.display='none';el.innerHTML='';}
-  var li=window._listPending&&window._listInfo,pend=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
+  var li=null;Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k]&&window._listInfo[k]){li=li||{changed:0,parts:[]};li.changed+=window._listInfo[k].changed;li.parts.push(SUP_LISTS[k].name+' '+window._listInfo[k].changed);}});var pend=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
   var n=document.getElementById('svOilNote');
-  if(n&&pend&&!window._refDirty){n.textContent='New prices loaded'+(li?' ('+li.changed+' KLK premium changes)':'')+' \u2014 press Save & Log Reference to store them';n.style.color='#b45309';}
+  if(n&&pend&&!window._refDirty){n.textContent='New prices loaded'+(li?' ('+li.changed+' premium changes: '+li.parts.join(', ')+')':'')+' \u2014 press Save & Log Reference to store them';n.style.color='#b45309';}
 }
 // ===== UNSAVED-CHANGES GUARD (User 0): changes to base oil / premium / packaging are lost if the page is closed =====
 function _svMarkDirty(){
@@ -6458,7 +6460,7 @@ if(nameChipsEl){
 }
 var listEl=document.getElementById('svProdList');if(!listEl)return;var filtered=data.filter(function(p,i){var fob=getFob(p);if(!fob||fob<=0)return false;if(window._svCat&&p.cat!==window._svCat)return false;if(window._svName&&p.name!==window._svName)return false;var name=(p.name||'').toLowerCase(),pack=(p.packing||'').toLowerCase();if(q&&name.indexOf(q)<0&&pack.indexOf(q)<0)return false;p._idx=i; return true;});var cnt=document.getElementById('svProdCount');if(cnt)cnt.textContent='('+filtered.length+' products)';var isAdmin=IS_ADMIN;var _allSameName=filtered.length>0&&filtered.every(function(p){return p.name===filtered[0].name;});
   var _singleNameHdr=_allSameName&&filtered.length>1?'<div style="padding:6px 12px 4px;font-size:.71rem;font-weight:700;color:var(--brand);background:#f0f4ff;border-bottom:1px solid var(--bdr);letter-spacing:.04em">'+filtered[0].name+'</div>':'';
-  listEl.innerHTML=_singleNameHdr+filtered.map(function(p){var fob=getFob(p);var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var est=fcpo+(p.pkg_cost||0);/* Est=FCPO+Pkg per Excel */var nw=p.net_wt||20;var lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var isFlexibag=(p.packing||'').toUpperCase().indexOf('FLEXIBAG')>=0;var c=svCalc(safeFob,nw,lc,isFlexibag);var sel=window._svSel&&window._svSel.packing===p.packing&&window._svSel.name===p.name;var portLabel=SV_SUP==='apical'?(SV_ORIGIN==='JKT'?'FOB Tj Priok':'FOB Port Klang'):SV_SUP==='wingagro'?'FOB Surabaya':'FOB Port Klang';var hasFr=(SV_FR.mode!=='fob'&&(SV_FR.usd>0||(SV_FR.port&&SV_FR.port.freight>0)));var li='<div class="apc-item'+(sel?' sel':'')+'" onclick="svSelectProduct('+p._idx+')">'; li+='<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">';li+='<div style="display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:3px">';li+='<b style="color:var(--brand);font-size:.8rem">'+p.name+'</b>';li+='<span style="background:#0a3d62;color:#fff;font-size:.6rem;padding:2px 7px;border-radius:10px;flex-shrink:0">'+portLabel+'</span>';if(SV_SUP==='klk'){if(_svKlkOnList(p.name,p.packing))li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+KLK_LIST_LABEL.replace(/ 20/,'').replace(/ /g,'')+'</span>';else li+='<span style="background:#f39c12;color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#9888; not on '+KLK_LIST_LABEL.replace(/ 20/,'').replace(/ /g,'')+' list &middot; +'+KLK_LIST_ADJ+' only'+'</span>';}else if(p.upd)li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+p.upd+'</span>';li+='</div>';li+='<div style="font-size:.66rem;color:#555;margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap">';li+='<span>'+p.packing+'</span><span style="color:#ccc">|</span>';li+='<span>'+fmt(lc,0)+' ctns/FCL</span><span style="color:#ccc">|</span>';li+='<span>'+nwFmt(nw,p.packing,2)+'/unit</span>';li+='</div>';li+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:start">';li+='<div style="background:#eaf0fb;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a3c6b;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #c5d8f0;padding-bottom:3px">SUPPLIER</div>';if(IS_ADMIN)li+='<div style="color:#1a3c6b;font-size:.67rem">Est: USD '+fmt(safeFob*(_ref.supplier_margin||1),2)+'/MT</div>';li+='<div style="color:#1a3c6b;font-size:.67rem">FOB: USD '+fmt(fob,2)+'/MT</div>';li+='<div style="color:#1a3c6b;font-size:.78rem;font-weight:800">USD '+fmt(c.su,2)+'/SKU</div>';li+='</div>';li+='<div style="background:#e8f5ec;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a5c2a;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #b5dcc0;padding-bottom:3px">OILLIO</div>';li+='<div style="color:#1a5c2a;font-size:.67rem">Oillio/MT: USD '+fmt(c.om,2)+'</div>';li+='<div style="color:#1a5c2a;font-size:.78rem;font-weight:800">USD '+fmt(c.os,2)+'/SKU</div>';if((window.USER_LEVEL!=null?window.USER_LEVEL:2)<=1){li+='<div style="color:#7b2d8b;font-size:.7rem;font-weight:700">Profit: +USD '+fmt(c.ps,2)+'/SKU</div>';}li+='</div>';li+='</div>';if(hasFr&&c.fr>0){li+='<div style="margin-top:4px;background:#fff3cd;border:1px solid #ffc107;border-radius:5px;padding:6px 8px;font-size:.67rem">';li+='<div style="color:#856404;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #ffd54f;padding-bottom:3px">WITH FREIGHT</div>';li+='<div style="display:flex;justify-content:space-between;color:#856404">';li+='<span>+USD '+fmt(c.fr,2)+'/SKU freight</span>';li+='<b>= USD '+fmt(c.of,2)+'/SKU (USD '+fmt(c.ofm,2)+'/MT)</b>';li+='</div></div>';}li+='</div>';li+='</div>';return li;}).join('')||'<div style="padding:14px;color:var(--mut);text-align:center">No products — check origin or search</div>';if(!window._svSel){var ed=document.getElementById('svDetailCard'),ee=document.getElementById('svEmptyState');if(ed)ed.style.display='none';if(ee)ee.style.display='';}}function svSetCat(cat){
+  listEl.innerHTML=_singleNameHdr+filtered.map(function(p){var fob=getFob(p);var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var est=fcpo+(p.pkg_cost||0);/* Est=FCPO+Pkg per Excel */var nw=p.net_wt||20;var lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var isFlexibag=(p.packing||'').toUpperCase().indexOf('FLEXIBAG')>=0;var c=svCalc(safeFob,nw,lc,isFlexibag);var sel=window._svSel&&window._svSel.packing===p.packing&&window._svSel.name===p.name;var portLabel=SV_SUP==='apical'?(SV_ORIGIN==='JKT'?'FOB Tj Priok':'FOB Port Klang'):SV_SUP==='wingagro'?'FOB Surabaya':'FOB Port Klang';var hasFr=(SV_FR.mode!=='fob'&&(SV_FR.usd>0||(SV_FR.port&&SV_FR.port.freight>0)));var li='<div class="apc-item'+(sel?' sel':'')+'" onclick="svSelectProduct('+p._idx+')">'; li+='<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">';li+='<div style="display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:3px">';li+='<b style="color:var(--brand);font-size:.8rem">'+p.name+'</b>';li+='<span style="background:#0a3d62;color:#fff;font-size:.6rem;padding:2px 7px;border-radius:10px;flex-shrink:0">'+portLabel+'</span>';if(SUP_LISTS[SV_SUP]){var _L=SUP_LISTS[SV_SUP],_lb=_L.label.replace(/ 20/,'').replace(/ /g,'');if(_svListOn(SV_SUP,p.name,p.packing))li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+_lb+'</span>';else li+='<span style="background:#f39c12;color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#9888; not on '+_lb+' list &middot; '+(_L.uplift?'+'+_L.uplift+' only':'unchanged')+'</span>';}else if(p.upd)li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+p.upd+'</span>';li+='</div>';li+='<div style="font-size:.66rem;color:#555;margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap">';li+='<span>'+p.packing+'</span><span style="color:#ccc">|</span>';li+='<span>'+fmt(lc,0)+' ctns/FCL</span><span style="color:#ccc">|</span>';li+='<span>'+nwFmt(nw,p.packing,2)+'/unit</span>';li+='</div>';li+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:start">';li+='<div style="background:#eaf0fb;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a3c6b;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #c5d8f0;padding-bottom:3px">SUPPLIER</div>';if(IS_ADMIN)li+='<div style="color:#1a3c6b;font-size:.67rem">Est: USD '+fmt(safeFob*(_ref.supplier_margin||1),2)+'/MT</div>';li+='<div style="color:#1a3c6b;font-size:.67rem">FOB: USD '+fmt(fob,2)+'/MT</div>';li+='<div style="color:#1a3c6b;font-size:.78rem;font-weight:800">USD '+fmt(c.su,2)+'/SKU</div>';li+='</div>';li+='<div style="background:#e8f5ec;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a5c2a;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #b5dcc0;padding-bottom:3px">OILLIO</div>';li+='<div style="color:#1a5c2a;font-size:.67rem">Oillio/MT: USD '+fmt(c.om,2)+'</div>';li+='<div style="color:#1a5c2a;font-size:.78rem;font-weight:800">USD '+fmt(c.os,2)+'/SKU</div>';if((window.USER_LEVEL!=null?window.USER_LEVEL:2)<=1){li+='<div style="color:#7b2d8b;font-size:.7rem;font-weight:700">Profit: +USD '+fmt(c.ps,2)+'/SKU</div>';}li+='</div>';li+='</div>';if(hasFr&&c.fr>0){li+='<div style="margin-top:4px;background:#fff3cd;border:1px solid #ffc107;border-radius:5px;padding:6px 8px;font-size:.67rem">';li+='<div style="color:#856404;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #ffd54f;padding-bottom:3px">WITH FREIGHT</div>';li+='<div style="display:flex;justify-content:space-between;color:#856404">';li+='<span>+USD '+fmt(c.fr,2)+'/SKU freight</span>';li+='<b>= USD '+fmt(c.of,2)+'/SKU (USD '+fmt(c.ofm,2)+'/MT)</b>';li+='</div></div>';}li+='</div>';li+='</div>';return li;}).join('')||'<div style="padding:14px;color:var(--mut);text-align:center">No products — check origin or search</div>';if(!window._svSel){var ed=document.getElementById('svDetailCard'),ee=document.getElementById('svEmptyState');if(ed)ed.style.display='none';if(ee)ee.style.display='';}}function svSetCat(cat){
   window._svCat=cat;window._svSel=null;
   // Auto-switch JKT/KL origin if this category is exclusively one or the other,
   // so users never land on an empty list due to origin mismatch (Apical only)
@@ -6575,7 +6577,7 @@ function svRenderPkgFields(){
   if(!activeCat || !byCat[activeCat]) activeCat=catOrder[0];
   _pkgActiveCat[s]=activeCat;
 
-  var tabsHtml=(s==='klk'?_svKlkMonitor()+'<div style="margin-bottom:8px"><button onclick="svLoadKlkList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Review KLK supplier list ('+KLK_LIST_LABEL+')</button> <span style="font-size:.62rem;color:#999">shows system FOB vs supplier FOB for every SKU</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
+  var tabsHtml=(SUP_LISTS[s]?_svListMonitor(s)+'<div style="margin-bottom:8px"><button onclick="svLoadList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Review '+SUP_LISTS[s].name+' supplier list ('+SUP_LISTS[s].label+')</button> <span style="font-size:.62rem;color:#999">shows system FOB vs supplier FOB for every SKU</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
   catOrder.forEach(function(c){
     var isActive=(c===activeCat);
     tabsHtml+='<button onclick="svSetPkgCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:4px 9px;border-radius:12px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;'
@@ -6590,7 +6592,7 @@ function svRenderPkgFields(){
     var _tv=window._tgtFob[s+'|'+r.id];
     listHtml+='<div style="border-bottom:1px dashed #f0dca0;padding:3px 0">';
     listHtml+='<div style="display:flex;align-items:center;gap:6px">';
-    listHtml+='<div style="flex:1;font-size:.68rem;color:#555;line-height:1.3">'+(r.name||'')+(s==='klk'?_svKlkTag(r.name,r.packing):'')+'<br><span style="color:#999">'+(r.packing||'')+'</span></div>';
+    listHtml+='<div style="flex:1;font-size:.68rem;color:#555;line-height:1.3">'+(r.name||'')+(SUP_LISTS[s]?_svListTag(s,r.name,r.packing):'')+'<br><span style="color:#999">'+(r.packing||'')+'</span></div>';
     listHtml+='<div style="width:88px"><label style="display:block;font-size:.58rem;color:#1a5276;font-weight:700">SUPPLIER FOB</label>';
     listHtml+='<input type="number" step="0.01" placeholder="key in" value="'+(_tv!=null?_tv:'')+'" data-pkgid="'+r.id+'" data-field="tgt" oninput="svOnTargetFob(this)" onkeydown="if(event.key===\'Enter\')svApplyTgt('+r.id+')" style="width:100%;padding:3px 4px;border:1.5px solid #2980b9;background:#eaf4fd;border-radius:4px;font-size:.72rem;text-align:right"></div>';
     listHtml+='<div style="width:74px"><label style="display:block;font-size:.58rem;color:#b45309;font-weight:700">PREM/DISC</label>';
@@ -6816,86 +6818,124 @@ var KLK_LIST_ADJ=10;
 KLK_LIST_16OCT26.forEach(function(x){x[2]=Math.round((x[2]+KLK_LIST_ADJ)*100)/100;});
 
 
-// ===== KLK SUPPLIER PRICE LIST — bulk load =====
-// Fills every SKU's Supplier FOB box from the supplier's price list, then shows a review table.
-// Premium/discount is solved against the base oil CURRENTLY on screen (DAILY OIL BASE PRICE tab).
-// ===== KLK SUPPLIER LIST: auto-applied + monitored =====
-// The latest supplier list is applied automatically (premium/discount = supplier FOB - base oil - packaging) until it has been
-// SAVED once (the save stores KLK_LIST_ID). While it is unsaved, editing a base oil price re-balances it live.
-var KLK_LIST_ID='16OCT26+10b',KLK_LIST_LABEL='16 Oct 2026';
-var _klkOnListSet=null;
-function _svKlkOnList(name,packing){
-  if(!_klkOnListSet){_klkOnListSet={};KLK_LIST_16OCT26.forEach(function(x){_klkOnListSet[x[0]+'|'+x[1]]=1;});}
-  return !!_klkOnListSet[name+'|'+packing];
+// ===== SUPPLIER PRICE LISTS (KLK, Apical) — auto-applied, monitored, reviewable =====
+// THE DRILL: the supplier's FOB list is added here; on load the app sets every listed SKU's premium/discount =
+// supplier FOB - base oil (as saved) - packaging, until it has been SAVED once (the save stores the list id).
+// While unsaved, editing a base oil price re-balances it live. SKUs not on the list are tagged orange.
+var APC_LIST_16OCT26=[
+  ['20kg Shortening 36/39','20kg carton',1190],
+  ['20kg Shortening 38/40 & 40/42','20kg carton',1185],
+  ['20kg Shortening 43/47','20kg carton',1180],
+  ['20kg Shortening 46/48','20kg carton',1175],
+  ['20kg Shortening 48/52','20kg carton',1160],
+  ['18kg BIB Spread Fat','18kg BIB',1325],
+  ['18kg RCNO','18kg BIB',2130],
+  ['20kg HCNO','20kg carton',2195],
+  ['HPS Flakes','25kg polywoven bag',1245], // 20ft FCL (640 bags) price; 40ft FCL is 1,260
+  ['20L Yellow Jerry Can – CP10','20L Jerry Can',1365],
+  ['20L Yellow Jerry Can – CP8','20L Jerry Can',1375],
+  ['20kg Hpks 33.5/35.5','20kg carton',2585],
+  ['20kg Hpko 38/40','20kg carton',2250],
+  ['20kg Hpko 40/42','20kg carton',2255],
+  ['20kg Hpkl 41/43','20kg carton',2110],
+  ['20kg CBR 37/40','20kg carton',2000],
+  ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1208],
+  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1210],
+  ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1215],
+  ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1215], // supplier's 43/48 line covers 46/48
+  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1215]
+];
+var SUP_LISTS={
+  klk:{id:'16OCT26+10b',label:'16 Oct 2026',uplift:KLK_LIST_ADJ,rows:KLK_LIST_16OCT26,name:'KLK'},
+  apical:{id:'16OCT26',label:'16 Oct 2026',uplift:0,rows:APC_LIST_16OCT26,name:'Apical'}
+};
+window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
+var _listOnSets={};
+function _svListData(sup){return sup==='apical'?APICAL_DATA:KLK_DATA;}
+function _svListRef(sup){return sup==='apical'?APC_REF:KLK_REF;}
+function _svListOn(sup,name,packing){
+  var L=SUP_LISTS[sup];if(!L)return true;
+  if(!_listOnSets[sup]){_listOnSets[sup]={};L.rows.forEach(function(x){_listOnSets[sup][x[0]+'|'+x[1]]=1;});}
+  return !!_listOnSets[sup][name+'|'+packing];
 }
-// orange tag on every KLK SKU that the latest supplier list did NOT cover (its FOB was not refreshed)
-function _svKlkTag(name,packing){
-  if(_svKlkOnList(name,packing))return '';
-  return ' <span title="This SKU was not on the KLK supplier list of '+KLK_LIST_LABEL+' \u2014 it only received the +USD '+KLK_LIST_ADJ+'/MT market uplift, no supplier quote" style="background:#f39c12;color:#fff;font-size:.56rem;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap">&#9888; NOT ON '+KLK_LIST_LABEL.toUpperCase()+' LIST &middot; +'+KLK_LIST_ADJ+' ONLY</span>';
+function _svListTarget(sup,name,packing){
+  var rows=SUP_LISTS[sup].rows;
+  for(var i=0;i<rows.length;i++){if(rows[i][0]===name&&rows[i][1]===packing)return rows[i][2];}
+  return null;
 }
-function _svApplyKlkListAuto(rebase){
-  if(rebase||!window._listBase){window._listBase={};getPkgArr('klk').forEach(function(r){window._listBase[r.id]=r.premium;});}
-  var prod={};KLK_DATA.forEach(function(p){prod[p.name+'|'+p.packing]=p;});
+function _svListNoteTxt(L){return L.uplift?('only received the +USD '+L.uplift+'/MT market uplift, no supplier quote'):'has no supplier quote on this list, so its price is unchanged';}
+// orange tag on every SKU that the latest supplier list did NOT cover
+function _svListTag(sup,name,packing){
+  var L=SUP_LISTS[sup];if(!L||_svListOn(sup,name,packing))return '';
+  return ' <span title="Not on the '+L.name+' supplier list of '+L.label+' — '+_svListNoteTxt(L)+'" style="background:#f39c12;color:#fff;font-size:.56rem;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap">&#9888; NOT ON '+L.label.toUpperCase()+' LIST &middot; '+(L.uplift?'+'+L.uplift+' ONLY':'UNCHANGED')+'</span>';
+}
+function _svApplyListAuto(sup,rebase){
+  var L=SUP_LISTS[sup];if(!L)return null;
+  var arr=getPkgArr(sup),R=_svListRef(sup);
+  if(rebase||!window._listBase[sup]){window._listBase[sup]={};arr.forEach(function(r){window._listBase[sup][r.id]=r.premium;});}
+  var base=window._listBase[sup],prod={};
+  _svListData(sup).forEach(function(p){prod[p.name+'|'+p.packing]=p;});
   var changed=0,found=0,up=0,down=0;
-  getPkgArr('klk').forEach(function(row){
-    var k=row.name+'|'+row.packing,p=prod[k],t=null;
-    for(var i=0;i<KLK_LIST_16OCT26.length;i++){if(KLK_LIST_16OCT26[i][0]===row.name&&KLK_LIST_16OCT26[i][1]===row.packing){t=KLK_LIST_16OCT26[i][2];break;}}
-    if(!p)return;
-    if(t==null){ // not on the supplier list: no quote, so only the same +USD 10/MT market uplift is applied to its last saved price
-      var b1=window._listBase[row.id];if(b1==null)b1=row.premium;
-      row.premium=Math.round((b1+KLK_LIST_ADJ)*100)/100;changed++;up++;return;
+  arr.forEach(function(row){
+    var p=prod[row.name+'|'+row.packing];if(!p)return;
+    var t=_svListTarget(sup,row.name,row.packing),b0=base[row.id];if(b0==null)b0=row.premium;
+    if(t==null){ // not on the supplier list: only the market uplift (if any) on its last saved price
+      if(L.uplift){row.premium=Math.round((b0+L.uplift)*100)/100;changed++;up++;}
+      return;
     }
     found++;
-    var np=Math.round((t-_modelBase(KLK_REF,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
-    var b0=window._listBase[row.id];if(b0==null)b0=row.premium;
+    var np=Math.round((t-_modelBase(R,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
     if(Math.abs(np-b0)>=0.005){changed++;if(np>b0)up++;else down++;}
     row.premium=np;
   });
-  window._listInfo={changed:changed,found:found,up:up,down:down};
-  return window._listInfo;
+  window._listInfo[sup]={changed:changed,found:found,up:up,down:down};
+  return window._listInfo[sup];
 }
-function _svKlkMonitor(){
-  var diffs=[],max=0,n=0;
-  KLK_LIST_16OCT26.forEach(function(x){
-    var p=null;for(var i=0;i<KLK_DATA.length;i++){if(KLK_DATA[i].name===x[0]&&KLK_DATA[i].packing===x[1]){p=KLK_DATA[i];break;}}
+function _svListMonitor(sup){
+  var L=SUP_LISTS[sup];if(!L)return '';
+  var diffs=[],max=0,n=0,data=_svListData(sup);
+  L.rows.forEach(function(x){
+    var p=null;for(var i=0;i<data.length;i++){if(data[i].name===x[0]&&data[i].packing===x[1]){p=data[i];break;}}
     if(!p)return;n++;
-    var g=x[2]-getLiveFob(p,'klk');
+    var g=x[2]-getLiveFob(p,sup);
     if(Math.abs(g)>=0.01){diffs.push(g);if(Math.abs(g)>max)max=Math.abs(g);}
   });
-  var ok=!diffs.length,nol=getPkgArr('klk').filter(function(r){return !_svKlkOnList(r.name,r.packing);}).length;
-  return (nol?'<div style="margin-bottom:6px;padding:6px 10px;border-radius:7px;font-size:.7rem;font-weight:700;background:#fff4e0;color:#b45309;border:1.5px solid #f6c77a">&#9888; '+nol+' SKU(s) were NOT on the '+KLK_LIST_LABEL+' supplier list &mdash; marked orange below; no supplier quote, so they only got the +USD '+KLK_LIST_ADJ+'/MT uplift.</div>':'')+'<div style="margin-bottom:8px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:700;background:'+(ok?'#e8f6ee':'#fdecea')+';color:'+(ok?'#1a7a4a':'#c0392b')+';border:1.5px solid '+(ok?'#b5dcc0':'#f1b0a8')+'">'
-    +'&#x1F50D; Supplier list monitor ('+KLK_LIST_LABEL+', '+n+' SKUs): '+(ok?'&#10003; system FOB matches the supplier list on every SKU':diffs.length+' SKU(s) differ from the supplier list (largest '+_l90Num(max)+') &mdash; base oil or premium moved since the list was applied')
-    +(ok?'':' <button onclick="svLoadKlkList()" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 9px;font-size:.66rem;font-weight:800;cursor:pointer;margin-left:6px">Review &amp; re-balance</button>')+'</div>';
+  var ok=!diffs.length,nol=getPkgArr(sup).filter(function(r){return !_svListOn(sup,r.name,r.packing);}).length;
+  return (nol?'<div style="margin-bottom:6px;padding:6px 10px;border-radius:7px;font-size:.7rem;font-weight:700;background:#fff4e0;color:#b45309;border:1.5px solid #f6c77a">&#9888; '+nol+' SKU(s) were NOT on the '+L.name+' '+L.label+' supplier list &mdash; marked orange below; '+(L.uplift?'no supplier quote, so they only got the +USD '+L.uplift+'/MT uplift.':'no supplier quote, so their price is unchanged.')+'</div>':'')
+    +'<div style="margin-bottom:8px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:700;background:'+(ok?'#e8f6ee':'#fdecea')+';color:'+(ok?'#1a7a4a':'#c0392b')+';border:1.5px solid '+(ok?'#b5dcc0':'#f1b0a8')+'">'
+    +'&#x1F50D; Supplier list monitor ('+L.label+', '+n+' SKUs): '+(ok?'&#10003; system FOB matches the supplier list on every SKU':diffs.length+' SKU(s) differ from the supplier list (largest '+_l90Num(max)+') &mdash; base oil or premium moved since the list was applied')
+    +(ok?'':' <button onclick="svLoadList()" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 9px;font-size:.66rem;font-weight:800;cursor:pointer;margin-left:6px">Review &amp; re-balance</button>')+'</div>';
 }
-function svLoadKlkList(){
+function svLoadList(){
   if(_svBlockSim('loading a price list'))return;
-  if(SV_SUP!=='klk')return;
-  var map={};getPkgArr('klk').forEach(function(r){map[r.name+'|'+r.packing]=r;});
+  var sup=SV_SUP,L=SUP_LISTS[sup];if(!L)return;
+  var map={};getPkgArr(sup).forEach(function(r){map[r.name+'|'+r.packing]=r;});
   window._tgtFob=window._tgtFob||{};
   var miss=[];
-  KLK_LIST_16OCT26.forEach(function(x){var r=map[x[0]+'|'+x[1]];if(r)window._tgtFob['klk|'+r.id]=x[2];else miss.push(x[0]+' '+x[1]);});
+  L.rows.forEach(function(x){var r=map[x[0]+'|'+x[1]];if(r)window._tgtFob[sup+'|'+r.id]=x[2];else miss.push(x[0]+' '+x[1]);});
   svRenderPkgFields();
-  svShowKlkPreview(miss);
+  svShowListPreview(sup,miss);
 }
-function _svKlkChanges(){
+function _svListChanges(sup){
   var out=[];
-  getPkgArr('klk').forEach(function(r){
-    var c=_svTgtCalc('klk',r.id);
+  getPkgArr(sup).forEach(function(r){
+    var c=_svTgtCalc(sup,r.id);
     if(c&&c.target!=null)out.push(c);
   });
   return out;
 }
-function svShowKlkPreview(miss){
-  var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+function svShowListPreview(sup,miss){
+  var L=SUP_LISTS[sup],modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(!modal||!body||!title)return;
-  title.textContent='KLK price list — review before applying';
-  var all=_svKlkChanges(),chg=all.filter(function(c){return Math.abs(c.gap)>=0.005;});
-  var inList={};KLK_LIST_16OCT26.forEach(function(x){inList[x[0]+'|'+x[1]]=1;});
-  var notOnList=getPkgArr('klk').filter(function(r){return !inList[r.name+'|'+r.packing];});
+  window._listPrevSup=sup;
+  title.textContent=L.name+' price list — review before applying';
+  var all=_svListChanges(sup),chg=all.filter(function(c){return Math.abs(c.gap)>=0.005;});
+  var notOnList=getPkgArr(sup).filter(function(r){return !_svListOn(sup,r.name,r.packing);});
+  var R=_svListRef(sup),bl=[['Malaysia CP10',R.malaysia_cp10!=null?R.malaysia_cp10:R.cp10],['Indonesia CP10',R.indonesia_cp10],['RBD Palm Oil MY',R.rbd_my],['RBD Palm Oil ID',R.rbd_id],['CP6',R.cp6],['Stearin',R.stearin],['PK Olein',R.pk_olein],['PK Oil',R.pk_oil],['PK Stearin',R.pk_stearin],['Coconut',R.coconut],['PFAD',R.pfad]].filter(function(x){return x[1]!=null;});
   var h='<div style="font-size:.74rem">';
-  h+='<div style="background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:8px 10px;margin-bottom:8px"><b>Base oil in use (KLK):</b> CP10 '+_l90Num(KLK_REF.cp10)+' &middot; RBD Palm Oil '+_l90Num(KLK_REF.rbd_my)+' &middot; CP6 '+_l90Num(KLK_REF.cp6)+' &middot; Stearin '+_l90Num(KLK_REF.stearin)+' &middot; PFAD '+_l90Num(KLK_REF.pfad)+'<br><span style="color:#b45309">If these are not today\'s base oil prices, close this and update the DAILY OIL BASE PRICE tab first &mdash; the new premiums are worked out against them.</span></div>';
+  h+='<div style="background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:8px 10px;margin-bottom:8px"><b>Base oil in use:</b> '+bl.map(function(x){return x[0]+' '+_l90Num(x[1]);}).join(' &middot; ')+'<br><span style="color:#b45309">If these are not today\'s base oil prices, close this and update the DAILY OIL BASE PRICE tab first &mdash; the new premiums are worked out against them.</span></div>';
   h+='<div style="margin-bottom:8px"><b>'+all.length+'</b> SKUs on the supplier list &rarr; <b style="color:#b45309">'+chg.length+'</b> premium/discount changes, '+(all.length-chg.length)+' already match.'+(miss&&miss.length?' <span style="color:#c0392b;font-weight:700">Not found in system: '+miss.join('; ')+'</span>':'')+'</div>';
-  h+='<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button onclick="svApplyKlkAll()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.76rem;font-weight:800;cursor:pointer">Apply all '+chg.length+' changes to premium/discount</button><button onclick="document.getElementById(\'fullModal\').className=\'\'" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 14px;font-size:.76rem;font-weight:700;cursor:pointer">Close (change nothing)</button><span style="color:var(--mut);align-self:center">Applying does not save. Review, then press Save &amp; Log Reference.</span></div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button onclick="svApplyListAll()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.76rem;font-weight:800;cursor:pointer">Apply all '+chg.length+' changes to premium/discount</button><button onclick="document.getElementById(\'fullModal\').className=\'\'" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 14px;font-size:.76rem;font-weight:700;cursor:pointer">Close (change nothing)</button><span style="color:var(--mut);align-self:center">Applying does not save. Review, then press Save &amp; Log Reference.</span></div>';
   h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:760px"><thead><tr>';
   ['Product','Packing','System FOB','Supplier FOB','Premium/discount change','Premium now &rarr; new'].forEach(function(t,i){h+='<th style="padding:6px 8px;background:#0a3d62;color:#fff;font-size:.64rem;text-align:'+(i<2?'left':'right')+';white-space:nowrap">'+t+'</th>';});
   h+='</tr></thead><tbody>';
@@ -6908,19 +6948,19 @@ function svShowKlkPreview(miss){
     h+='<td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap">'+_l90Num(c.row.premium)+(same?'':' &rarr; <b>'+_l90Num(c.newPrem)+'</b>')+'</td></tr>';
   });
   h+='</tbody></table></div>';
-  if(notOnList.length)h+='<div style="margin-top:8px;color:var(--mut)"><b>Not on the supplier list (left unchanged):</b> '+notOnList.map(function(r){return r.name+' '+r.packing;}).join('; ')+'</div>';
+  if(notOnList.length)h+='<div style="margin-top:8px;color:var(--mut)"><b>Not on the supplier list ('+(L.uplift?'+'+L.uplift+' uplift only':'left unchanged')+'):</b> '+notOnList.map(function(r){return r.name+' '+r.packing;}).join('; ')+'</div>';
   h+='</div>';
   body.innerHTML=h;modal.className='open';
 }
-function svApplyKlkAll(){
-  var n=0;
-  _svKlkChanges().forEach(function(c){if(Math.abs(c.gap)>=0.005){c.row.premium=c.newPrem;n++;}});
+function svApplyListAll(){
+  var sup=window._listPrevSup||SV_SUP,n=0;
+  _svListChanges(sup).forEach(function(c){if(Math.abs(c.gap)>=0.005){c.row.premium=c.newPrem;n++;}});
   if(n)_svMarkDirty();
   document.getElementById('fullModal').className='';
   svRenderPkgFields();svRenderTable();
   showToast('Applied '+n+' premium/discount changes — now press Save & Log Reference',6000);
 }
-// ===== END KLK LIST =====
+// ===== END SUPPLIER LISTS =====
 
 // ===== SUPPLIER FOB → PREMIUM/DISCOUNT BALANCER =====
 // User keys in the supplier's quoted FOB (USD/MT) for a SKU. The new premium/discount is
@@ -7055,7 +7095,7 @@ function svOnRefChange(inp){
       r.rbd_my=val-10; r.rbd_id=val-130;
     }
   });
-  if(window._listPending){try{_svApplyKlkListAuto();_svModelBanner();}catch(e){}}
+  try{Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k])_svApplyListAuto(k);});_svModelBanner();}catch(e){}
   // Surgical update only — never rebuild the whole panel here, that would
   // destroy the input the user is actively typing in and kick their cursor out.
   if(isMalaysiaCp10){
