@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1545';
+  var _v='V17OCT1600';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -386,6 +386,9 @@ body.user-mode #userPdfBar { display:flex !important; }
 #userPdfBar h2 { font-size:1rem; font-weight:800; margin:0; }
 #userPdfBar p  { font-size:.82rem; opacity:.8; margin:0; }
 #authOverlay{display:none}
+/* SIMULATION LOCK: while a past date is loaded, every save / PDF / copy button is greyed out and unclickable */
+body.sim-on button[onclick*="svSaveRef"],body.sim-on button[onclick*="svResetRef"],body.sim-on button[onclick*="copyReport"],body.sim-on button[onclick*="doPrint"],body.sim-on button[onclick*="openPrintPreview"],body.sim-on button[onclick*="downloadPdf"],body.sim-on button[onclick*="generatePDF"],body.sim-on button[onclick*="copyAsImage"]{opacity:.3!important;filter:grayscale(1)!important;pointer-events:none!important;cursor:not-allowed!important}
+body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 </style>
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body data-build="202606070555">
@@ -2400,6 +2403,7 @@ function setRptMode(m){
 }
 
 function rReport(){
+  if(window._simMode){var _rt=el('reportTxt');if(_rt)_rt.value='\u26D4 SIMULATION of a past date \u2014 report and WhatsApp text are disabled.\nPress "Back to current prices" to create a report.';var _vt=el('rptTableDiv');if(_vt)_vt.innerHTML='';var _vx=el('rptTableTxt');if(_vx)_vx.value='';return;}
   if(!QITEMS.length){
     el('reportTxt').value='';
     el('rptTableDiv').innerHTML='';
@@ -6548,12 +6552,14 @@ function _svSimBanner(){
     if(window._simMode){el.style.display='';el.innerHTML='&#x1F552; SIMULATION &mdash; prices as at '+_l90Date(window._simDate)+' &nbsp;<span style="font-weight:400">('+window._simInfo+')</span>. Read-only: nothing can be saved. &nbsp;<button onclick="svSimExit()" style="background:#fff;color:#c0392b;border:none;border-radius:5px;padding:3px 10px;font-size:.72rem;font-weight:800;cursor:pointer">Back to current prices</button>';}
     else{el.style.display='none';el.innerHTML='';}
   }
+  document.body.classList.toggle('sim-on',!!window._simMode);
   var bk=document.getElementById('svSimBack');if(bk)bk.style.display=window._simMode?'':'none';
   document.querySelectorAll('button[onclick*="copyReport"],button[onclick*="generatePDF"],button[onclick*="downloadPdf"],button[onclick*="doPrint"],button[onclick*="copyAsImage"],button[onclick*="openPrintPreview"]').forEach(function(b){b.style.opacity=window._simMode?'.4':'';});
   ['svOilSaveBtn','svSupSaveBtn'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.opacity=window._simMode?'.4':'';b.title=window._simMode?'Disabled while simulating a past date':'';}});
 }
 function _svSimRefresh(){
   svRenderRefPanel();
+  try{rReport();}catch(e){}
   if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
   _svSimBanner();
 }
@@ -6769,7 +6775,7 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){if(window._simMode){showToast('Simulation of a past date \u2014 nothing is saved. Press Back to current prices first.',5000);return;}var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
   // Propagate Apical oil price fields to WA_REF and KLK_REF
   if(s==='apical'){
     var _sf=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
@@ -6792,7 +6798,7 @@ function svSaveRef(){if(window._simMode){showToast('Simulation of a past date \u
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
   // Push to Sheets so all devices/users get the update
   _syncSave();
-}function svResetRef(){if(window._simMode){showToast('Simulation of a past date \u2014 press Back to current prices first.',4000);return;}var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
+}function svResetRef(){if(_svBlockSim('Reset Defaults'))return;var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
   Promise.all([
