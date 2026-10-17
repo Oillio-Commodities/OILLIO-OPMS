@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT2000';
+  var _v='V17OCT2015';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -5983,6 +5983,7 @@ var APC_PKG_DEF=[
 {id:17,cat:"SPECIALTY — JKT Only",name:"RPKO BIB 20kg",packing:"20kg BIB",pkg_cost:100.0,premium:94.3333},
 {id:18,cat:"SPECIALTY — JKT Only",name:"RCNO Flexibag",packing:"Flexibag",pkg_cost:52.0,premium:81.9583},
 {id:19,cat:"SPECIALTY — JKT Only",name:"HPS Flakes",packing:"25kg polywoven bag",pkg_cost:10.0,premium:160.0},
+{id:30,cat:"SPECIALTY — JKT Only",name:"HPS Flakes",packing:"25kg polywoven bag - 40ft FCL (960 bags)",pkg_cost:10.0,premium:160.0},
 {id:20,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 36/39",packing:"20kg carton",pkg_cost:82.0,premium:100.5},
 {id:21,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 38/40 & 40/42",packing:"20kg carton",pkg_cost:82.0,premium:120.5},
 {id:22,cat:"LOW GE & MCPDE SHORTENING",name:"LOW GE & MCPDE 20kg Shortening 43/48",packing:"20kg carton",pkg_cost:82.0,premium:130.5},
@@ -6220,6 +6221,7 @@ var APICAL_DATA=[
 {cat:'SPECIALTY — JKT Only',name:'RPKO BIB 20kg',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2403.3333,fob_kl:null,fcpo_default:2090,premium:94.3333,pkg_cost:100.0,fcpo_ref:'pk_oil',fcpo_delta:54.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'RCNO Flexibag',packing:'Flexibag',load_ctn:1,net_wt:20.0,fob_jkt:1933.9583,fob_kl:null,fcpo_default:1860,premium:81.9583,pkg_cost:52.0,fcpo_ref:'pk_olein',fcpo_delta:-40.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'HPS Flakes',packing:'25kg polywoven bag',load_ctn:640,net_wt:25.0,fob_jkt:1330,fob_kl:null,fcpo_default:1120,premium:160.0,pkg_cost:10.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SPECIALTY — JKT Only',name:'HPS Flakes',packing:'25kg polywoven bag - 40ft FCL (960 bags)',load_ctn:960,net_wt:25.0,fob_jkt:1260,fob_kl:null,fcpo_default:1120,premium:160.0,pkg_cost:10.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'16Oct26'},
 {cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 36/39',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1270,fcpo_default:1040,premium:100.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
 {cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 38/40 & 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1290,fcpo_default:1040,premium:120.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
 {cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 43/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1300,fcpo_default:1040,premium:130.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
@@ -6831,7 +6833,8 @@ var APC_LIST_16OCT26=[
   ['18kg BIB Spread Fat','18kg BIB',1325],
   ['18kg RCNO','18kg BIB',2130],
   ['20kg HCNO','20kg carton',2195],
-  ['HPS Flakes','25kg polywoven bag',1245], // 20ft FCL (640 bags) price; 40ft FCL is 1,260
+  ['HPS Flakes','25kg polywoven bag',1245], // 20ft FCL (640 bags)
+  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1260], // 40ft FCL (960 bags)
   ['20L Yellow Jerry Can – CP10','20L Jerry Can',1365],
   ['20L Yellow Jerry Can – CP8','20L Jerry Can',1375],
   ['20kg Hpks 33.5/35.5','20kg carton',2585],
