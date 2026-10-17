@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1720';
+  var _v='V17OCT1735';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -393,6 +393,7 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body data-build="202606070555">
 <div id="verBanner" style="display:none"></div>
+<div id="modelBanner" style="display:none;position:sticky;top:0;z-index:8999;background:#fff3cd;color:#7a4b00;border-bottom:2px solid #f0a500;padding:9px 14px;font-size:.78rem;font-weight:600;text-align:center"></div>
 <div id="simBanner" style="display:none;position:sticky;top:0;z-index:9000;background:#c0392b;color:#fff;padding:9px 14px;font-size:.78rem;font-weight:700;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)"></div>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
@@ -1611,19 +1612,29 @@ function el(id){return document.getElementById(id);}
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
+    // Keep the refs exactly as saved (needed to convert old-model premiums), THEN recalculate the auto fields
+    var _oldRefs = {apc:Object.assign({},APC_REF), wa:Object.assign({},WA_REF), klk:Object.assign({},KLK_REF)};
+    [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
     window._refLastSaved = d.last_saved || '';
     window._refSavedBy = d.saved_by || 'User 0';
     // Apply packaging/premium overrides (User 0 view only — UI hidden for others)
-    function _applyPkg(savedArr, liveArr){
-      if(!savedArr || !liveArr) return;
+    function _applyPkg(savedArr, liveArr, defArr){
+      if(!liveArr) return;
+      // start every SKU from the code defaults, then lay the saved values on top (deterministic on every refresh)
+      liveArr.forEach(function(r){ var dd=defArr.filter(function(o){return o.id===r.id;})[0]; if(dd){ r.premium=dd.premium; r.pkg_cost=dd.pkg_cost; } });
+      if(!savedArr) return;
       savedArr.forEach(function(s){
         var row = liveArr.find(function(r){ return r.id === s.id; });
         if(row){ if(s.premium!=null) row.premium=s.premium; if(s.pkg_cost!=null) row.pkg_cost=s.pkg_cost; }
       });
     }
-    _applyPkg(d.apical_pkg, APC_PKG);
-    _applyPkg(d.klk_pkg, KLK_PKG);
-    _applyPkg(d.wingagro_pkg, WA_PKG);
+    _applyPkg(d.apical_pkg, APC_PKG, APC_PKG_DEF);
+    _applyPkg(d.klk_pkg, KLK_PKG, KLK_PKG_DEF);
+    _applyPkg(d.wingagro_pkg, WA_PKG, WA_PKG_DEF);
+    // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
+    var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
+    if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
+    try { _svModelBanner(); } catch(e) {}
     var flds = document.getElementById('svRefFields');
     if (flds) flds.querySelectorAll('[data-ref]').forEach(function(inp) {
       var k = inp.getAttribute('data-ref');
@@ -1652,19 +1663,20 @@ function el(id){return document.getElementById(id);}
 
   function _syncSave() {
     if (window._simMode) return; // never persist while simulating a past date
+    var savedTs = _pricingTs();
     var myTime = new Date().toLocaleString('en-MY', {
       timeZone:'Asia/Kuala_Lumpur',
       year:'numeric',month:'2-digit',day:'2-digit',
       hour:'2-digit',minute:'2-digit',second:'2-digit'
     });
     var payload = {
-      apical: Object.assign({}, APC_REF),
-      klk: Object.assign({}, KLK_REF),
-      wingagro: Object.assign({}, WA_REF),
+      apical: Object.assign({}, APC_REF, {model_v: MODEL_V}),
+      klk: Object.assign({}, KLK_REF, {model_v: MODEL_V}),
+      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
-      last_saved: new Date().toISOString(),
+      last_saved: savedTs,
       saved_by: 'User 0'
     };
     // Update the single ref_prices row
@@ -1676,6 +1688,7 @@ function el(id){return document.getElementById(id);}
     .then(function(r) {
       if (r.ok) {
         window._refDirty = false; // save complete — safe to resume live sync
+        window._modelPending = false; try { _svModelBanner(); } catch(e) {}
         showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
@@ -1693,7 +1706,6 @@ function el(id){return document.getElementById(id);}
         }).catch(function(){});
         // NEW: flat, row-per-product log (Excel-like, easy day-to-day comparison)
         try {
-          var savedTs = new Date().toISOString();
           var rows = []
             .concat(_buildPriceLogRows('apical', APICAL_DATA, APC_PKG, savedTs))
             .concat(_buildPriceLogRows('klk', KLK_DATA, KLK_PKG, savedTs))
@@ -1706,13 +1718,21 @@ function el(id){return document.getElementById(id);}
         } catch(e) {}
         // NEW: oil base price log — one row per supplier, same timestamp as price_log rows
         try {
-          var oilRows = [
-            {saved_at: savedTs, saved_by:'User 0', supplier:'apical', malaysia_cp10:APC_REF.malaysia_cp10, indonesia_cp10:APC_REF.indonesia_cp10, pk_olein:APC_REF.pk_olein, pk_oil:APC_REF.pk_oil, pk_stearin:APC_REF.pk_stearin, stearin:APC_REF.stearin, coconut:APC_REF.coconut, supplier_margin:APC_REF.supplier_margin},
-            {saved_at: savedTs, saved_by:'User 0', supplier:'klk', malaysia_cp10:KLK_REF.cp10, indonesia_cp10:null, pk_olein:null, pk_oil:null, pk_stearin:null, stearin:null, coconut:null, supplier_margin:KLK_REF.supplier_margin},
-            {saved_at: savedTs, saved_by:'User 0', supplier:'wingagro', malaysia_cp10:WA_REF.malaysia_cp10, indonesia_cp10:WA_REF.indonesia_cp10, pk_olein:WA_REF.pk_olein, pk_oil:WA_REF.pk_oil, pk_stearin:WA_REF.pk_stearin, stearin:WA_REF.stearin, coconut:WA_REF.coconut, supplier_margin:WA_REF.supplier_margin}
-          ];
+          function _oilRow(sup, R, cp10v, full) {
+            var o = {saved_at: savedTs, saved_by:'User 0', supplier:sup, malaysia_cp10:cp10v, indonesia_cp10:R.indonesia_cp10!=null?R.indonesia_cp10:null, pk_olein:R.pk_olein!=null?R.pk_olein:null, pk_oil:R.pk_oil!=null?R.pk_oil:null, pk_stearin:R.pk_stearin!=null?R.pk_stearin:null, stearin:R.stearin!=null?R.stearin:null, coconut:R.coconut!=null?R.coconut:null, supplier_margin:R.supplier_margin};
+            if (full) { o.cp6=R.cp6; o.pfad=R.pfad; o.rbd_my=R.rbd_my; o.rbd_id=R.rbd_id; }
+            return o;
+          }
+          function _oilRows(full) { return [_oilRow('apical',APC_REF,APC_REF.malaysia_cp10,full), _oilRow('klk',KLK_REF,KLK_REF.cp10,full), _oilRow('wingagro',WA_REF,WA_REF.malaysia_cp10,full)]; }
+          // Try with the extra columns (CP6, PFAD, RBD Palm Oil MY/ID); if the table does not have them yet, fall back to the original columns
           fetch(_SB_URL + '/rest/v1/oil_base_log', {
-            method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(oilRows)
+            method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(_oilRows(true))
+          }).then(function(r2) {
+            if (!r2.ok) {
+              return fetch(_SB_URL + '/rest/v1/oil_base_log', {
+                method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(_oilRows(false))
+              });
+            }
           }).catch(function(){});
         } catch(e) {}
       } else {
@@ -5919,12 +5939,12 @@ function calcKLKItemP(item){
 var APC_REF_KEY='oillio_apc_ref';
 var WA_REF_KEY='oillio_wa_ref';
 var KLK_REF_KEY='oillio_klk_ref';
-var APC_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.96};
+var APC_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.96};
 
 
 
-var WA_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.955};
-var KLK_REF_DEF={cp10:1207.50,cp6:1267.50,pfad:1100.0,stearin:1160.0,supplier_margin:0.975,oillio_margin:0.0};
+var WA_REF_DEF={malaysia_cp10:1207.50,indonesia_cp10:1087.50,rbd_my:1197.50,rbd_id:1077.50,pk_olein:1840.0,pk_oil:2155.0,pk_stearin:2590.0,stearin:1160.0,coconut:1860.0,cp6:1267.50,pfad:1100.0,oillio_margin:0.0,supplier_margin:0.955};
+var KLK_REF_DEF={cp10:1207.50,rbd_my:1197.50,rbd_id:1077.50,cp6:1267.50,pfad:1100.0,stearin:1160.0,supplier_margin:0.975,oillio_margin:0.0};
 function loadRef(key,def){try{var d=JSON.parse(localStorage.getItem(key)||'{}');if(d&&d._savedByUser===true&&Object.keys(d).length>1){var ok=true;if(def.malaysia_cp10&&d.malaysia_cp10&&Math.abs(d.malaysia_cp10-def.malaysia_cp10)>30)ok=false;if(ok){var m=Object.assign({},def);Object.keys(def).forEach(function(k){if(k in d&&!isNaN(parseFloat(d[k])))m[k]=parseFloat(d[k]);});return m;}localStorage.removeItem(key);}}catch(e){}return Object.assign({},def);}
 var APC_REF=loadRef(APC_REF_KEY,APC_REF_DEF);
 var WA_REF=loadRef(WA_REF_KEY,WA_REF_DEF)
@@ -6103,17 +6123,83 @@ function getPkgArr(supplier){
 
 ;
 var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
+
+// ===== AUTO BASE FIELDS: always worked out from Malaysia CP10 (never typed, never stale) =====
+// Indonesia CP10 = CP10 - 120 | CP6 = CP10 + 60 | RBD Palm Oil (Malaysia) = CP10 - 10 | RBD Palm Oil (Indonesia) = Indonesia CP10 - 10
+function _deriveAuto(r){
+  if(!r)return r;
+  var c=parseFloat(r.malaysia_cp10!=null?r.malaysia_cp10:r.cp10);
+  if(isNaN(c))return r;
+  if('indonesia_cp10' in r)r.indonesia_cp10=c-120;
+  if('cp6' in r)r.cp6=c+60;
+  r.rbd_my=c-10;
+  r.rbd_id=c-130;
+  return r;
+}
+[APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
+
+// ===== PRICING MODEL V2 (17 Oct 2026): every product = base oil + premium/discount + packaging =====
+// Saved prices from the old model are converted ONCE, in memory, so that no FOB changes: the premium/discount absorbs the
+// difference between the old base and the new base (and any packaging re-estimate). Pressing Save & Log stores it as v2.
+var MODEL_V=2;
+var MODEL_V2_OLD={"apical":{"20kg Shortening 36/39|20kg carton":["indonesia_cp10",0.0,1040.0,null],"20kg Shortening 38/40 & 40/42|20kg carton":["indonesia_cp10",0.0,1040.0,null],"20kg Shortening 43/47|20kg carton":["indonesia_cp10",0.0,1040.0,null],"20kg Shortening 46/48|20kg carton":["indonesia_cp10",0.0,1040.0,null],"20kg Shortening 48/52|20kg carton":["indonesia_cp10",0.0,1040.0,null],"LOW GE & MCPDE 20kg Shortening 36/39|20kg carton":["indonesia_cp10",0.0,1040.0,null],"LOW GE & MCPDE 20kg Shortening 38/40 & 40/42|20kg carton":["indonesia_cp10",0.0,1040.0,null],"LOW GE & MCPDE 20kg Shortening 43/48|20kg carton":["indonesia_cp10",0.0,1040.0,null],"LOW GE & MCPDE 20kg Shortening 46/48|20kg carton":["indonesia_cp10",22.0,1040.0,null],"LOW GE & MCPDE 20kg Shortening 48/52|20kg carton":["indonesia_cp10",0.0,1040.0,null]},"klk":{"RBD PALM OLEIN CP6|900ML X 12 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|1.5L X 12 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|1.5L X 6 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|2L X 6 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|4.5L X 6 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|4L X 4 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|5L X 4 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|1L X 12 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|1.8L X 6 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP6|3L X 6 PET BOTTLES PER CARTON":["cp6",0.0,1220.0,null],"RBD PALM OLEIN CP10|4L X 4 YELLOW JERRY CANS PER CARTON":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|4.5L X 4 YELLOW JERRY CANS PER CARTON":["fixed",0.0,1155.0,null],"RBD PALM OLEIN CP10|5L X 4 TRANSPARENT JERRY CANS PER CARTON":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|8L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|8L X 2 YELLOW JERRY CANS PER CARTON":["fixed",0.0,1155.0,null],"RBD PALM OLEIN CP10|9L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|10L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|10L BM YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|16L (18) YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|16L BM YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|16L (18) BM YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|18L BM YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|20L TRANSPARENT JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|20L BM YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|20L WHITE JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|16L TIN SMALL LID":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|16L TIN BIG LID":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|17L TIN FLEXSPOT":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|18L TIN FLEXSPOT":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|20L TIN FLEXSPOT":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|10KG BIB":["",0.0,1175.0,150.0],"RBD PALM OLEIN CP10|16L BIB":["",0.0,1155.0,120.0],"RBD PALM OLEIN CP10|20KG BIB":["",0.0,1155.0,100.0],"RBD PALM OLEIN CP10|210L TIGHT HEAD STEEL DRUM - BLUE":["",0.0,1175.0,null],"RBD PALM OLEIN CP10|220L HDPE PLASTIC DRUM - BLUE":["",0.0,1175.0,null],"SHORTENING 48-52|16KG PE LINERS IN CARTON":["fixed",-15.0,1160.0,102.0],"SHORTENING 48-52|20KG PE LINERS IN CARTON":["fixed",-15.0,1160.0,82.0],"SHORTENING 52-56|20KG PE LINERS IN CARTON":["",0.0,1150.0,82.0],"SHORTENING 46-48|20KG PE LINERS IN CARTON":["",-12.5,1142.5,82.0],"SHORTENING 42-46|20KG PE LINERS IN CARTON":["",-10.0,1145.0,82.0],"SHORTENING 40-42|20KG PE LINERS IN CARTON":["",-7.5,1147.5,82.0],"SHORTENING 36-39|20KG PE LINERS IN CARTON":["",-5.0,1150.0,82.0],"SHORTENING 36-39|25KG PE LINERS IN CARTON":["fixed",-5.0,1170.0,66.0],"SHORTENING 33-36|20KG PE LINERS IN CARTON":["",25.0,1180.0,82.0],"MARGARINE ALL PURPOSE|20KG PE LINERS IN CARTON":["",20.0,1175.0,82.0],"MARGARINE PASTRY|20KG PE LINERS IN CARTON":["",20.0,1175.0,82.0],"BUTTER OIL SUBSTITUTE|20KG PE LINERS IN CARTON":["",20.0,1195.0,null],"VEGETABLE GHEE|1L X 12 ROU-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|2L X 6 REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|4L X 4 REC-TIN W/LID":["fixed",0.0,1195.0,null],"VEGETABLE GHEE|5L X 4 REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|6L X 2 REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|8L X 2 REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|8KG X 2 REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|12L REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|14L REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|16L REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|18L REC-TIN W/LID":["fixed",0.0,1195.0,null],"VEGETABLE GHEE|20L REC-TIN W/LID":["fixed",0.0,1195.0,null],"VEGETABLE GHEE|16KG REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|14KG REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|15KG REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|20KG REC-TIN W/LID":["",20.0,1195.0,null],"VEGETABLE GHEE|220L HDPE PLASTIC DRUM - BLUE":["",20.0,1195.0,null],"RBD PALM OLEIN CP10|3L X 6 YELLOW JERRY CANS PER CARTON":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|5L X 4 YELLOW JERRY CANS PER CARTON":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|17L YELLOW JERRY CAN WITH DOUBLE SIDED ST":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|18L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|20L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|25L YELLOW JERRY CAN":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|FLEXIBAG":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|FLEXIBAG WITH HEATING PAD":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|FLEXIBAG WITH HEATING RAIL":["",0.0,1155.0,null],"RBD PALM OLEIN CP10|FLEXIBAG WITH DOUBLE HEATING PAD":["",0.0,1175.0,null],"RBD PALM OIL 36-39|FLEXIBAG":["",-5.0,1170.0,null],"RBD PALM OIL 36-39|FLEXIBAG WITH HEATING PAD":["",-5.0,1170.0,null],"RBD PALM OIL 36-39|FLEXIBAG WITH HEATING RAIL":["",-5.0,1170.0,null],"RBD PALM OIL 36-39|FLEXIBAG WITH DOUBLE HEATING PAD":["",-5.0,1170.0,null],"RBD PALM OIL 36-39|20KG PE LINERS IN CARTON":["malaysia_cp10",0.0,1160.0,null],"RBD PALM STEARIN|FLEXIBAG":["",-40.0,1135.0,null],"RBD PALM STEARIN|FLEXIBAG WITH HEATING PAD":["",-40.0,1135.0,null],"RBD PALM STEARIN|FLEXIBAG WITH HEATING RAIL":["",-40.0,1135.0,null],"RBD PALM STEARIN|FLEXIBAG WITH DOUBLE HEATING PAD":["",-40.0,1135.0,null],"RBD PALM STEARIN|20KG PE LINERS IN CARTON":["stearin",0.0,1120.0,null],"RBD PALM STEARIN|200L RECON STEEL DRUM":["stearin",0.0,1120.0,null],"RBD PALM STEARIN|200L RECON STEEL DRUM (SLIGHTLY DENTED)":["stearin",0.0,1120.0,null],"RBD PALM STEARIN|200L RECON STEEL DRUM WITH RINGCLIP":["stearin",0.0,1120.0,null],"RBD PALM STEARIN|210L TIGHT HEAD STEEL DRUM - BLUE":["stearin",0.0,1120.0,null]},"wingagro":{"20L/ 25l Yellow Jerry Can \u2013 CP10|20L Jerry Can":["malaysia_cp10",-28.0,1132.0,null]}};
+function _modelBase(ref,rf,dl,df){return (rf&&rf!=='fixed'&&ref[rf]!=null)?(ref[rf]+(dl||0)):(df||0);}
+function _migrateModelV2(oldRefs){
+  var n=0;
+  [['apical',APICAL_DATA,APC_PKG,APC_REF,oldRefs.apc],['klk',KLK_DATA,KLK_PKG,KLK_REF,oldRefs.klk],['wingagro',WA_DATA,WA_PKG,WA_REF,oldRefs.wa]].forEach(function(x){
+    var tbl=MODEL_V2_OLD[x[0]]||{},prod={};
+    x[1].forEach(function(p){prod[p.name+'|'+p.packing]=p;});
+    x[2].forEach(function(row){
+      var k=row.name+'|'+row.packing,e=tbl[k],p=prod[k];
+      if(!e||!p)return;
+      var fd=p.fob_delta||0;
+      var oldFob=_modelBase(x[4],e[0],e[1],e[2])+row.premium+row.pkg_cost+fd;
+      var newPkg=(e[3]!=null)?e[3]:row.pkg_cost;
+      var newBase=_modelBase(x[3],p.fcpo_ref,p.fcpo_delta,p.fcpo_default);
+      row.pkg_cost=newPkg;
+      row.premium=Math.round((oldFob-newBase-newPkg-fd)*100)/100;
+      n++;
+    });
+  });
+  return n;
+}
+function _svModelBanner(){
+  var el=document.getElementById('modelBanner');if(!el)return;
+  var show=!!window._modelPending&&(window.USER_LEVEL===0);
+  el.style.display=show?'':'none';
+  if(show)el.innerHTML='&#9889; PRICING MODEL UPGRADED &mdash; every product now = base oil + premium/discount + packaging (new RBD Palm Oil bases, Ghee &amp; Butter Oil Substitute = CP10 + 20). All FOB prices are unchanged. Press <b>SAVE &amp; LOG REFERENCE</b> once so this is stored for every device.';
+}
+// ===== UNSAVED-CHANGES GUARD (User 0): changes to base oil / premium / packaging are lost if the page is closed =====
+function _svMarkDirty(){
+  window._refDirty=true;
+  ['svOilNote','svRefNote'].forEach(function(id){var n=document.getElementById(id);if(n){n.textContent='⚠ Unsaved changes — press Save & Log Reference';n.style.color='#c0392b';}});
+}
+window.addEventListener('beforeunload',function(e){
+  if(window.USER_LEVEL===0&&window._refDirty&&!window._simMode){e.preventDefault();e.returnValue='You have unsaved base oil / premium / packaging changes.';return e.returnValue;}
+});
+// Weekend rule: there is no market on Sat/Sun, so a weekend save is dated the Friday before (stamped 23:59 Malaysia time, in save order)
+function _pricingTs(){
+  var now=new Date(),my=new Date(now.getTime()+8*3600000),dow=my.getUTCDay();
+  if(dow!==6&&dow!==0)return now.toISOString();
+  var back=(dow===6)?1:2;
+  var base=Date.UTC(my.getUTCFullYear(),my.getUTCMonth(),my.getUTCDate()-back,15,59,0); // Fri 23:59:00 MYT
+  var since=(dow===6?0:86400)+my.getUTCHours()*3600+my.getUTCMinutes()*60+my.getUTCSeconds();
+  return new Date(base+Math.floor(since/172800*59000)).toISOString();
+}
+function _svRollWeekend(day){var d=new Date(day+'T00:00:00Z'),w=d.getUTCDay();if(w===6)d=new Date(d.getTime()-86400000);else if(w===0)d=new Date(d.getTime()-2*86400000);return d.toISOString().slice(0,10);}
+// "Current" pricing = the LAST SAVED pricing day (weekends/holidays keep Friday's prices live — never locked)
+function _svLatestDay(){var ts=window._refLastSaved;return _svRollWeekend(ts?_myDay(ts):_myDay(new Date().toISOString()));}
 var SV_CFG=(function(){try{var d=JSON.parse(localStorage.getItem('oillio_supp'));if(d&&d.margin!=null)return d;}catch(e){}return {margin:5.0};}());var SV_APC_KEY="oillio_apc_fob";var SV_WA_KEY="oillio_wa_fob";var SV_KLK_KEY="oillio_klk_fob";
 var APICAL_DATA=[
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336,net_wt:18.0,fob_jkt:1405.2083,fob_kl:null,fcpo_default:1160,premium:54.7083,pkg_cost:143.0,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP8',packing:'20L Jerry Can',load_ctn:1336,net_wt:18.0,fob_jkt:1415.625,fob_kl:null,fcpo_default:1160.0,premium:55.125,pkg_cost:143.0,fcpo_ref:'malaysia_cp10',fcpo_delta:10.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'JERRY CANS',name:'20L White Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336,net_wt:18.0,fob_jkt:null,fob_kl:1415.625,fcpo_default:1160,premium:55.125,pkg_cost:153.0,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
 {cat:'JERRY CANS',name:'20L White Jerry Can – CP8',packing:'20L Jerry Can',load_ctn:1336,net_wt:18.0,fob_jkt:null,fob_kl:1425.0,fcpo_default:1160.0,premium:55.5,pkg_cost:152.0,fcpo_ref:'malaysia_cp10',fcpo_delta:10.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0},
-{cat:'SHORTENING',name:'20kg Shortening 36/39',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1240,fob_kl:null,fcpo_default:1040,premium:70.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
-{cat:'SHORTENING',name:'20kg Shortening 38/40 & 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1240,fob_kl:null,fcpo_default:1040,premium:70.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
-{cat:'SHORTENING',name:'20kg Shortening 43/47',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1250,fob_kl:null,fcpo_default:1040,premium:80.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
-{cat:'SHORTENING',name:'20kg Shortening 46/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1250,fob_kl:null,fcpo_default:1040,premium:80.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
-{cat:'SHORTENING',name:'20kg Shortening 48/52',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1265,fob_kl:null,fcpo_default:1040,premium:95.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SHORTENING',name:'20kg Shortening 36/39',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1240,fob_kl:null,fcpo_default:1040,premium:70.5,pkg_cost:82.0,fcpo_ref:'rbd_id',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SHORTENING',name:'20kg Shortening 38/40 & 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1240,fob_kl:null,fcpo_default:1040,premium:70.5,pkg_cost:82.0,fcpo_ref:'rbd_id',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SHORTENING',name:'20kg Shortening 43/47',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1250,fob_kl:null,fcpo_default:1040,premium:80.5,pkg_cost:82.0,fcpo_ref:'rbd_id',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SHORTENING',name:'20kg Shortening 46/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1250,fob_kl:null,fcpo_default:1040,premium:80.5,pkg_cost:82.0,fcpo_ref:'rbd_id',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
+{cat:'SHORTENING',name:'20kg Shortening 48/52',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:1265,fob_kl:null,fcpo_default:1040,premium:95.5,pkg_cost:82.0,fcpo_ref:'rbd_id',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
 {cat:'BIB',name:'20kg BIB Spread Fat',packing:'20kg BIB',load_ctn:1058,net_wt:20.0,fob_jkt:1377.5,fob_kl:null,fcpo_default:1120,premium:117.5,pkg_cost:100.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'03Aug26'},
 {cat:'BIB',name:'18kg BIB Spread Fat',packing:'18kg BIB',load_ctn:1215,net_wt:18.0,fob_jkt:1365,fob_kl:null,fcpo_default:1120,premium:105.0,pkg_cost:100.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
 {cat:'SPECIALTY — KL Only',name:'20kg CBR 37/40',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1905,fcpo_default:1860,premium:-17.0,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
@@ -6129,15 +6215,15 @@ var APICAL_DATA=[
 {cat:'SPECIALTY — JKT Only',name:'RPKO BIB 20kg',packing:'20kg BIB',load_ctn:1142,net_wt:20.0,fob_jkt:2403.3333,fob_kl:null,fcpo_default:2090,premium:94.3333,pkg_cost:100.0,fcpo_ref:'pk_oil',fcpo_delta:54.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'RCNO Flexibag',packing:'Flexibag',load_ctn:1,net_wt:20.0,fob_jkt:1933.9583,fob_kl:null,fcpo_default:1860,premium:81.9583,pkg_cost:52.0,fcpo_ref:'pk_olein',fcpo_delta:-40.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0},
 {cat:'SPECIALTY — JKT Only',name:'HPS Flakes',packing:'25kg polywoven bag',load_ctn:640,net_wt:25.0,fob_jkt:1330,fob_kl:null,fcpo_default:1120,premium:160.0,pkg_cost:10.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta_jkt:0,fob_delta_kl:null,fob_delta:0,upd:'24Aug26'},
-{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 36/39',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1270,fcpo_default:1040,premium:100.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
-{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 38/40 & 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1290,fcpo_default:1040,premium:120.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
-{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 43/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1300,fcpo_default:1040,premium:130.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
-{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 46/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1202.0833,fcpo_default:1040,premium:26.0833,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:22.0,fob_delta_jkt:null,fob_delta_kl:14.0833,fob_delta:0},
-{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 48/52',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1325,fcpo_default:1040,premium:155.5,pkg_cost:82.0,fcpo_ref:'indonesia_cp10',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
+{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 36/39',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1270,fcpo_default:1040,premium:100.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
+{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 38/40 & 40/42',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1290,fcpo_default:1040,premium:120.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
+{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 43/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1300,fcpo_default:1040,premium:130.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
+{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 46/48',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1202.0833,fcpo_default:1040,premium:26.0833,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:14.0833,fob_delta:0},
+{cat:'LOW GE & MCPDE SHORTENING',name:'LOW GE & MCPDE 20kg Shortening 48/52',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:1325,fcpo_default:1040,premium:155.5,pkg_cost:82.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0,upd:'24Aug26'},
 {cat:'SPECIALTY — KL Only',name:'Apifil 7011 XC',packing:'20kg carton',load_ctn:1132,net_wt:20.0,fob_jkt:null,fob_kl:2004.7917,fcpo_default:1860,premium:84.7917,pkg_cost:82.0,fcpo_ref:'pk_olein',fcpo_delta:-2.0,fob_delta_jkt:null,fob_delta_kl:0,fob_delta:0}
 ];
 var WA_DATA=[
-{cat:'JERRY CANS',name:'20L/ 25l Yellow Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336.0,net_wt:18.0,fob_sua:1323.0,fcpo_default:1132.0,premium:88.3141,pkg_cost:102.6859,fcpo_ref:'malaysia_cp10',fcpo_delta:-28.0,fob_delta:0,upd:'03Aug26'},
+{cat:'JERRY CANS',name:'20L/ 25l Yellow Jerry Can – CP10',packing:'20L Jerry Can',load_ctn:1336.0,net_wt:18.0,fob_sua:1323.0,fcpo_default:1132.0,premium:88.3141,pkg_cost:102.6859,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'},
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP8',packing:'20L Jerry Can',load_ctn:1336.0,net_wt:18.0,fob_sua:1352.4,fcpo_default:1112.6,premium:106.8,pkg_cost:133.0,fcpo_ref:'malaysia_cp10',fcpo_delta:-47.4,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY',name:'20kg Hpks 33.5/35.5',packing:'20kg carton',load_ctn:1132.0,net_wt:20.0,fob_sua:2470.0,fcpo_default:2410.0,premium:-22.0,pkg_cost:82.0,fcpo_ref:'pk_stearin',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY',name:'20kg Hpko 38/40',packing:'20kg carton',load_ctn:1132.0,net_wt:20.0,fob_sua:2130.0,fcpo_default:2090.0,premium:-42.0,pkg_cost:82.0,fcpo_ref:'pk_oil',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'}
@@ -6153,84 +6239,84 @@ var KLK_DATA=[
 {cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1L X 12 PET BOTTLES PER CARTON',load_ctn:1830.0,net_wt:10.8,fob_mt:1435.71,fcpo_default:1220.0,premium:-42.29,pkg_cost:258.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'1.8L X 6 PET BOTTLES PER CARTON',load_ctn:1600.0,net_wt:9.72,fob_mt:1464.26,fcpo_default:1220.0,premium:-25.74,pkg_cost:270.0,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'3L X 6 PET BOTTLES PER CARTON',load_ctn:990.0,net_wt:16.2,fob_mt:1418.26,fcpo_default:1220.0,premium:15.415,pkg_cost:182.845,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1358.0,net_wt:14.4,fob_mt:1374.22,fcpo_default:1155.0,premium:66.085,pkg_cost:153.135,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4.5L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:16.2,fob_mt:1403.075,fcpo_default:1155.0,premium:34.7015,pkg_cost:213.3735,fcpo_ref:'fixed',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 TRANSPARENT JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:18.0,fob_mt:1386.75,fcpo_default:1155.0,premium:66.455,pkg_cost:165.295,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'8L YELLOW JERRY CAN',load_ctn:3134.0,net_wt:7.2,fob_mt:1377.56,fcpo_default:1155.0,premium:66.015,pkg_cost:156.545,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'8L X 2 YELLOW JERRY CANS PER CARTON',load_ctn:1605.0,net_wt:14.4,fob_mt:1418.835,fcpo_default:1155.0,premium:35.0955,pkg_cost:228.7395,fcpo_ref:'fixed',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'9L YELLOW JERRY CAN',load_ctn:2530.0,net_wt:8.1,fob_mt:1370.37,fcpo_default:1155.0,premium:65.525,pkg_cost:149.845,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'10L YELLOW JERRY CAN',load_ctn:2590.0,net_wt:9.0,fob_mt:1355.63,fcpo_default:1155.0,premium:65.305,pkg_cost:135.325,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'10L BM YELLOW JERRY CAN',load_ctn:2490.0,net_wt:9.0,fob_mt:1370.07,fcpo_default:1155.0,premium:65.805,pkg_cost:149.265,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L (18) YELLOW JERRY CAN',load_ctn:1440.0,net_wt:14.4,fob_mt:1345.79,fcpo_default:1155.0,premium:64.8925,pkg_cost:125.8975,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L BM YELLOW JERRY CAN',load_ctn:1450.0,net_wt:14.4,fob_mt:1357.76,fcpo_default:1155.0,premium:65.193,pkg_cost:137.567,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L (18) BM YELLOW JERRY CAN',load_ctn:1360.0,net_wt:14.4,fob_mt:1355.46,fcpo_default:1155.0,premium:65.295,pkg_cost:135.165,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'18L BM YELLOW JERRY CAN',load_ctn:1360.0,net_wt:16.2,fob_mt:1341.15,fcpo_default:1155.0,premium:64.97,pkg_cost:121.18,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L TRANSPARENT JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1361.66,fcpo_default:1155.0,premium:65.015,pkg_cost:141.645,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L BM YELLOW JERRY CAN',load_ctn:1256.0,net_wt:18.0,fob_mt:1335.09,fcpo_default:1155.0,premium:64.7075,pkg_cost:115.3825,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L WHITE JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1325.76,fcpo_default:1155.0,premium:64.455,pkg_cost:106.305,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'16L TIN SMALL LID',load_ctn:1650.0,net_wt:14.4,fob_mt:1407.07,fcpo_default:1175.0,premium:25.1538,pkg_cost:206.9162,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'16L TIN BIG LID',load_ctn:1650.0,net_wt:14.4,fob_mt:1415.7,fcpo_default:1175.0,premium:14.859,pkg_cost:225.841,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'17L TIN FLEXSPOT',load_ctn:1438.0,net_wt:15.3,fob_mt:1399.75,fcpo_default:1175.0,premium:22.9915,pkg_cost:201.7585,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'18L TIN FLEXSPOT',load_ctn:1438.0,net_wt:16.2,fob_mt:1390.13,fcpo_default:1175.0,premium:22.4195,pkg_cost:192.7105,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'20L TIN FLEXSPOT',load_ctn:1242.0,net_wt:18.0,fob_mt:1379.61,fcpo_default:1175.0,premium:13.206,pkg_cost:191.404,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'10KG BIB',load_ctn:2000.0,net_wt:10.0,fob_mt:1323.76,fcpo_default:1175.0,premium:15.4953,pkg_cost:133.2647,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'16L BIB',load_ctn:1242.0,net_wt:14.4,fob_mt:1312.38,fcpo_default:1155.0,premium:82.9333,pkg_cost:74.4467,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'20KG BIB',load_ctn:1120.0,net_wt:20.0,fob_mt:1294.46,fcpo_default:1155.0,premium:76.65,pkg_cost:62.81,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM OLEIN CP10',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1430.54,fcpo_default:1175.0,premium:13.241,pkg_cost:242.299,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM OLEIN CP10',packing:'220L HDPE PLASTIC DRUM - BLUE',load_ctn:98.0,net_wt:198.0,fob_mt:1348.47,fcpo_default:1175.0,premium:15.489,pkg_cost:157.981,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 48-52',packing:'16KG PE LINERS IN CARTON',load_ctn:1300.0,net_wt:16.0,fob_mt:1309.64,fcpo_default:1160.0,premium:47.741,pkg_cost:116.899,fcpo_ref:'fixed',fcpo_delta:-15.0,fob_delta:0},
-{cat:'CARTON BOX',name:'SHORTENING 48-52',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1305.96,fcpo_default:1160.0,premium:47.649,pkg_cost:113.311,fcpo_ref:'fixed',fcpo_delta:-15.0,fob_delta:0},
-{cat:'CARTON BOX',name:'SHORTENING 52-56',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1280.74,fcpo_default:1150.0,premium:29.87,pkg_cost:100.87,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 46-48',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1353.74,fcpo_default:1142.5,premium:86.24,pkg_cost:125.0,fcpo_ref:'',fcpo_delta:-12.5,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 42-46',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1351.74,fcpo_default:1145.0,premium:86.19,pkg_cost:120.55,fcpo_ref:'',fcpo_delta:-10.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 40-42',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1309.24,fcpo_default:1147.5,premium:75.16,pkg_cost:86.58,fcpo_ref:'',fcpo_delta:-7.5,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 36-39',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1318.74,fcpo_default:1150.0,premium:79.37,pkg_cost:89.37,fcpo_ref:'',fcpo_delta:-5.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'SHORTENING 36-39',packing:'25KG PE LINERS IN CARTON',load_ctn:840.0,net_wt:25.0,fob_mt:1333.5,fcpo_default:1170.0,premium:38.3375,pkg_cost:130.1625,fcpo_ref:'fixed',fcpo_delta:-5.0,fob_delta:0},
-{cat:'CARTON BOX',name:'SHORTENING 33-36',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1398.74,fcpo_default:1180.0,premium:81.37,pkg_cost:137.37,fcpo_ref:'',fcpo_delta:25.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'MARGARINE ALL PURPOSE',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1287.51,fcpo_default:1175.0,premium:70.58,pkg_cost:41.93,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'MARGARINE PASTRY',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1210.96,fcpo_default:1175.0,premium:35.96,pkg_cost:0.0,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'BUTTER OIL SUBSTITUTE',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1331.11,fcpo_default:1195.0,premium:12.325,pkg_cost:123.785,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'1L X 12 ROU-TIN W/LID',load_ctn:1345.0,net_wt:10.8,fob_mt:1623.47,fcpo_default:1195.0,premium:-150.1427,pkg_cost:578.6127,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'2L X 6 REC-TIN W/LID',load_ctn:1428.0,net_wt:10.8,fob_mt:1916.58,fcpo_default:1195.0,premium:62.0813,pkg_cost:659.4987,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'4L X 4 REC-TIN W/LID',load_ctn:1386.0,net_wt:14.4,fob_mt:1650.67,fcpo_default:1195.0,premium:13.9765,pkg_cost:441.6935,fcpo_ref:'fixed',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'5L X 4 REC-TIN W/LID',load_ctn:1133.0,net_wt:18.0,fob_mt:1580.55,fcpo_default:1195.0,premium:13.7543,pkg_cost:371.7957,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'6L X 2 REC-TIN W/LID',load_ctn:2000.0,net_wt:10.8,fob_mt:1547.19,fcpo_default:1195.0,premium:13.515,pkg_cost:338.675,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'8L X 2 REC-TIN W/LID',load_ctn:1488.0,net_wt:14.4,fob_mt:1550.2,fcpo_default:1195.0,premium:15.0625,pkg_cost:340.1375,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'8KG X 2 REC-TIN W/LID',load_ctn:1920.0,net_wt:10.8,fob_mt:1519.34,fcpo_default:1195.0,premium:13.5597,pkg_cost:310.7803,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'12L REC-TIN W/LID',load_ctn:1920.0,net_wt:16.0,fob_mt:1486.57,fcpo_default:1195.0,premium:48.016,pkg_cost:243.554,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'14L REC-TIN W/LID',load_ctn:1650.0,net_wt:12.6,fob_mt:1454.82,fcpo_default:1195.0,premium:16.266,pkg_cost:243.554,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'16L REC-TIN W/LID',load_ctn:1500.0,net_wt:14.4,fob_mt:1430.59,fcpo_default:1195.0,premium:16.7035,pkg_cost:218.8865,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'18L REC-TIN W/LID',load_ctn:1500.0,net_wt:16.2,fob_mt:1412.04,fcpo_default:1195.0,premium:-1.8465,pkg_cost:218.8865,fcpo_ref:'fixed',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'20L REC-TIN W/LID',load_ctn:1242.0,net_wt:18.0,fob_mt:1400.84,fcpo_default:1195.0,premium:2.65,pkg_cost:203.19,fcpo_ref:'fixed',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'16KG REC-TIN W/LID',load_ctn:1498.0,net_wt:16.0,fob_mt:1413.72,fcpo_default:1195.0,premium:13.2105,pkg_cost:205.5095,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'14KG REC-TIN W/LID',load_ctn:1500.0,net_wt:14.0,fob_mt:1394.21,fcpo_default:1195.0,premium:-10.7942,pkg_cost:210.0042,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'16Oct26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'15KG REC-TIN W/LID',load_ctn:1650.0,net_wt:15.0,fob_mt:1423.02,fcpo_default:1195.0,premium:18.0158,pkg_cost:210.0042,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'20KG REC-TIN W/LID',load_ctn:1050.0,net_wt:20.0,fob_mt:1402.65,fcpo_default:1195.0,premium:13.1775,pkg_cost:194.4725,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'VEGETABLE GHEE',packing:'220L HDPE PLASTIC DRUM - BLUE',load_ctn:98.0,net_wt:198.0,fob_mt:1360.95,fcpo_default:1195.0,premium:13.0222,pkg_cost:152.9278,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'3L X 6 YELLOW JERRY CANS PER CARTON',load_ctn:1062.0,net_wt:16.2,fob_mt:1389.19,fcpo_default:1155.0,premium:66.335,pkg_cost:167.855,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:18.0,fob_mt:1359.13,fcpo_default:1155.0,premium:65.535,pkg_cost:138.595,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'17L YELLOW JERRY CAN WITH DOUBLE SIDED ST',load_ctn:1440.0,net_wt:15.3,fob_mt:1340.07,fcpo_default:1155.0,premium:72.23,pkg_cost:112.84,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'18L YELLOW JERRY CAN',load_ctn:1440.0,net_wt:16.2,fob_mt:1332.56,fcpo_default:1155.0,premium:64.715,pkg_cost:112.845,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L YELLOW JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1323.0,fcpo_default:1155.0,premium:64.434,pkg_cost:103.566,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'25L YELLOW JERRY CAN',load_ctn:1098.0,net_wt:22.5,fob_mt:1318.03,fcpo_default:1155.0,premium:64.21,pkg_cost:98.82,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1238.0,fcpo_default:1155.0,premium:76.5,pkg_cost:6.5,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1244.39,fcpo_default:1155.0,premium:76.7,pkg_cost:12.69,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1246.13,fcpo_default:1155.0,premium:76.77,pkg_cost:14.36,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1250.78,fcpo_default:1175.0,premium:20.915,pkg_cost:54.865,fcpo_ref:'',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1233.0,fcpo_default:1170.0,premium:21.9037,pkg_cost:41.0963,fcpo_ref:'',fcpo_delta:-5.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1239.39,fcpo_default:1170.0,premium:21.9172,pkg_cost:47.4728,fcpo_ref:'',fcpo_delta:-5.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1241.13,fcpo_default:1170.0,premium:21.3465,pkg_cost:49.7835,fcpo_ref:'',fcpo_delta:-5.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1245.78,fcpo_default:1170.0,premium:20.79,pkg_cost:54.99,fcpo_ref:'',fcpo_delta:-5.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'RBD PALM OIL 36-39',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1270.00,fcpo_default:1160.0,premium:17.0,pkg_cost:93.0,fcpo_ref:'malaysia_cp10',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1185.5,fcpo_default:1135.0,premium:42.6537,pkg_cost:7.8463,fcpo_ref:'',fcpo_delta:-40.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1191.89,fcpo_default:1135.0,premium:42.6672,pkg_cost:14.2228,fcpo_ref:'',fcpo_delta:-40.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1193.63,fcpo_default:1135.0,premium:42.0965,pkg_cost:16.5335,fcpo_ref:'',fcpo_delta:-40.0,fob_delta:0,upd:'20Aug26'},
-{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1198.28,fcpo_default:1135.0,premium:41.54,pkg_cost:21.74,fcpo_ref:'',fcpo_delta:-40.0,fob_delta:0,upd:'20Aug26'},
-{cat:'CARTON BOX',name:'RBD PALM STEARIN',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1222.50,fcpo_default:1120.0,premium:9.5,pkg_cost:93.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM',load_ctn:98.0,net_wt:180.0,fob_mt:1294.34,fcpo_default:1120.0,premium:29.34,pkg_cost:145.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM (SLIGHTLY DENTED)',load_ctn:98.0,net_wt:180.0,fob_mt:1270.86,fcpo_default:1120.0,premium:25.86,pkg_cost:125.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM WITH RINGCLIP',load_ctn:98.0,net_wt:180.0,fob_mt:1270.86,fcpo_default:1120.0,premium:25.86,pkg_cost:125.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
-{cat:'DRUM',name:'RBD PALM STEARIN',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1378.04,fcpo_default:1120.0,premium:23.04,pkg_cost:235.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1358.0,net_wt:14.4,fob_mt:1374.22,fcpo_default:1155.0,premium:66.085,pkg_cost:153.135,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'4.5L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:16.2,fob_mt:1403.075,fcpo_default:1155.0,premium:34.7015,pkg_cost:213.3735,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 TRANSPARENT JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:18.0,fob_mt:1386.75,fcpo_default:1155.0,premium:66.455,pkg_cost:165.295,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'8L YELLOW JERRY CAN',load_ctn:3134.0,net_wt:7.2,fob_mt:1377.56,fcpo_default:1155.0,premium:66.015,pkg_cost:156.545,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'8L X 2 YELLOW JERRY CANS PER CARTON',load_ctn:1605.0,net_wt:14.4,fob_mt:1418.835,fcpo_default:1155.0,premium:35.0955,pkg_cost:228.7395,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'9L YELLOW JERRY CAN',load_ctn:2530.0,net_wt:8.1,fob_mt:1370.37,fcpo_default:1155.0,premium:65.525,pkg_cost:149.845,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'10L YELLOW JERRY CAN',load_ctn:2590.0,net_wt:9.0,fob_mt:1355.63,fcpo_default:1155.0,premium:65.305,pkg_cost:135.325,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'10L BM YELLOW JERRY CAN',load_ctn:2490.0,net_wt:9.0,fob_mt:1370.07,fcpo_default:1155.0,premium:65.805,pkg_cost:149.265,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L (18) YELLOW JERRY CAN',load_ctn:1440.0,net_wt:14.4,fob_mt:1345.79,fcpo_default:1155.0,premium:64.8925,pkg_cost:125.8975,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L BM YELLOW JERRY CAN',load_ctn:1450.0,net_wt:14.4,fob_mt:1357.76,fcpo_default:1155.0,premium:65.193,pkg_cost:137.567,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'16L (18) BM YELLOW JERRY CAN',load_ctn:1360.0,net_wt:14.4,fob_mt:1355.46,fcpo_default:1155.0,premium:65.295,pkg_cost:135.165,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'18L BM YELLOW JERRY CAN',load_ctn:1360.0,net_wt:16.2,fob_mt:1341.15,fcpo_default:1155.0,premium:64.97,pkg_cost:121.18,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L TRANSPARENT JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1361.66,fcpo_default:1155.0,premium:65.015,pkg_cost:141.645,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L BM YELLOW JERRY CAN',load_ctn:1256.0,net_wt:18.0,fob_mt:1335.09,fcpo_default:1155.0,premium:64.7075,pkg_cost:115.3825,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L WHITE JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1325.76,fcpo_default:1155.0,premium:64.455,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'16L TIN SMALL LID',load_ctn:1650.0,net_wt:14.4,fob_mt:1407.07,fcpo_default:1175.0,premium:25.1538,pkg_cost:206.9162,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'16L TIN BIG LID',load_ctn:1650.0,net_wt:14.4,fob_mt:1415.7,fcpo_default:1175.0,premium:14.859,pkg_cost:225.841,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'17L TIN FLEXSPOT',load_ctn:1438.0,net_wt:15.3,fob_mt:1399.75,fcpo_default:1175.0,premium:22.9915,pkg_cost:201.7585,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'18L TIN FLEXSPOT',load_ctn:1438.0,net_wt:16.2,fob_mt:1390.13,fcpo_default:1175.0,premium:22.4195,pkg_cost:192.7105,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'RBD PALM OLEIN CP10',packing:'20L TIN FLEXSPOT',load_ctn:1242.0,net_wt:18.0,fob_mt:1379.61,fcpo_default:1175.0,premium:13.206,pkg_cost:191.404,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'10KG BIB',load_ctn:2000.0,net_wt:10.0,fob_mt:1323.76,fcpo_default:1175.0,premium:15.4953,pkg_cost:133.2647,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'16L BIB',load_ctn:1242.0,net_wt:14.4,fob_mt:1312.38,fcpo_default:1155.0,premium:82.9333,pkg_cost:74.4467,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'20KG BIB',load_ctn:1120.0,net_wt:20.0,fob_mt:1294.46,fcpo_default:1155.0,premium:76.65,pkg_cost:62.81,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM OLEIN CP10',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1430.54,fcpo_default:1175.0,premium:13.241,pkg_cost:242.299,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM OLEIN CP10',packing:'220L HDPE PLASTIC DRUM - BLUE',load_ctn:98.0,net_wt:198.0,fob_mt:1348.47,fcpo_default:1175.0,premium:15.489,pkg_cost:157.981,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 48-52',packing:'16KG PE LINERS IN CARTON',load_ctn:1300.0,net_wt:16.0,fob_mt:1309.64,fcpo_default:1160.0,premium:47.741,pkg_cost:116.899,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0},
+{cat:'CARTON BOX',name:'SHORTENING 48-52',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1305.96,fcpo_default:1160.0,premium:47.649,pkg_cost:113.311,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0},
+{cat:'CARTON BOX',name:'SHORTENING 52-56',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1280.74,fcpo_default:1150.0,premium:29.87,pkg_cost:100.87,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 46-48',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1353.74,fcpo_default:1142.5,premium:86.24,pkg_cost:125.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 42-46',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1351.74,fcpo_default:1145.0,premium:86.19,pkg_cost:120.55,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 40-42',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1309.24,fcpo_default:1147.5,premium:75.16,pkg_cost:86.58,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 36-39',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1318.74,fcpo_default:1150.0,premium:79.37,pkg_cost:89.37,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'SHORTENING 36-39',packing:'25KG PE LINERS IN CARTON',load_ctn:840.0,net_wt:25.0,fob_mt:1333.5,fcpo_default:1170.0,premium:38.3375,pkg_cost:130.1625,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0},
+{cat:'CARTON BOX',name:'SHORTENING 33-36',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1398.74,fcpo_default:1180.0,premium:81.37,pkg_cost:137.37,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'MARGARINE ALL PURPOSE',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1287.51,fcpo_default:1175.0,premium:70.58,pkg_cost:41.93,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'MARGARINE PASTRY',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1210.96,fcpo_default:1175.0,premium:35.96,pkg_cost:0.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'BUTTER OIL SUBSTITUTE',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1331.11,fcpo_default:1195.0,premium:12.325,pkg_cost:123.785,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'1L X 12 ROU-TIN W/LID',load_ctn:1345.0,net_wt:10.8,fob_mt:1623.47,fcpo_default:1195.0,premium:-150.1427,pkg_cost:578.6127,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'2L X 6 REC-TIN W/LID',load_ctn:1428.0,net_wt:10.8,fob_mt:1916.58,fcpo_default:1195.0,premium:62.0813,pkg_cost:659.4987,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'4L X 4 REC-TIN W/LID',load_ctn:1386.0,net_wt:14.4,fob_mt:1650.67,fcpo_default:1195.0,premium:13.9765,pkg_cost:441.6935,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'5L X 4 REC-TIN W/LID',load_ctn:1133.0,net_wt:18.0,fob_mt:1580.55,fcpo_default:1195.0,premium:13.7543,pkg_cost:371.7957,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'6L X 2 REC-TIN W/LID',load_ctn:2000.0,net_wt:10.8,fob_mt:1547.19,fcpo_default:1195.0,premium:13.515,pkg_cost:338.675,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'8L X 2 REC-TIN W/LID',load_ctn:1488.0,net_wt:14.4,fob_mt:1550.2,fcpo_default:1195.0,premium:15.0625,pkg_cost:340.1375,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'8KG X 2 REC-TIN W/LID',load_ctn:1920.0,net_wt:10.8,fob_mt:1519.34,fcpo_default:1195.0,premium:13.5597,pkg_cost:310.7803,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'12L REC-TIN W/LID',load_ctn:1920.0,net_wt:16.0,fob_mt:1486.57,fcpo_default:1195.0,premium:48.016,pkg_cost:243.554,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'14L REC-TIN W/LID',load_ctn:1650.0,net_wt:12.6,fob_mt:1454.82,fcpo_default:1195.0,premium:16.266,pkg_cost:243.554,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'16L REC-TIN W/LID',load_ctn:1500.0,net_wt:14.4,fob_mt:1430.59,fcpo_default:1195.0,premium:16.7035,pkg_cost:218.8865,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'18L REC-TIN W/LID',load_ctn:1500.0,net_wt:16.2,fob_mt:1412.04,fcpo_default:1195.0,premium:-1.8465,pkg_cost:218.8865,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'20L REC-TIN W/LID',load_ctn:1242.0,net_wt:18.0,fob_mt:1400.84,fcpo_default:1195.0,premium:2.65,pkg_cost:203.19,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'16KG REC-TIN W/LID',load_ctn:1498.0,net_wt:16.0,fob_mt:1413.72,fcpo_default:1195.0,premium:13.2105,pkg_cost:205.5095,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'14KG REC-TIN W/LID',load_ctn:1500.0,net_wt:14.0,fob_mt:1394.21,fcpo_default:1195.0,premium:-10.7942,pkg_cost:210.0042,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'16Oct26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'15KG REC-TIN W/LID',load_ctn:1650.0,net_wt:15.0,fob_mt:1423.02,fcpo_default:1195.0,premium:18.0158,pkg_cost:210.0042,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'20KG REC-TIN W/LID',load_ctn:1050.0,net_wt:20.0,fob_mt:1402.65,fcpo_default:1195.0,premium:13.1775,pkg_cost:194.4725,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'VEGETABLE GHEE',packing:'220L HDPE PLASTIC DRUM - BLUE',load_ctn:98.0,net_wt:198.0,fob_mt:1360.95,fcpo_default:1195.0,premium:13.0222,pkg_cost:152.9278,fcpo_ref:'cp10',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'3L X 6 YELLOW JERRY CANS PER CARTON',load_ctn:1062.0,net_wt:16.2,fob_mt:1389.19,fcpo_default:1155.0,premium:66.335,pkg_cost:167.855,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 YELLOW JERRY CANS PER CARTON',load_ctn:1100.0,net_wt:18.0,fob_mt:1359.13,fcpo_default:1155.0,premium:65.535,pkg_cost:138.595,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'17L YELLOW JERRY CAN WITH DOUBLE SIDED ST',load_ctn:1440.0,net_wt:15.3,fob_mt:1340.07,fcpo_default:1155.0,premium:72.23,pkg_cost:112.84,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'18L YELLOW JERRY CAN',load_ctn:1440.0,net_wt:16.2,fob_mt:1332.56,fcpo_default:1155.0,premium:64.715,pkg_cost:112.845,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L YELLOW JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1323.0,fcpo_default:1155.0,premium:64.434,pkg_cost:103.566,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'25L YELLOW JERRY CAN',load_ctn:1098.0,net_wt:22.5,fob_mt:1318.03,fcpo_default:1155.0,premium:64.21,pkg_cost:98.82,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1238.0,fcpo_default:1155.0,premium:76.5,pkg_cost:6.5,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1244.39,fcpo_default:1155.0,premium:76.7,pkg_cost:12.69,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1246.13,fcpo_default:1155.0,premium:76.77,pkg_cost:14.36,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1250.78,fcpo_default:1175.0,premium:20.915,pkg_cost:54.865,fcpo_ref:'cp10',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1233.0,fcpo_default:1170.0,premium:21.9037,pkg_cost:41.0963,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1239.39,fcpo_default:1170.0,premium:21.9172,pkg_cost:47.4728,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1241.13,fcpo_default:1170.0,premium:21.3465,pkg_cost:49.7835,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM OIL 36-39',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1245.78,fcpo_default:1170.0,premium:20.79,pkg_cost:54.99,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'RBD PALM OIL 36-39',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1270.00,fcpo_default:1160.0,premium:17.0,pkg_cost:93.0,fcpo_ref:'rbd_my',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1185.5,fcpo_default:1135.0,premium:42.6537,pkg_cost:7.8463,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1191.89,fcpo_default:1135.0,premium:42.6672,pkg_cost:14.2228,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1193.63,fcpo_default:1135.0,premium:42.0965,pkg_cost:16.5335,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'FLEXIBAG',name:'RBD PALM STEARIN',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1198.28,fcpo_default:1135.0,premium:41.54,pkg_cost:21.74,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'CARTON BOX',name:'RBD PALM STEARIN',packing:'20KG PE LINERS IN CARTON',load_ctn:1100.0,net_wt:20.0,fob_mt:1222.50,fcpo_default:1120.0,premium:9.5,pkg_cost:93.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM',load_ctn:98.0,net_wt:180.0,fob_mt:1294.34,fcpo_default:1120.0,premium:29.34,pkg_cost:145.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM (SLIGHTLY DENTED)',load_ctn:98.0,net_wt:180.0,fob_mt:1270.86,fcpo_default:1120.0,premium:25.86,pkg_cost:125.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM STEARIN',packing:'200L RECON STEEL DRUM WITH RINGCLIP',load_ctn:98.0,net_wt:180.0,fob_mt:1270.86,fcpo_default:1120.0,premium:25.86,pkg_cost:125.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
+{cat:'DRUM',name:'RBD PALM STEARIN',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1378.04,fcpo_default:1120.0,premium:23.04,pkg_cost:235.0,fcpo_ref:'stearin',fcpo_delta:0.0,fob_delta:0,upd:'20Aug26'},
 {cat:'FLEXIBAG',name:'PFAD',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1097.49,fcpo_default:1110.0,premium:-22.5628,pkg_cost:10.0528,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'FLEXIBAG',name:'PFAD',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1104.02,fcpo_default:1110.0,premium:-22.3995,pkg_cost:16.4195,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'FLEXIBAG',name:'PFAD',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1106.39,fcpo_default:1110.0,premium:-22.3403,pkg_cost:18.7303,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
@@ -6403,6 +6489,7 @@ function svRenderRefPanel(){
     pk_stearin:'RBD Palm Kernel Stearin (USD/MT)',stearin:'RBD Stearin (USD/MT)',
     coconut:'Coconut Oil (USD/MT)',cp10:'CP10 (USD/MT)',
     cp6:'CP6 (USD/MT)',pfad:'PFAD (USD/MT)',
+    rbd_my:'RBD Palm Oil — Malaysia (USD/MT)',rbd_id:'RBD Palm Oil — Indonesia (USD/MT)',
     supplier_margin:'Supplier Margin Factor'};
   var html='';
   if(!_oilTab&&'supplier_margin' in def){
@@ -6428,12 +6515,14 @@ function svRenderRefPanel(){
     return def.cp10;
   }
   var AUTO_FORMULA_FIELDS={indonesia_cp10:function(r){return _resolveMalaysiaCp10(r,def)-120;},
-    cp6:function(r){return _resolveMalaysiaCp10(r,def)+60;}};
+    cp6:function(r){return _resolveMalaysiaCp10(r,def)+60;},
+    rbd_my:function(r){return _resolveMalaysiaCp10(r,def)-10;},
+    rbd_id:function(r){return _resolveMalaysiaCp10(r,def)-130;}};
   Object.keys(def).forEach(function(k){
     if(k==='oillio_margin'||k==='supplier_margin')return;
     var lbl=LABS[k]||k.replace(/_/g,' ').toUpperCase();
     var isAuto=k in AUTO_FORMULA_FIELDS;
-    var val=isAuto?((window._simMode&&ref[k]!=null)?ref[k]:AUTO_FORMULA_FIELDS[k](ref)):(ref[k]!=null?ref[k]:def[k]);
+    var val=isAuto?AUTO_FORMULA_FIELDS[k](ref):(ref[k]!=null?ref[k]:def[k]);
     html+='<div>';
     html+='<div style="font-size:.6rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:2px">'+lbl+(isAuto?' <span style="font-weight:400;color:#999">(auto)</span>':'')+'</div>';
     if(isEd&&!isAuto){
@@ -6441,7 +6530,7 @@ function svRenderRefPanel(){
       html+=' style="width:100%;padding:5px;border:2px solid #f9a825;background:#fffde7;border-radius:5px;font-weight:700;color:#b45309;font-size:.85rem"';
       html+=' oninput="svOnRefChange(this)">';
     }else if(isAuto){
-      html+='<div id="autoField_'+k+'" style="padding:5px;border:1.5px dashed #999;background:#f0f0f0;border-radius:5px;font-weight:700;color:#666;font-size:.85rem" title="Auto-calculated from Malaysia CP10, not directly editable">'+val+'</div>';
+      html+='<div id="autoField_'+k+'" style="padding:5px;border:1.5px dashed #999;background:#f0f0f0;border-radius:5px;font-weight:700;color:#666;font-size:.85rem" title="Auto-calculated from Malaysia CP10 (Indonesia CP10 = CP10 - 120, CP6 = CP10 + 60, RBD Palm Oil Malaysia = CP10 - 10, RBD Palm Oil Indonesia = Indonesia CP10 - 10). Not directly editable.">'+val+'</div>';
     }else{
       html+='<div style="padding:5px;border:1.5px solid #ddd;background:#f8f8f8;border-radius:5px;font-weight:700;color:#666;font-size:.85rem">'+val+'</div>';
     }
@@ -6534,7 +6623,7 @@ function _svTodayMY(){return _myDay(new Date().toISOString());}
 function _svSimInitDate(){
   var el=document.getElementById('svSimDate');if(!el)return;
   el.max=_svTodayMY();el.min=_myDay(new Date(Date.now()-90*86400000).toISOString());
-  if(!el.value)el.value=window._simDate||_svTodayMY();
+  if(!el.value)el.value=window._simDate||_svLatestDay();
 }
 function _svSnapshot(){
   var b={apc:JSON.parse(JSON.stringify(APC_REF)),wa:JSON.parse(JSON.stringify(WA_REF)),klk:JSON.parse(JSON.stringify(KLK_REF)),pkg:{}};
@@ -6568,20 +6657,21 @@ function _svSimRefresh(){
 function svSimExit(){
   if(window._simBackup){_svRestore(window._simBackup);}
   window._simMode=false;window._simBackup=null;window._simDate=null;window._simInfo='';
-  var el=document.getElementById('svSimDate');if(el)el.value=_svTodayMY();
+  var el=document.getElementById('svSimDate');if(el)el.value=_svLatestDay();
   _svSimRefresh();
   showToast('Back to current prices');
 }
 function svSimLoad(){
   var el=document.getElementById('svSimDate');if(!el||!el.value){showToast('Pick a date first');return;}
   var day=el.value,today=_svTodayMY(),min=_myDay(new Date(Date.now()-90*86400000).toISOString());
-  if(day>=today){if(window._simMode){svSimExit();}else{showToast('Already showing current prices');}return;}
+  // the LAST SAVED pricing day (and anything later, e.g. a weekend) is the live price list — never a locked simulation
+  if(day>=_svLatestDay()){if(window._simMode){svSimExit();}else{showToast('That is the latest saved pricing ('+_l90Date(_svLatestDay())+') — already live');}return;}
   if(day<min){showToast('Only the last 90 days can be simulated');return;}
   showToast('Loading '+_l90Date(day)+'...');
   var end=new Date(day+'T23:59:59.999+08:00').toISOString();
   Promise.all([
     fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&saved_at=lte.'+encodeURIComponent(end)+'&order=saved_at.desc&limit=5000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
-    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&saved_at=lte.'+encodeURIComponent(end)+'&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,fob,saved_at&saved_at=lte.'+encodeURIComponent(end)+'&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
   ]).then(function(res){
     var oilRows=Array.isArray(res[0])?res[0]:[],priceRows=Array.isArray(res[1])?res[1]:[];
     if(!oilRows.length&&!priceRows.length){showToast('No saved pricing on or before '+_l90Date(day),4000);return;}
@@ -6598,8 +6688,9 @@ function svSimLoad(){
       var v=oilVals[c.key];if(v==null)return;
       [APC_REF,WA_REF,KLK_REF].forEach(function(r){if(c.key in r)r[c.key]=v;if(c.key==='malaysia_cp10'&&'cp10' in r)r.cp10=v;});
     });
+    [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto); // CP6 / Indonesia CP10 / RBD Palm Oil follow that day's Malaysia CP10
     // --- premium / packaging: per SKU, latest saved value on/before the day ---
-    var seenP={},seenK={},applied={apical:0,klk:0,wingagro:0};
+    var seenP={},seenK={},seenF={},fobMap={},applied={apical:0,klk:0,wingagro:0};
     var maps={};['apical','klk','wingagro'].forEach(function(sup){var m={};getPkgArr(sup).forEach(function(r){m[r.name+'|'+r.packing]=r;});maps[sup]=m;});
     priceRows.forEach(function(r){
       var m=maps[r.supplier];if(!m)return;
@@ -6607,7 +6698,19 @@ function svSimLoad(){
       var kk=r.supplier+'|'+key,hit=false;
       if(!seenP[kk]&&r.premium!=null){row.premium=Number(r.premium);seenP[kk]=1;hit=true;}
       if(!seenK[kk]&&r.pkg_cost!=null){row.pkg_cost=Number(r.pkg_cost);seenK[kk]=1;hit=true;}
+      if(!seenF[kk]&&r.fob!=null){fobMap[kk]=Number(r.fob);seenF[kk]=1;}
       if(hit&&!seenP['c'+kk]){seenP['c'+kk]=1;applied[r.supplier]++;}
+    });
+    // The prices of that day are what was LOGGED. Saves made before the 17 Oct 2026 model upgrade used different bases,
+    // so for every SKU keep the logged FOB exactly and show the premium/discount against today's base links.
+    ['apical','klk','wingagro'].forEach(function(sup){
+      var refObj=sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:KLK_REF,dat=sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:KLK_DATA,pm={};
+      dat.forEach(function(p){pm[p.name+'|'+p.packing]=p;});
+      getPkgArr(sup).forEach(function(row){
+        var k=row.name+'|'+row.packing,f=fobMap[sup+'|'+k],p=pm[k];
+        if(f==null||!p)return;
+        row.premium=Math.round((f-_modelBase(refObj,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
+      });
     });
     var missing=0;['apical','klk','wingagro'].forEach(function(sup){missing+=Math.max(0,getPkgArr(sup).length-applied[sup]);});
     var oilSrc=tsList.length?_l90Date(_myDay(tsList[0])):'none',prSrc=priceRows.length?_l90Date(_myDay(priceRows[0].saved_at)):'none';
@@ -6735,7 +6838,7 @@ function svShowKlkPreview(miss){
   var inList={};KLK_LIST_16OCT26.forEach(function(x){inList[x[0]+'|'+x[1]]=1;});
   var notOnList=getPkgArr('klk').filter(function(r){return !inList[r.name+'|'+r.packing];});
   var h='<div style="font-size:.74rem">';
-  h+='<div style="background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:8px 10px;margin-bottom:8px"><b>Base oil in use (KLK):</b> CP10 '+_l90Num(KLK_REF.cp10)+' &middot; CP6 '+_l90Num(KLK_REF.cp6)+' &middot; Stearin '+_l90Num(KLK_REF.stearin)+' &middot; PFAD '+_l90Num(KLK_REF.pfad)+'<br><span style="color:#b45309">If these are not today\'s base oil prices, close this and update the DAILY OIL BASE PRICE tab first &mdash; the new premiums are worked out against them.</span></div>';
+  h+='<div style="background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:8px 10px;margin-bottom:8px"><b>Base oil in use (KLK):</b> CP10 '+_l90Num(KLK_REF.cp10)+' &middot; RBD Palm Oil '+_l90Num(KLK_REF.rbd_my)+' &middot; CP6 '+_l90Num(KLK_REF.cp6)+' &middot; Stearin '+_l90Num(KLK_REF.stearin)+' &middot; PFAD '+_l90Num(KLK_REF.pfad)+'<br><span style="color:#b45309">If these are not today\'s base oil prices, close this and update the DAILY OIL BASE PRICE tab first &mdash; the new premiums are worked out against them.</span></div>';
   h+='<div style="margin-bottom:8px"><b>'+all.length+'</b> SKUs on the supplier list &rarr; <b style="color:#b45309">'+chg.length+'</b> premium/discount changes, '+(all.length-chg.length)+' already match.'+(miss&&miss.length?' <span style="color:#c0392b;font-weight:700">Not found in system: '+miss.join('; ')+'</span>':'')+'</div>';
   h+='<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button onclick="svApplyKlkAll()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:.76rem;font-weight:800;cursor:pointer">Apply all '+chg.length+' changes to premium/discount</button><button onclick="document.getElementById(\'fullModal\').className=\'\'" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 14px;font-size:.76rem;font-weight:700;cursor:pointer">Close (change nothing)</button><span style="color:var(--mut);align-self:center">Applying does not save. Review, then press Save &amp; Log Reference.</span></div>';
   h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:760px"><thead><tr>';
@@ -6757,6 +6860,7 @@ function svShowKlkPreview(miss){
 function svApplyKlkAll(){
   var n=0;
   _svKlkChanges().forEach(function(c){if(Math.abs(c.gap)>=0.005){c.row.premium=c.newPrem;n++;}});
+  if(n)_svMarkDirty();
   document.getElementById('fullModal').className='';
   svRenderPkgFields();svRenderTable();
   showToast('Applied '+n+' premium/discount changes — now press Save & Log Reference',6000);
@@ -6818,6 +6922,7 @@ function svApplyTgtAll(){
 // ===== END BALANCER =====
 
 function svOnPkgChange(inp){
+  _svMarkDirty();
   var s=SV_SUP;
   var arr=getPkgArr(s);
   var id=parseInt(inp.getAttribute('data-pkgid'));
@@ -6876,7 +6981,7 @@ function _preserveScrollAcross(renderFn){
 }
 
 function svOnRefChange(inp){
-  window._refDirty = true;
+  _svMarkDirty();
   var k=inp.getAttribute('data-ref'),val=parseFloat(inp.value)||0;
   var isMalaysiaCp10=(k==='malaysia_cp10'||k==='cp10');
   // Capture old values before update
@@ -6892,6 +6997,7 @@ function svOnRefChange(inp){
     if(isMalaysiaCp10){
       if('indonesia_cp10' in r)r.indonesia_cp10=val-120;
       if('cp6' in r)r.cp6=val+60;
+      r.rbd_my=val-10; r.rbd_id=val-130;
     }
   });
   // Surgical update only — never rebuild the whole panel here, that would
@@ -6901,6 +7007,8 @@ function svOnRefChange(inp){
     if(_indEl)_indEl.textContent=(val-120);
     var _cp6El=document.getElementById('autoField_cp6');
     if(_cp6El)_cp6El.textContent=(val+60);
+    var _rmEl=document.getElementById('autoField_rbd_my');if(_rmEl)_rmEl.textContent=(val-10);
+    var _riEl=document.getElementById('autoField_rbd_id');if(_riEl)_riEl.textContent=(val-130);
   }
   _preserveScrollAcross(function(){
     svRenderTable();if(window._svSel&&SV_SUP!=='oilbase'){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}
@@ -6912,6 +7020,7 @@ function svOnRefChange(inp){
   }
 }
 function svOnPkgChange(inp){
+  _svMarkDirty();
   var id=parseInt(inp.getAttribute('data-pkgid'));
   var field=inp.getAttribute('data-field');
   var val=parseFloat(inp.value);
@@ -6924,7 +7033,7 @@ function svOnPkgChange(inp){
 function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
   // Propagate Apical oil price fields to WA_REF and KLK_REF
   if(s==='apical'){
-    var _sf=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
+    var _sf=['malaysia_cp10','indonesia_cp10','rbd_my','rbd_id','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
     _sf.forEach(function(fld){
       if(fld in APC_REF){
         if(fld in WA_REF)WA_REF[fld]=APC_REF[fld];
@@ -6935,6 +7044,7 @@ function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!
     localStorage.setItem(WA_REF_KEY,JSON.stringify(Object.assign({},WA_REF,{_savedByUser:true})));
     localStorage.setItem(KLK_REF_KEY,JSON.stringify(Object.assign({},KLK_REF,{_savedByUser:true})));
   }
+  [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
   var today=new Date().toISOString().slice(0,10);var _saveObj=Object.assign({},ref,{_savedByUser:true});localStorage.setItem(key,JSON.stringify(_saveObj));
   // Also save packaging costs/premiums
   var pkgArr=getPkgArr(s);
@@ -7494,7 +7604,8 @@ function _findFcpoRef(supplier, name, packing){
 
 var OIL_FIELD_LABELS = {
   malaysia_cp10:'Malaysia CP10', indonesia_cp10:'Indonesia CP10', pk_olein:'PK Olein',
-  pk_oil:'PK Oil', pk_stearin:'PK Stearin', stearin:'RBD Stearin', coconut:'Coconut Oil'
+  pk_oil:'PK Oil', pk_stearin:'PK Stearin', stearin:'RBD Stearin', coconut:'Coconut Oil',
+  rbd_my:'RBD Palm Oil MY', rbd_id:'RBD Palm Oil ID', cp6:'CP6', pfad:'PFAD'
 };
 
 function svShowTrendChart(){
@@ -7691,6 +7802,7 @@ function svViewOilBaseTable(fromDate, toDate, supplier, page){
 
 var OIL_TABLE_COLS=[
   {key:'malaysia_cp10',label:'Malaysia CP10'},{key:'indonesia_cp10',label:'Indonesia CP10'},
+  {key:'rbd_my',label:'RBD Palm Oil MY'},{key:'rbd_id',label:'RBD Palm Oil ID'},
   {key:'pk_olein',label:'PK Olein'},{key:'pk_oil',label:'PK Oil'},{key:'pk_stearin',label:'PK Stearin'},
   {key:'stearin',label:'Stearin'},{key:'coconut',label:'Coconut'},{key:'cp6',label:'CP6'},{key:'pfad',label:'PFAD'}
 ];
