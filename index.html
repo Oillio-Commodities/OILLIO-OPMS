@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1600';
+  var _v='V17OCT1630';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -539,7 +539,7 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 <div id="svOilFields" style="margin-bottom:10px"></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
 <div style="display:flex;align-items:end;gap:6px;flex-wrap:wrap;background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:5px 8px"><div><label style="display:block;font-size:.58rem;font-weight:700;color:#b45309">PRICING DATE (up to 90 days back)</label><input type="date" id="svSimDate" style="padding:4px 6px;border:1.5px solid #f9a825;border-radius:5px;font-size:.74rem"></div><button onclick="svSimLoad()" style="background:#2980b9;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x1F552; Load this date</button><button id="svSimBack" onclick="svSimExit()" style="display:none;background:#fff;color:#c0392b;border:2px solid #c0392b;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#8617; Back to current prices</button></div><button id="svOilSaveBtn" onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
-<button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
+<button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">&#8617; Reset to Last Saved</button>
 <span id="svOilNote" style="font-size:.71rem;color:var(--mut)">Changes show live in all supplier tabs. Press Save &amp; Log to keep them for everyone.</span>
 </div></div></div>
 <div id="supplierView" style="display:none;padding:0 14px 20px">
@@ -556,7 +556,7 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
 <button id="svSupSaveBtn" onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
-<button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
+<button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">&#8617; Reset to Last Saved</button>
 <span id="svRefNote" style="font-size:.71rem;color:var(--mut)">FCPO column updates automatically.</span>
 </div></div>
 <div style="background:var(--card);border-radius:var(--rad);box-shadow:var(--shd);padding:12px 14px;margin-bottom:12px">
@@ -1592,7 +1592,7 @@ function el(id){return document.getElementById(id);}
   function _syncApply(d) {
     if (!d) return;
     if (window._simMode) return; // simulating a past date — don't overwrite with live values
-    if (window._refDirty) return;
+    if (window._refDirty && !window._forceApply) return;
     // Also skip the visual re-render entirely whenever a supplier's yellow
     // reference panel is currently being viewed — not just while actively
     // typing. The panel is visible whenever SV_SUP is a real supplier, and
@@ -1601,7 +1601,7 @@ function el(id){return document.getElementById(id);}
     // stays correct either way — this only pauses the LIVE visual refresh,
     // which resumes normally the moment they switch away or reload.
     var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro' || SV_SUP === 'oilbase');
-    if (_refPanelVisible) return;
+    if (_refPanelVisible && !window._forceApply) return;
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
       if (k in d.apical) APC_REF[k] = parseFloat(d.apical[k]) || APC_REF[k];
     });
@@ -6798,7 +6798,24 @@ function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
   // Push to Sheets so all devices/users get the update
   _syncSave();
-}function svResetRef(){if(_svBlockSim('Reset Defaults'))return;var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
+}function svResetRef(){
+  if(_svBlockSim('Reset to Last Saved'))return;
+  // Throws away anything typed but NOT yet saved, and reloads the last SAVED prices (the shared ones every
+  // device sees): code defaults first, then the saved values on top — same result as a fresh page load.
+  showToast('Loading last saved prices...');
+  _syncLoad(function(d){
+    if(!d){showToast('Could not reach the database \u2014 nothing was changed',4000);return;}
+    Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);
+    [[APC_PKG,APC_PKG_DEF],[WA_PKG,WA_PKG_DEF],[KLK_PKG,KLK_PKG_DEF]].forEach(function(x){
+      x[0].forEach(function(r){var def=x[1].filter(function(o){return o.id===r.id;})[0];if(def){r.premium=def.premium;r.pkg_cost=def.pkg_cost;}});
+    });
+    window._tgtFob={};window._refDirty=false;
+    window._forceApply=true;try{_syncApply(d);}finally{window._forceApply=false;}
+    svRenderRefPanel();
+    if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
+    showToast('Reset to the last saved prices');
+  });
+}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
   Promise.all([
