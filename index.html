@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT2026J';
+  var _v='V17OCT2026K';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8587,6 +8587,9 @@ function setSupplierUser(s){
     var hasFr=fr>0,port='',country='';
     if(hasFr){if(SV_FR.mode==='port'&&SV_FR.port){port=SV_FR.port.port||'';country=SV_FR.port.country||'';}else{port=SV_FR.portName||'';}}
     var del=(el('qDel')||{value:''}).value||'',cust=(el('qCust')||{value:''}).value||'';
+    var miss=[];
+    if(!del.trim())miss.push('Delivery period');
+    if(hasFr){if(!port.trim())miss.push('Freight port');if(!country.trim())miss.push('Freight country');}
     var h='<div style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:.82rem;margin-bottom:12px">';
     h+='<b>Customer</b><span>'+(cust?esc(cust):'<span style="color:#999">not entered</span>')+'</span>';
     h+='<b>Delivery period</b><span>'+(del?esc(del):'<b style="color:#c0392b">NOT SET &mdash; go back and enter it</b>')+'</span>';
@@ -8596,11 +8599,19 @@ function setSupplierUser(s){
     QITEMS.forEach(function(item,i){
       var p;try{p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);}catch(e){p={fs:0,fm:0};}
       var frU=hasFr?round4(fr/(item.sku.sku_fcl||1)):0;
+      var _mg=parseFloat(item.mgn!=null?item.mgn:SV_CFG.margin),_pre='Item '+(i+1)+': ';
+      if(!String(itemDisplayName(item)||'').trim()&&!String(item.oilName||'').trim())miss.push(_pre+'product / oil name');
+      if(!String((item.sku&&item.sku.type)||'').trim())miss.push(_pre+'packaging type');
+      if(isNaN(_mg)||_mg<=0)miss.push(_pre+'Oillio margin');
+      if(!(p.fs>0))miss.push(_pre+'price per carton');
+      if(!(p.fm>0))miss.push(_pre+'price per MT');
       var nm=itemDisplayName(item),oil=(item.oilName&&nm!==item.oilName)?'<br><span style="color:#777">Oil: '+esc(item.oilName)+'</span>':'';
       var org=item.supplier==='apical'?'<br><span style="color:#777">Origin: '+(item.apicalOrigin==='JKT'?'Tj Priok, Jakarta':'Port Klang, Malaysia')+'</span>':'';
       h+='<tr style="border-bottom:1px solid #e3e3e3"><td style="padding:6px">'+(i+1)+'</td><td style="padding:6px;font-weight:700">'+esc(nm)+oil+org+'</td><td style="padding:6px">'+esc(item.sku.type||'-')+'</td><td style="padding:6px;text-align:right">'+fmt(item.mgn!=null?item.mgn:SV_CFG.margin,2)+'%</td><td style="padding:6px;text-align:right;font-weight:700">USD '+fmt(p.fs,2)+'</td>'+(hasFr?'<td style="padding:6px;text-align:right">+'+fmt(frU,2)+'</td><td style="padding:6px;text-align:right;font-weight:700">USD '+fmt(round4(p.fs+frU),2)+'</td>':'')+'<td style="padding:6px;text-align:right;font-weight:700">USD '+fmt(p.fm,2)+'</td><td style="padding:6px;text-align:right">'+item.fcl+'</td></tr>';
     });
     h+='</tbody></table></div>';
+    window._cfmMissing=miss;
+    if(miss.length)h='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;color:#922"><b>&#9888; Missing / incomplete ('+miss.length+'):</b><ul style="margin:5px 0 0 18px;padding:0">'+miss.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul></div>'+h;
     return h;
   }
   function ask(kind,go){
@@ -8608,7 +8619,8 @@ function setSupplierUser(s){
     var old=document.getElementById('cfmOv');if(old)old.remove();
     var ov=document.createElement('div');ov.id='cfmOv';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px';
     var label=kind==='copy'?'Copy message':'Save PDF';
-    ov.innerHTML='<div style="background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.4)"><div style="padding:14px 18px;border-bottom:1px solid #ddd;font-weight:800;color:#1a6b1a;font-size:1rem">&#9888; Please confirm before you proceed</div><div style="padding:14px 18px;overflow:auto;flex:1">'+build(kind)+'<div style="margin-top:10px;font-size:.74rem;color:#555">Check the product name, packaging, margin, prices, port/country and delivery period. If anything is wrong, go back and change it first.</div></div><div style="padding:12px 18px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button id="cfmBack" style="background:#fff;color:#c0392b;border:2px solid #c0392b;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer">&#8592; No, go back</button><button id="cfmOk" style="background:#1a6b1a;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer">&#10003; Yes, confirm &amp; '+label+'</button></div></div>';
+    var _body=build(kind),_bad=(window._cfmMissing||[]).length>0;
+    ov.innerHTML='<div style="background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.4)"><div style="padding:14px 18px;border-bottom:1px solid #ddd;font-weight:800;color:#1a6b1a;font-size:1rem">&#9888; Please confirm before you proceed</div><div style="padding:14px 18px;overflow:auto;flex:1">'+_body+'<div style="margin-top:10px;font-size:.74rem;color:#555">Check the product name, packaging, margin, prices, port/country and delivery period. If anything is wrong, go back and change it first.</div></div><div style="padding:12px 18px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button id="cfmBack" style="background:#fff;color:#c0392b;border:2px solid #c0392b;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer">&#8592; No, go back</button><button id="cfmOk" style="background:'+(_bad?'#b45309':'#1a6b1a')+';color:#fff;border:none;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer">'+(_bad?'&#9888; Proceed anyway &amp; ':'&#10003; Yes, confirm &amp; ')+label+'</button></div></div>';
     document.body.appendChild(ov);
     document.getElementById('cfmBack').onclick=function(){ov.remove();};
     document.getElementById('cfmOk').onclick=function(){ov.remove();go();};
