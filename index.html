@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1735';
+  var _v='V17OCT1800';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1634,6 +1634,8 @@ function el(id){return document.getElementById(id);}
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
     var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
     if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
+    var _savedList = (d.klk && d.klk.list_id) || '';
+    if (_savedList !== KLK_LIST_ID) { _svApplyKlkListAuto(true); window._listPending = true; } else { window._listPending = false; }
     try { _svModelBanner(); } catch(e) {}
     var flds = document.getElementById('svRefFields');
     if (flds) flds.querySelectorAll('[data-ref]').forEach(function(inp) {
@@ -1671,7 +1673,7 @@ function el(id){return document.getElementById(id);}
     });
     var payload = {
       apical: Object.assign({}, APC_REF, {model_v: MODEL_V}),
-      klk: Object.assign({}, KLK_REF, {model_v: MODEL_V}),
+      klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: KLK_LIST_ID}),
       wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
@@ -1688,7 +1690,7 @@ function el(id){return document.getElementById(id);}
     .then(function(r) {
       if (r.ok) {
         window._refDirty = false; // save complete — safe to resume live sync
-        window._modelPending = false; try { _svModelBanner(); } catch(e) {}
+        window._modelPending = false; window._listPending = false; try { _svModelBanner(); } catch(e) {}
         showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
@@ -6165,9 +6167,11 @@ function _migrateModelV2(oldRefs){
 }
 function _svModelBanner(){
   var el=document.getElementById('modelBanner');if(!el)return;
-  var show=!!window._modelPending&&(window.USER_LEVEL===0);
+  var li=window._listPending&&window._listInfo,show=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
   el.style.display=show?'':'none';
-  if(show)el.innerHTML='&#9889; PRICING MODEL UPGRADED &mdash; every product now = base oil + premium/discount + packaging (new RBD Palm Oil bases, Ghee &amp; Butter Oil Substitute = CP10 + 20). All FOB prices are unchanged. Press <b>SAVE &amp; LOG REFERENCE</b> once so this is stored for every device.';
+  var lh=li?('&#x1F4E5; KLK supplier prices of '+KLK_LIST_LABEL+' applied to '+li.found+' SKUs: <b>'+li.changed+' premium/discount changes</b> ('+li.up+' up, '+li.down+' down). '):'';
+  if(show&&!window._modelPending)el.innerHTML=lh+'Press <b>SAVE &amp; LOG REFERENCE</b> to store them and log the changes.';
+  else if(show)el.innerHTML=lh+'&#9889; PRICING MODEL UPGRADED &mdash; every product now = base oil + premium/discount + packaging (new RBD Palm Oil bases, Ghee &amp; Butter Oil Substitute = CP10 + 20). Press <b>SAVE &amp; LOG REFERENCE</b> once so this is stored for every device.';
 }
 // ===== UNSAVED-CHANGES GUARD (User 0): changes to base oil / premium / packaging are lost if the page is closed =====
 function _svMarkDirty(){
@@ -6572,7 +6576,7 @@ function svRenderPkgFields(){
   if(!activeCat || !byCat[activeCat]) activeCat=catOrder[0];
   _pkgActiveCat[s]=activeCat;
 
-  var tabsHtml=(s==='klk'?'<div style="margin-bottom:8px"><button onclick="svLoadKlkList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Load KLK supplier price list (16 Oct 2026)</button> <span style="font-size:.62rem;color:#999">fills every Supplier FOB box, then shows a review table first</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
+  var tabsHtml=(s==='klk'?_svKlkMonitor()+'<div style="margin-bottom:8px"><button onclick="svLoadKlkList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Review KLK supplier list ('+KLK_LIST_LABEL+')</button> <span style="font-size:.62rem;color:#999">shows system FOB vs supplier FOB for every SKU</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
   catOrder.forEach(function(c){
     var isActive=(c===activeCat);
     tabsHtml+='<button onclick="svSetPkgCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:4px 9px;border-radius:12px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;'
@@ -6812,6 +6816,40 @@ var KLK_LIST_16OCT26=[
 // ===== KLK SUPPLIER PRICE LIST — bulk load =====
 // Fills every SKU's Supplier FOB box from the supplier's price list, then shows a review table.
 // Premium/discount is solved against the base oil CURRENTLY on screen (DAILY OIL BASE PRICE tab).
+// ===== KLK SUPPLIER LIST: auto-applied + monitored =====
+// The latest supplier list is applied automatically (premium/discount = supplier FOB - base oil - packaging) until it has been
+// SAVED once (the save stores KLK_LIST_ID). While it is unsaved, editing a base oil price re-balances it live.
+var KLK_LIST_ID='16OCT26',KLK_LIST_LABEL='16 Oct 2026';
+function _svApplyKlkListAuto(rebase){
+  if(rebase||!window._listBase){window._listBase={};getPkgArr('klk').forEach(function(r){window._listBase[r.id]=r.premium;});}
+  var prod={};KLK_DATA.forEach(function(p){prod[p.name+'|'+p.packing]=p;});
+  var changed=0,found=0,up=0,down=0;
+  getPkgArr('klk').forEach(function(row){
+    var k=row.name+'|'+row.packing,p=prod[k],t=null;
+    for(var i=0;i<KLK_LIST_16OCT26.length;i++){if(KLK_LIST_16OCT26[i][0]===row.name&&KLK_LIST_16OCT26[i][1]===row.packing){t=KLK_LIST_16OCT26[i][2];break;}}
+    if(t==null||!p)return;
+    found++;
+    var np=Math.round((t-_modelBase(KLK_REF,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
+    var b0=window._listBase[row.id];if(b0==null)b0=row.premium;
+    if(Math.abs(np-b0)>=0.005){changed++;if(np>b0)up++;else down++;}
+    row.premium=np;
+  });
+  window._listInfo={changed:changed,found:found,up:up,down:down};
+  return window._listInfo;
+}
+function _svKlkMonitor(){
+  var diffs=[],max=0,n=0;
+  KLK_LIST_16OCT26.forEach(function(x){
+    var p=null;for(var i=0;i<KLK_DATA.length;i++){if(KLK_DATA[i].name===x[0]&&KLK_DATA[i].packing===x[1]){p=KLK_DATA[i];break;}}
+    if(!p)return;n++;
+    var g=x[2]-getLiveFob(p,'klk');
+    if(Math.abs(g)>=0.01){diffs.push(g);if(Math.abs(g)>max)max=Math.abs(g);}
+  });
+  var ok=!diffs.length;
+  return '<div style="margin-bottom:8px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:700;background:'+(ok?'#e8f6ee':'#fdecea')+';color:'+(ok?'#1a7a4a':'#c0392b')+';border:1.5px solid '+(ok?'#b5dcc0':'#f1b0a8')+'">'
+    +'&#x1F50D; Supplier list monitor ('+KLK_LIST_LABEL+', '+n+' SKUs): '+(ok?'&#10003; system FOB matches the supplier list on every SKU':diffs.length+' SKU(s) differ from the supplier list (largest '+_l90Num(max)+') &mdash; base oil or premium moved since the list was applied')
+    +(ok?'':' <button onclick="svLoadKlkList()" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 9px;font-size:.66rem;font-weight:800;cursor:pointer;margin-left:6px">Review &amp; re-balance</button>')+'</div>';
+}
 function svLoadKlkList(){
   if(_svBlockSim('loading a price list'))return;
   if(SV_SUP!=='klk')return;
@@ -7000,6 +7038,7 @@ function svOnRefChange(inp){
       r.rbd_my=val-10; r.rbd_id=val-130;
     }
   });
+  if(window._listPending){try{_svApplyKlkListAuto();_svModelBanner();}catch(e){}}
   // Surgical update only — never rebuild the whole panel here, that would
   // destroy the input the user is actively typing in and kick their cursor out.
   if(isMalaysiaCp10){
