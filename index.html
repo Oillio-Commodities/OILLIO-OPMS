@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1830';
+  var _v='V17OCT1920';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7205,10 +7205,10 @@ function _showLogPicker(rows){
   html+='<button onclick="svViewOilBaseHistory()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:6px;padding:8px 14px;font-size:.73rem;font-weight:700;cursor:pointer">&#x1F6E2; Oil Base History</button>';
   html+='</div></div>';
 
-  // Section 3: compare two dates (optional) — by CALENDAR DAY, averaged if
+  // Section 3: compare two dates (optional) — by CALENDAR DAY, last save used if
   // multiple saves happened that day, per instruction (easier to read)
   html+='<div style="border-top:1px solid var(--bdr);padding-top:12px;margin-bottom:12px">';
-  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Compare two dates (optional) &mdash; averages a day\'s updates if more than one</div>';
+  html+='<div style="font-weight:700;color:var(--brand);margin-bottom:8px">Compare two dates (optional) &mdash; uses the last save of each day</div>';
   var seenDays={}, days=[];
   events.forEach(function(e){
     var day=e.saved_at.slice(0,10);
@@ -7364,39 +7364,27 @@ function _showOilBaseTable(rows, fromDate, toDate){
 var OIL_COLS=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut'];
 
 function _avgPriceLogByProduct(rows){
-  // Averages premium/pkg_cost/fob per (supplier,product,packing) across
-  // all rows given — used to collapse a whole day's saves into one value.
+  // Collapses a whole day's saves into one value per (supplier,product,packing): the LAST save of the day.
   var map={};
   rows.forEach(function(r){
-    var key=r.supplier+'|'+r.product_name+'|'+r.packing;
-    if(!map[key]) map[key]={supplier:r.supplier,product_name:r.product_name,packing:r.packing,_pS:0,_pC:0,_kS:0,_kC:0,_fS:0,_fC:0};
-    var g=map[key];
-    if(r.premium!=null){ g._pS+=Number(r.premium); g._pC++; }
-    if(r.pkg_cost!=null){ g._kS+=Number(r.pkg_cost); g._kC++; }
-    if(r.fob!=null){ g._fS+=Number(r.fob); g._fC++; }
+    var key=r.supplier+'|'+r.product_name+'|'+r.packing,t=r.saved_at||'';
+    var g=map[key]||(map[key]={supplier:r.supplier,product_name:r.product_name,packing:r.packing,premium:null,pkg_cost:null,fob:null,_a:'',_b:'',_c:''});
+    if(r.premium!=null&&t>=g._a){g.premium=Number(r.premium);g._a=t;}
+    if(r.pkg_cost!=null&&t>=g._b){g.pkg_cost=Number(r.pkg_cost);g._b=t;}
+    if(r.fob!=null&&t>=g._c){g.fob=Number(r.fob);g._c=t;}
   });
-  return Object.keys(map).map(function(k){
-    var g=map[k];
-    return {supplier:g.supplier, product_name:g.product_name, packing:g.packing,
-      premium:g._pC?g._pS/g._pC:null, pkg_cost:g._kC?g._kS/g._kC:null, fob:g._fC?g._fS/g._fC:null};
-  });
+  return Object.keys(map).map(function(k){var g=map[k];return {supplier:g.supplier,product_name:g.product_name,packing:g.packing,premium:g.premium,pkg_cost:g.pkg_cost,fob:g.fob};});
 }
 
 function _avgOilBaseBySupplier(rows){
   var map={};
   rows.forEach(function(r){
-    if(!map[r.supplier]) map[r.supplier]={supplier:r.supplier,_sums:{},_counts:{}};
-    var g=map[r.supplier];
+    var t=r.saved_at||'',g=map[r.supplier]||(map[r.supplier]={supplier:r.supplier,_t:{}});
     OIL_COLS.forEach(function(col){
-      if(r[col]!=null){ g._sums[col]=(g._sums[col]||0)+Number(r[col]); g._counts[col]=(g._counts[col]||0)+1; }
+      if(r[col]!=null&&(g._t[col]==null||t>=g._t[col])){g[col]=Number(r[col]);g._t[col]=t;}
     });
   });
-  return Object.keys(map).map(function(k){
-    var g=map[k];
-    var row={supplier:g.supplier};
-    OIL_COLS.forEach(function(col){ row[col]=g._counts[col]?(g._sums[col]/g._counts[col]):null; });
-    return row;
-  });
+  return Object.keys(map).map(function(k){var g=map[k],row={supplier:g.supplier};OIL_COLS.forEach(function(col){row[col]=g[col]!=null?g[col]:null;});return row;});
 }
 
 function svCompareLog(){
@@ -7450,7 +7438,7 @@ function svCompareLog(){
     function _dOnly(day){ var d=new Date(day+'T00:00:00'); return d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'}); }
     var dLabelA=_dOnly(dayA), dLabelB=_dOnly(dayB);
     var dShortA=dLabelA, dShortB=dLabelB;
-    var html='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+dLabelA+' &rarr; '+dLabelB+' (each averaged if multiple updates that day)</div>';
+    var html='<div style="font-size:.68rem;color:var(--mut);margin-bottom:6px">'+dLabelA+' &rarr; '+dLabelB+' (last save of each day)</div>';
 
     var oilHtml='<div style="font-weight:700;color:var(--brand);margin-bottom:4px;font-size:.72rem">&#x1F6E2; Base Oil ('+oilChanges.length+')</div>';
     if(!oilChanges.length){
@@ -7896,7 +7884,7 @@ function _l90Shell(){
   }
   h+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
   h+='</div>';
-  h+='<div style="color:var(--mut);margin-bottom:6px">Newest first. Same-day updates are averaged. <span style="color:#1a7a4a;font-weight:700">&#9650; green = up</span> and <span style="color:#c0392b;font-weight:700">&#9660; red = down</span> versus the previous update, shown next to that day\'s figure.</div>';
+  h+='<div style="color:var(--mut);margin-bottom:6px">Newest first. If saved more than once in a day, the last save of that day is shown. <span style="color:#1a7a4a;font-weight:700">&#9650; green = up</span> and <span style="color:#c0392b;font-weight:700">&#9660; red = down</span> versus the previous update, shown next to that day\'s figure.</div>';
   h+='<div id="l90Out"></div></div>';
   body.innerHTML=h;
   _l90Out();
@@ -7912,22 +7900,22 @@ function _l90OilHtml(S,cut){
   var cols=OIL_TABLE_COLS,byDay={};
   // Base oil is ONE shared set of prices. Each save is logged once per supplier
   // (identical values), so collapse by save time first — taking the first non-empty
-  // value across the suppliers' rows — then average the saves within each day.
+  // value across the suppliers' rows — then take the LAST save within each day.
   var saves={},rank={apical:0,wingagro:1,klk:2};
   S.oil.slice().sort(function(a,b){return (rank[a.supplier]!=null?rank[a.supplier]:3)-(rank[b.supplier]!=null?rank[b.supplier]:3);}).forEach(function(r){
     var sv=saves[r.saved_at]||(saves[r.saved_at]={});
     cols.forEach(function(c){if(sv[c.key]==null&&r[c.key]!=null)sv[c.key]=Number(r[c.key]);});
   });
-  Object.keys(saves).forEach(function(ts){
-    var d=_myDay(ts);var g=byDay[d]||(byDay[d]={s:{},n:{}});
-    cols.forEach(function(c){var v=saves[ts][c.key];if(v!=null){g.s[c.key]=(g.s[c.key]||0)+v;g.n[c.key]=(g.n[c.key]||0)+1;}});
+  Object.keys(saves).sort().forEach(function(ts){ // oldest -> newest, so the LAST save of the day wins
+    var d=_myDay(ts);var g=byDay[d]||(byDay[d]={v:{}});
+    cols.forEach(function(c){var v=saves[ts][c.key];if(v!=null)g.v[c.key]=v;});
   });
   var days=Object.keys(byDay).sort(); // oldest → newest
   var prev={},lines=[];
   days.forEach(function(d){
     var row={day:d,v:{},p:{}};
     cols.forEach(function(c){
-      var v=byDay[d].n[c.key]?byDay[d].s[c.key]/byDay[d].n[c.key]:null;
+      var v=byDay[d].v[c.key]!=null?byDay[d].v[c.key]:null;
       row.v[c.key]=v;row.p[c.key]=prev[c.key];
       if(v!=null)prev[c.key]=v;
     });
@@ -7957,15 +7945,15 @@ function _l90PriceHtml(S,cut){
     if(q&&((r.product_name||'')+' '+(r.packing||'')).toLowerCase().indexOf(q)<0)return;
     var k=r.supplier+'|'+r.product_name+'|'+r.packing,d=_myDay(r.saved_at);
     var g=groups[k]||(groups[k]={sup:r.supplier,name:r.product_name,packing:r.packing,days:{}});
-    var x=g.days[d]||(g.days[d]={ps:0,pn:0,ks:0,kn:0});
-    if(r.premium!=null){x.ps+=Number(r.premium);x.pn++;}
-    if(r.pkg_cost!=null){x.ks+=Number(r.pkg_cost);x.kn++;}
+    var x=g.days[d]||(g.days[d]={p:null,pt:'',k:null,kt:''});
+    if(r.premium!=null&&r.saved_at>=x.pt){x.p=Number(r.premium);x.pt=r.saved_at;} // the day's LAST save wins
+    if(r.pkg_cost!=null&&r.saved_at>=x.kt){x.k=Number(r.pkg_cost);x.kt=r.saved_at;}
   });
   var changes=[];
   Object.keys(groups).forEach(function(k){
     var g=groups[k],ds=Object.keys(g.days).sort(),prevP=null,prevK=null;
     ds.forEach(function(d){
-      var x=g.days[d],p=x.pn?x.ps/x.pn:null,kk=x.kn?x.ks/x.kn:null;
+      var x=g.days[d],p=x.p,kk=x.k;
       var chP=(p!=null&&prevP!=null&&Math.abs(p-prevP)>=0.005),chK=(kk!=null&&prevK!=null&&Math.abs(kk-prevK)>=0.005);
       if(d>=cut&&(chP||chK))changes.push({day:d,sup:g.sup,name:g.name,packing:g.packing,p:p,pp:prevP,k:kk,kp:prevK});
       if(p!=null)prevP=p;if(kk!=null)prevK=kk;
@@ -7996,35 +7984,27 @@ function _l90PriceHtml(S,cut){
 /* ===== END LAST 90 DAYS ===== */
 
 function _dailyAverage(rows, dateField, numericCols){
-  // Consolidates multiple same-day saves into ONE row per calendar day,
-  // averaging each numeric field across that day's saves. Keeps the
-  // underlying raw log untouched (this is a display-only transform) —
-  // if a value wasn't touched on a given save, it's excluded from that
-  // field's average rather than treated as zero.
+  // Consolidates multiple same-day saves into ONE row per calendar day, showing the LAST save of that day
+  // (the closing price). Display-only transform; the raw log is untouched. A field not touched on the
+  // last save falls back to the latest save that did have it.
   var byDay={};
   rows.forEach(function(r){
     var day=_myDay(r[dateField]); // YYYY-MM-DD, Malaysia calendar day
-    if(!byDay[day]) byDay[day]={_day:day, _count:0, _sums:{}, _counts:{}, _latestTs:r[dateField], _saved_by:r.saved_by};
+    if(!byDay[day]) byDay[day]={_day:day, _count:0, _vals:{}, _ts:{}, _latestTs:r[dateField], _saved_by:r.saved_by};
     var g=byDay[day];
     g._count++;
     if(r[dateField]>g._latestTs) g._latestTs=r[dateField];
     numericCols.forEach(function(c){
       var v=r[c];
-      if(v!=null){
-        g._sums[c]=(g._sums[c]||0)+Number(v);
-        g._counts[c]=(g._counts[c]||0)+1;
-      }
+      if(v!=null&&(g._ts[c]==null||r[dateField]>=g._ts[c])){g._vals[c]=Number(v);g._ts[c]=r[dateField];}
     });
   });
-  var out=Object.keys(byDay).sort().reverse().map(function(day){
+  return Object.keys(byDay).sort().reverse().map(function(day){
     var g=byDay[day];
     var row={saved_at:g._latestTs, saved_by:g._saved_by, _updateCount:g._count};
-    numericCols.forEach(function(c){
-      row[c]=g._counts[c]?(g._sums[c]/g._counts[c]):null;
-    });
+    numericCols.forEach(function(c){ row[c]=g._vals[c]!=null?g._vals[c]:null; });
     return row;
   });
-  return out;
 }
 
 function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
@@ -8062,7 +8042,7 @@ function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
     var bg=i%2===0?'#eaf2fb':'#fff';
     var d=new Date(r.saved_at);
     var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
-    var countBadge=r._updateCount>1?' <span style="font-weight:400;color:#888;font-size:.62rem">('+r._updateCount+' updates, avg)</span>':'';
+    var countBadge=r._updateCount>1?' <span style="font-weight:400;color:#888;font-size:.62rem">('+r._updateCount+' updates, last shown)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
     html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     OIL_TABLE_COLS.forEach(function(c){
@@ -8155,7 +8135,7 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
   var resultEl=document.getElementById('ptResult');
   var PAGE_SIZE=10;
 
-  // One row per Malaysia calendar day; several saves in a day are averaged.
+  // One row per Malaysia calendar day; if saved several times in a day, the LAST save of that day is shown.
   // Each product (name + packing) shows BOTH its premium/discount and its packaging cost,
   // with a green ▲ / red ▼ change versus the previous day beside the figure.
   var byDay={};
@@ -8164,17 +8144,17 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
     if(!byDay[day]) byDay[day]={_p:{}, _k:{}, _latestTs:r.saved_at, _updateDates:{}};
     var g=byDay[day];
     if(r.saved_at>g._latestTs) g._latestTs=r.saved_at;
-    if(r.premium!=null){var a=g._p[k]||(g._p[k]={s:0,n:0});a.s+=Number(r.premium);a.n++;}
-    if(r.pkg_cost!=null){var b=g._k[k]||(g._k[k]={s:0,n:0});b.s+=Number(r.pkg_cost);b.n++;}
+    if(r.premium!=null){var a=g._p[k];if(!a||r.saved_at>=a.t)g._p[k]={v:Number(r.premium),t:r.saved_at};}   // the day's LAST save wins
+    if(r.pkg_cost!=null){var b=g._k[k];if(!b||r.saved_at>=b.t)g._k[k]={v:Number(r.pkg_cost),t:r.saved_at};}
     g._updateDates[r.saved_at]=1;
   });
-  function _val(o){return o&&o.n?o.s/o.n:null;}
+  function _val(o){return o?o.v:null;}
   var days=Object.keys(byDay).sort().reverse();
   var totalPages=Math.max(1,Math.ceil(days.length/PAGE_SIZE));
   page=Math.min(Math.max(1,page),totalPages);
   var from=(page-1)*PAGE_SIZE, pageDays=days.slice(from, from+PAGE_SIZE);
 
-  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (daily average). Each cell shows <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</div>';
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (last save of each day). Each cell shows <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</div>';
 
   if(!days.length){
     html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
@@ -8194,7 +8174,7 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
     var d=new Date(g._latestTs);
     var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
     var updCount=Object.keys(g._updateDates).length;
-    var countBadge=updCount>1?' <span style="font-weight:400;color:#888;font-size:.6rem">('+updCount+' upd, avg)</span>':'';
+    var countBadge=updCount>1?' <span style="font-weight:400;color:#888;font-size:.6rem">('+updCount+' upd, last shown)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
     html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     cols.forEach(function(c){
