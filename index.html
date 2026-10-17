@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1445';
+  var _v='V17OCT1530';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -390,6 +390,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 <script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
 <body data-build="202606070555">
 <div id="verBanner" style="display:none"></div>
+<div id="simBanner" style="display:none;position:sticky;top:0;z-index:9000;background:#c0392b;color:#fff;padding:9px 14px;font-size:.78rem;font-weight:700;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)"></div>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:24px;display:flex;flex-direction:column;align-items:center;gap:0">
@@ -534,7 +535,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 <div style="font-size:.7rem;color:#8a6d1a;margin-bottom:10px">One set of base oil prices for ALL suppliers (Apical, KLK, Wing Agro) &mdash; the pricing formula is the same for every supplier. Update here when the market moves.</div>
 <div id="svOilFields" style="margin-bottom:10px"></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-<button onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
+<div style="display:flex;align-items:end;gap:6px;flex-wrap:wrap;background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:5px 8px"><div><label style="display:block;font-size:.58rem;font-weight:700;color:#b45309">PRICING DATE (up to 90 days back)</label><input type="date" id="svSimDate" style="padding:4px 6px;border:1.5px solid #f9a825;border-radius:5px;font-size:.74rem"></div><button onclick="svSimLoad()" style="background:#2980b9;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#x1F552; Load this date</button><button id="svSimBack" onclick="svSimExit()" style="display:none;background:#fff;color:#c0392b;border:2px solid #c0392b;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer">&#8617; Back to current prices</button></div><button id="svOilSaveBtn" onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
 <button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
 <span id="svOilNote" style="font-size:.71rem;color:var(--mut)">Changes show live in all supplier tabs. Press Save &amp; Log to keep them for everyone.</span>
 </div></div></div>
@@ -551,7 +552,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 </div>
 
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-<button onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
+<button id="svSupSaveBtn" onclick="svSaveRef()" class="u0-edit" style="background:#f9a825;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:.77rem;font-weight:700;cursor:pointer">&#x1F4BE; Save &amp; Log Reference</button><button onclick="svViewLog()" class="u01-only" style="background:#e8f0fa;color:var(--bm);border:1.5px solid #b8d0f0;border-radius:7px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-left:6px">&#x1F4C5; View Log</button>
 <button onclick="svResetRef()" class="u0-edit" style="background:#fff;color:#b45309;border:2px solid #f9a825;border-radius:6px;padding:7px 14px;font-size:.77rem;font-weight:700;cursor:pointer">Reset Defaults</button>
 <span id="svRefNote" style="font-size:.71rem;color:var(--mut)">FCPO column updates automatically.</span>
 </div></div>
@@ -1587,6 +1588,7 @@ function el(id){return document.getElementById(id);}
   // ── APPLY: update live ref objects + re-render panel/inputs ──
   function _syncApply(d) {
     if (!d) return;
+    if (window._simMode) return; // simulating a past date — don't overwrite with live values
     if (window._refDirty) return;
     // Also skip the visual re-render entirely whenever a supplier's yellow
     // reference panel is currently being viewed — not just while actively
@@ -1646,6 +1648,7 @@ function el(id){return document.getElementById(id);}
   }
 
   function _syncSave() {
+    if (window._simMode) return; // never persist while simulating a past date
     var myTime = new Date().toLocaleString('en-MY', {
       timeZone:'Asia/Kuala_Lumpur',
       year:'numeric',month:'2-digit',day:'2-digit',
@@ -6332,7 +6335,7 @@ function setSupplier(s){
       rQuote();rReport();
     },50);
   }
-  ["supOilBase","supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+(id==="supOilBase"&&e.classList.contains("u2-hide")?" u2-hide":"")+((id==="supOilBase"&&s==="oilbase")||(id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","oilBaseView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="oilbase"){window._svSel=null;window._svSelIdx=null;var obv=document.getElementById("oilBaseView");if(obv)obv.style.display="";svRenderRefPanel();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"oilbase":"🛢 Daily Oil Base Price • applies to all suppliers","apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
+  ["supOilBase","supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+(id==="supOilBase"&&e.classList.contains("u2-hide")?" u2-hide":"")+((id==="supOilBase"&&s==="oilbase")||(id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","oilBaseView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="oilbase"){window._svSel=null;window._svSelIdx=null;var obv=document.getElementById("oilBaseView");if(obv)obv.style.display="";_svSimInitDate();svRenderRefPanel();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}var labels={"oilbase":"🛢 Daily Oil Base Price • applies to all suppliers","apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnFrChange(){SV_FR.portName=(document.getElementById("svFrPortName")||{value:""}).value||"";SV_FR.usd=parseFloat((document.getElementById("svFrAmt")||{}).value)||0;svRenderTable();}function svSetFreight(m){SV_FR.mode=m;["fob","manual","port"].forEach(function(k){var b=document.getElementById("frBtn"+k.charAt(0).toUpperCase()+k.slice(1));if(!b)return;b.style.background=k===m?"var(--brand)":"#fff";b.style.color=k===m?"#fff":"var(--mut)";b.style.borderColor=k===m?"var(--brand)":"var(--bdr)";});var mw=document.getElementById("svFrManual"),pw=document.getElementById("svFrPort");if(mw)mw.style.display=m==="manual"?"":"none";if(pw)pw.style.display=m==="port"?"":"none";if(m==="port"){var rs=document.getElementById("svPortRegion");if(rs&&!rs.options.length)svInitPorts();}svRenderTable();}function svInitPorts(){var rs=document.getElementById('svPortRegion');if(!rs)return;var regions=['ALL'].concat([...new Set(ALL_PORTS.map(function(p){return p.region;}))].sort());rs.innerHTML=regions.map(function(r){return'<option>'+r+'</option>';}).join('');svFilterPorts();}function svFilterPorts(){var q=((document.getElementById('svPortSearch')||{}).value||'').toLowerCase();var reg=(document.getElementById('svPortRegion')||{}).value||'ALL';var el_=document.getElementById('svPortList');if(!el_)return;var ports=ALL_PORTS.filter(function(p){if(reg!=='ALL'&&p.region!==reg)return false;if(q&&(p.port+p.country+p.region).toLowerCase().indexOf(q)<0)return false;return true;});window._svPC=ports;el_.innerHTML=ports.slice(0,200).map(function(p,i){var age=p.updated?Math.round((Date.now()-new Date(p.updated))/(1000*86400)):999;var cls=age<90?'fresh':age<180?'warn':'stale';var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';return'<div class="pitem" data-fi="'+i+'">'+'<div class="pdot '+cls+'" title="Last updated: '+dLabel+'"></div>'+'<div class="pport">'+p.port+'</div>'+'<div class="pcty">'+p.country+'</div>'+'<div class="pfr">$'+fmt(p.freight,0)+'<div style="font-size:.6rem;color:#999;font-weight:400">'+dLabel+'</div></div></div>';}).join('');el_.querySelectorAll('[data-fi]').forEach(function(d){d.onclick=function(){var p=window._svPC[+this.getAttribute('data-fi')];if(p)svSelectPort(p.country,p);};});}function svSelectPort(country,p){SV_FR.port={country:p.country,port:p.port,freight:p.freight,updated:p.updated};var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="";if(pl)pl.style.display="none";var nm=document.getElementById("svPortSelName"),rt=document.getElementById("svPortSelRate");var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';if(nm)nm.textContent=p.port+", "+country;if(rt)rt.textContent="USD "+fmt(p.freight,0)+"/FCL (updated "+dLabel+")";svRenderTable();}function svClearPort(){SV_FR.port=null;var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="none";if(pl)pl.style.display="";svRenderTable();}
 function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var cats={};data.forEach(function(p){if(p.cat)cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c;}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
@@ -6424,7 +6427,7 @@ function svRenderRefPanel(){
     if(k==='oillio_margin'||k==='supplier_margin')return;
     var lbl=LABS[k]||k.replace(/_/g,' ').toUpperCase();
     var isAuto=k in AUTO_FORMULA_FIELDS;
-    var val=isAuto?AUTO_FORMULA_FIELDS[k](ref):(ref[k]!=null?ref[k]:def[k]);
+    var val=isAuto?((window._simMode&&ref[k]!=null)?ref[k]:AUTO_FORMULA_FIELDS[k](ref)):(ref[k]!=null?ref[k]:def[k]);
     html+='<div>';
     html+='<div style="font-size:.6rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:2px">'+lbl+(isAuto?' <span style="font-weight:400;color:#999">(auto)</span>':'')+'</div>';
     if(isEd&&!isAuto){
@@ -6507,6 +6510,97 @@ function svRenderPkgFields(){
   pd.innerHTML=tabsHtml+'<div style="max-height:340px;overflow-y:auto;padding-right:4px">'+listHtml+'</div>';
 }
 
+
+
+// ===== PAST-DATE PRICING SIMULATION (read-only) =====
+// Loads the base oil + premium/discount + packaging that were SAVED on (or before) a chosen day,
+// so the whole platform can be viewed as it was then. Nothing can be saved while simulating.
+window._simMode=false;window._simBackup=null;window._simDate=null;window._simInfo='';
+function _svTodayMY(){return _myDay(new Date().toISOString());}
+function _svSimInitDate(){
+  var el=document.getElementById('svSimDate');if(!el)return;
+  el.max=_svTodayMY();el.min=_myDay(new Date(Date.now()-90*86400000).toISOString());
+  if(!el.value)el.value=window._simDate||_svTodayMY();
+}
+function _svSnapshot(){
+  var b={apc:JSON.parse(JSON.stringify(APC_REF)),wa:JSON.parse(JSON.stringify(WA_REF)),klk:JSON.parse(JSON.stringify(KLK_REF)),pkg:{}};
+  ['apical','klk','wingagro'].forEach(function(sup){b.pkg[sup]=getPkgArr(sup).map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};});});
+  return b;
+}
+function _svRestore(b){
+  [[APC_REF,b.apc],[WA_REF,b.wa],[KLK_REF,b.klk]].forEach(function(x){Object.keys(x[0]).forEach(function(k){delete x[0][k];});Object.assign(x[0],x[1]);});
+  ['apical','klk','wingagro'].forEach(function(sup){
+    var arr=getPkgArr(sup);
+    b.pkg[sup].forEach(function(o){var r=arr.filter(function(x){return x.id===o.id;})[0];if(r){r.premium=o.premium;r.pkg_cost=o.pkg_cost;}});
+  });
+}
+function _svSimBanner(){
+  var el=document.getElementById('simBanner');
+  if(el){
+    if(window._simMode){el.style.display='';el.innerHTML='&#x1F552; SIMULATION &mdash; prices as at '+_l90Date(window._simDate)+' &nbsp;<span style="font-weight:400">('+window._simInfo+')</span>. Read-only: nothing can be saved. &nbsp;<button onclick="svSimExit()" style="background:#fff;color:#c0392b;border:none;border-radius:5px;padding:3px 10px;font-size:.72rem;font-weight:800;cursor:pointer">Back to current prices</button>';}
+    else{el.style.display='none';el.innerHTML='';}
+  }
+  var bk=document.getElementById('svSimBack');if(bk)bk.style.display=window._simMode?'':'none';
+  ['svOilSaveBtn','svSupSaveBtn'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.opacity=window._simMode?'.4':'';b.title=window._simMode?'Disabled while simulating a past date':'';}});
+}
+function _svSimRefresh(){
+  svRenderRefPanel();
+  if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
+  _svSimBanner();
+}
+function svSimExit(){
+  if(window._simBackup){_svRestore(window._simBackup);}
+  window._simMode=false;window._simBackup=null;window._simDate=null;window._simInfo='';
+  var el=document.getElementById('svSimDate');if(el)el.value=_svTodayMY();
+  _svSimRefresh();
+  showToast('Back to current prices');
+}
+function svSimLoad(){
+  var el=document.getElementById('svSimDate');if(!el||!el.value){showToast('Pick a date first');return;}
+  var day=el.value,today=_svTodayMY(),min=_myDay(new Date(Date.now()-90*86400000).toISOString());
+  if(day>=today){if(window._simMode){svSimExit();}else{showToast('Already showing current prices');}return;}
+  if(day<min){showToast('Only the last 90 days can be simulated');return;}
+  showToast('Loading '+_l90Date(day)+'...');
+  var end=new Date(day+'T23:59:59.999+08:00').toISOString();
+  Promise.all([
+    fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&saved_at=lte.'+encodeURIComponent(end)+'&order=saved_at.desc&limit=5000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
+    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&saved_at=lte.'+encodeURIComponent(end)+'&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+  ]).then(function(res){
+    var oilRows=Array.isArray(res[0])?res[0]:[],priceRows=Array.isArray(res[1])?res[1]:[];
+    if(!oilRows.length&&!priceRows.length){showToast('No saved pricing on or before '+_l90Date(day),4000);return;}
+    if(window._simMode&&window._simBackup){_svRestore(window._simBackup);}else{window._simBackup=_svSnapshot();}
+    // --- base oil: one shared set; per field take the latest saved value on/before the day ---
+    var rank={apical:0,wingagro:1,klk:2},saves={};
+    oilRows.slice().sort(function(a,b){return (rank[a.supplier]!=null?rank[a.supplier]:3)-(rank[b.supplier]!=null?rank[b.supplier]:3);}).forEach(function(r){
+      var sv=saves[r.saved_at]||(saves[r.saved_at]={ts:r.saved_at});
+      OIL_TABLE_COLS.forEach(function(c){if(sv[c.key]==null&&r[c.key]!=null)sv[c.key]=Number(r[c.key]);});
+    });
+    var tsList=Object.keys(saves).sort().reverse(),oilVals={};
+    tsList.forEach(function(ts){OIL_TABLE_COLS.forEach(function(c){if(oilVals[c.key]==null&&saves[ts][c.key]!=null)oilVals[c.key]=saves[ts][c.key];});});
+    OIL_TABLE_COLS.forEach(function(c){
+      var v=oilVals[c.key];if(v==null)return;
+      [APC_REF,WA_REF,KLK_REF].forEach(function(r){if(c.key in r)r[c.key]=v;if(c.key==='malaysia_cp10'&&'cp10' in r)r.cp10=v;});
+    });
+    // --- premium / packaging: per SKU, latest saved value on/before the day ---
+    var seenP={},seenK={},applied={apical:0,klk:0,wingagro:0};
+    var maps={};['apical','klk','wingagro'].forEach(function(sup){var m={};getPkgArr(sup).forEach(function(r){m[r.name+'|'+r.packing]=r;});maps[sup]=m;});
+    priceRows.forEach(function(r){
+      var m=maps[r.supplier];if(!m)return;
+      var key=r.product_name+'|'+r.packing,row=m[key];if(!row)return;
+      var kk=r.supplier+'|'+key,hit=false;
+      if(!seenP[kk]&&r.premium!=null){row.premium=Number(r.premium);seenP[kk]=1;hit=true;}
+      if(!seenK[kk]&&r.pkg_cost!=null){row.pkg_cost=Number(r.pkg_cost);seenK[kk]=1;hit=true;}
+      if(hit&&!seenP['c'+kk]){seenP['c'+kk]=1;applied[r.supplier]++;}
+    });
+    var missing=0;['apical','klk','wingagro'].forEach(function(sup){missing+=Math.max(0,getPkgArr(sup).length-applied[sup]);});
+    var oilSrc=tsList.length?_l90Date(_myDay(tsList[0])):'none',prSrc=priceRows.length?_l90Date(_myDay(priceRows[0].saved_at)):'none';
+    window._simMode=true;window._simDate=day;
+    window._simInfo='base oil from the '+oilSrc+' save; premium &amp; packaging from the '+prSrc+' save'+(missing?'; '+missing+' SKU(s) had no record by then and show current values':'');
+    _svSimRefresh();
+    showToast('Showing prices as at '+_l90Date(day));
+  }).catch(function(){showToast('Could not load that date — check connection',4000);});
+}
+// ===== END SIMULATION =====
 
 // ===== SUPPLIER FOB → PREMIUM/DISCOUNT BALANCER =====
 // User keys in the supplier's quoted FOB (USD/MT) for a SKU. The new premium/discount is
@@ -6666,7 +6760,7 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+function svSaveRef(){if(window._simMode){showToast('Simulation of a past date \u2014 nothing is saved. Press Back to current prices first.',5000);return;}var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
   // Propagate Apical oil price fields to WA_REF and KLK_REF
   if(s==='apical'){
     var _sf=['malaysia_cp10','indonesia_cp10','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
@@ -6689,7 +6783,7 @@ function svSaveRef(){var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lv
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
   // Push to Sheets so all devices/users get the update
   _syncSave();
-}function svResetRef(){var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
+}function svResetRef(){if(window._simMode){showToast('Simulation of a past date \u2014 press Back to current prices first.',4000);return;}var s=SV_SUP;if(s==='oilbase'){Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(APC_REF_KEY);localStorage.removeItem(WA_REF_KEY);localStorage.removeItem(KLK_REF_KEY);svRenderRefPanel();showToast('Reset to defaults');return;}if(s==='apical'){Object.assign(APC_REF,APC_REF_DEF);localStorage.removeItem(APC_REF_KEY);}else if(s==='wingagro'){Object.assign(WA_REF,WA_REF_DEF);localStorage.removeItem(WA_REF_KEY);}else if(s==='klk'){Object.assign(KLK_REF,KLK_REF_DEF);localStorage.removeItem(KLK_REF_KEY);}svRenderRefPanel();showToast('Reset to defaults');}
 function showToast(msg,dur){var t=document.getElementById('svToast');if(!t){t=document.createElement('div');t.id='svToast';t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+'background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:20px;font-size:.82rem;'+'font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(function(){t.style.opacity='0';},dur||2500);}
 function svViewLog(){
   Promise.all([
