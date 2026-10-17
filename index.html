@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1700';
+  var _v='V17OCT1720';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6203,7 +6203,7 @@ var KLK_DATA=[
 {cat:'TIN',name:'VEGETABLE GHEE',packing:'18L REC-TIN W/LID',load_ctn:1500.0,net_wt:16.2,fob_mt:1412.04,fcpo_default:1195.0,premium:-1.8465,pkg_cost:218.8865,fcpo_ref:'fixed',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'TIN',name:'VEGETABLE GHEE',packing:'20L REC-TIN W/LID',load_ctn:1242.0,net_wt:18.0,fob_mt:1400.84,fcpo_default:1195.0,premium:2.65,pkg_cost:203.19,fcpo_ref:'fixed',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'TIN',name:'VEGETABLE GHEE',packing:'16KG REC-TIN W/LID',load_ctn:1498.0,net_wt:16.0,fob_mt:1413.72,fcpo_default:1195.0,premium:13.2105,pkg_cost:205.5095,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
-{cat:'TIN',name:'VEGETABLE GHEE',packing:'14KG REC-TIN W/LID',load_ctn:1500.0,net_wt:14.0,fob_mt:1394.21,fcpo_default:1195.0,premium:-10.7942,pkg_cost:210.0042,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'17Oct26'},
+{cat:'TIN',name:'VEGETABLE GHEE',packing:'14KG REC-TIN W/LID',load_ctn:1500.0,net_wt:14.0,fob_mt:1394.21,fcpo_default:1195.0,premium:-10.7942,pkg_cost:210.0042,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'16Oct26'},
 {cat:'TIN',name:'VEGETABLE GHEE',packing:'15KG REC-TIN W/LID',load_ctn:1650.0,net_wt:15.0,fob_mt:1423.02,fcpo_default:1195.0,premium:18.0158,pkg_cost:210.0042,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
 {cat:'TIN',name:'VEGETABLE GHEE',packing:'20KG REC-TIN W/LID',load_ctn:1050.0,net_wt:20.0,fob_mt:1402.65,fcpo_default:1195.0,premium:13.1775,pkg_cost:194.4725,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
 {cat:'DRUM',name:'VEGETABLE GHEE',packing:'220L HDPE PLASTIC DRUM - BLUE',load_ctn:98.0,net_wt:198.0,fob_mt:1360.95,fcpo_default:1195.0,premium:13.0222,pkg_cost:152.9278,fcpo_ref:'',fcpo_delta:20.0,fob_delta:0,upd:'20Aug26'},
@@ -6483,7 +6483,7 @@ function svRenderPkgFields(){
   if(!activeCat || !byCat[activeCat]) activeCat=catOrder[0];
   _pkgActiveCat[s]=activeCat;
 
-  var tabsHtml=(s==='klk'?'<div style="margin-bottom:8px"><button onclick="svLoadKlkList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Load KLK supplier price list (17 Oct 2026)</button> <span style="font-size:.62rem;color:#999">fills every Supplier FOB box, then shows a review table first</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
+  var tabsHtml=(s==='klk'?'<div style="margin-bottom:8px"><button onclick="svLoadKlkList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Load KLK supplier price list (16 Oct 2026)</button> <span style="font-size:.62rem;color:#999">fills every Supplier FOB box, then shows a review table first</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
   catOrder.forEach(function(c){
     var isActive=(c===activeCat);
     tabsHtml+='<button onclick="svSetPkgCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:4px 9px;border-radius:12px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;'
@@ -6619,7 +6619,7 @@ function svSimLoad(){
 }
 // ===== END SIMULATION =====
 
-var KLK_LIST_17OCT26=[
+var KLK_LIST_16OCT26=[
   ['RBD PALM OLEIN CP6', '900ML X 12 PET BOTTLES PER CARTON', 1454.07],
   ['RBD PALM OLEIN CP6', '1.5L X 6 PET BOTTLES PER CARTON', 1503.15],
   ['RBD PALM OLEIN CP6', '2L X 6 PET BOTTLES PER CARTON', 1441.56],
@@ -6715,7 +6715,7 @@ function svLoadKlkList(){
   var map={};getPkgArr('klk').forEach(function(r){map[r.name+'|'+r.packing]=r;});
   window._tgtFob=window._tgtFob||{};
   var miss=[];
-  KLK_LIST_17OCT26.forEach(function(x){var r=map[x[0]+'|'+x[1]];if(r)window._tgtFob['klk|'+r.id]=x[2];else miss.push(x[0]+' '+x[1]);});
+  KLK_LIST_16OCT26.forEach(function(x){var r=map[x[0]+'|'+x[1]];if(r)window._tgtFob['klk|'+r.id]=x[2];else miss.push(x[0]+' '+x[1]);});
   svRenderPkgFields();
   svShowKlkPreview(miss);
 }
@@ -6732,7 +6732,7 @@ function svShowKlkPreview(miss){
   if(!modal||!body||!title)return;
   title.textContent='KLK price list — review before applying';
   var all=_svKlkChanges(),chg=all.filter(function(c){return Math.abs(c.gap)>=0.005;});
-  var inList={};KLK_LIST_17OCT26.forEach(function(x){inList[x[0]+'|'+x[1]]=1;});
+  var inList={};KLK_LIST_16OCT26.forEach(function(x){inList[x[0]+'|'+x[1]]=1;});
   var notOnList=getPkgArr('klk').filter(function(r){return !inList[r.name+'|'+r.packing];});
   var h='<div style="font-size:.74rem">';
   h+='<div style="background:#fff8dc;border:1.5px solid #f0dca0;border-radius:8px;padding:8px 10px;margin-bottom:8px"><b>Base oil in use (KLK):</b> CP10 '+_l90Num(KLK_REF.cp10)+' &middot; CP6 '+_l90Num(KLK_REF.cp6)+' &middot; Stearin '+_l90Num(KLK_REF.stearin)+' &middot; PFAD '+_l90Num(KLK_REF.pfad)+'<br><span style="color:#b45309">If these are not today\'s base oil prices, close this and update the DAILY OIL BASE PRICE tab first &mdash; the new premiums are worked out against them.</span></div>';
