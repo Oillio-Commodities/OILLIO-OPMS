@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16OCT1030';
+  var _v='V17OCT1500';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6484,20 +6484,83 @@ function svRenderPkgFields(){
   tabsHtml+='</div>';
 
   var listHtml='';
+  window._tgtFob=window._tgtFob||{};
   byCat[activeCat].forEach(function(r){
-    listHtml+='<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px dashed #f0dca0">';
+    var _tv=window._tgtFob[s+'|'+r.id];
+    listHtml+='<div style="border-bottom:1px dashed #f0dca0;padding:3px 0">';
+    listHtml+='<div style="display:flex;align-items:center;gap:6px">';
     listHtml+='<div style="flex:1;font-size:.68rem;color:#555;line-height:1.3">'+(r.name||'')+'<br><span style="color:#999">'+(r.packing||'')+'</span></div>';
+    listHtml+='<div style="width:88px"><label style="display:block;font-size:.58rem;color:#1a5276;font-weight:700">SUPPLIER FOB</label>';
+    listHtml+='<input type="number" step="0.01" placeholder="key in" value="'+(_tv!=null?_tv:'')+'" data-pkgid="'+r.id+'" data-field="tgt" oninput="svOnTargetFob(this)" onkeydown="if(event.key===\'Enter\')svApplyTgt('+r.id+')" style="width:100%;padding:3px 4px;border:1.5px solid #2980b9;background:#eaf4fd;border-radius:4px;font-size:.72rem;text-align:right"></div>';
     listHtml+='<div style="width:74px"><label style="display:block;font-size:.58rem;color:#b45309;font-weight:700">PREM/DISC</label>';
     listHtml+='<input type="number" step="0.01" value="'+r.premium+'" data-pkgid="'+r.id+'" data-field="premium" oninput="svOnPkgChange(this)" style="width:100%;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-size:.72rem;text-align:right"></div>';
     listHtml+='<div style="width:74px"><label style="display:block;font-size:.58rem;color:#b45309;font-weight:700">PKG COST</label>';
     listHtml+='<input type="number" step="0.01" value="'+r.pkg_cost+'" data-pkgid="'+r.id+'" data-field="pkg_cost" oninput="svOnPkgChange(this)" style="width:100%;padding:3px 4px;border:1.5px solid #f9a825;border-radius:4px;font-size:.72rem;text-align:right"></div>';
     listHtml+='</div>';
+    listHtml+='<div id="tgtInfo_'+r.id+'" style="font-size:.62rem;margin-top:2px;min-height:12px">'+_svTgtInfoHtml(s,r.id)+'</div>';
+    listHtml+='</div>';
   });
+  listHtml+='<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button onclick="svApplyTgtAll()" style="background:#2980b9;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.68rem;font-weight:700;cursor:pointer">Apply all supplier prices in this tab</button><span style="font-size:.62rem;color:#999">Key in the supplier FOB (USD/MT) &rarr; the new premium/discount is worked out for you. Packaging is never changed. Press Save &amp; Log Reference to keep it.</span></div>';
 
   // Shorter max-height now that each tab only holds one category —
   // most categories will fit with little to no scrolling at all.
-  pd.innerHTML=tabsHtml+'<div style="max-height:220px;overflow-y:auto;padding-right:4px">'+listHtml+'</div>';
+  pd.innerHTML=tabsHtml+'<div style="max-height:340px;overflow-y:auto;padding-right:4px">'+listHtml+'</div>';
 }
+
+
+// ===== SUPPLIER FOB → PREMIUM/DISCOUNT BALANCER =====
+// User keys in the supplier's quoted FOB (USD/MT) for a SKU. The new premium/discount is
+// the current premium plus the gap between that quote and the system's live FOB
+// (FOB = base oil + premium + packaging, so only the premium absorbs the difference).
+// Packaging is never touched. Result rounded to 2 decimals.
+window._tgtFob=window._tgtFob||{};
+function _svFindProduct(s,row){
+  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:KLK_DATA;
+  for(var i=0;i<data.length;i++){if(data[i].name===row.name&&data[i].packing===row.packing)return data[i];}
+  return null;
+}
+function _svTgtCalc(s,id){
+  var row=getPkgArr(s).filter(function(r){return r.id===id;})[0];
+  if(!row)return null;
+  var p=_svFindProduct(s,row);if(!p)return null;
+  var sys=getLiveFob(p,s),t=window._tgtFob[s+'|'+id];
+  var c={row:row,sys:sys,target:(t!=null?t:null)};
+  if(t!=null){c.gap=t-sys;c.newPrem=Math.round((row.premium+c.gap)*100)/100;}
+  return c;
+}
+function _svTgtInfoHtml(s,id){
+  var c=_svTgtCalc(s,id);if(!c)return '';
+  var h='<span style="color:#777">System FOB '+_l90Num(c.sys)+'</span>';
+  if(c.target==null)return h;
+  if(Math.abs(c.gap)<0.005)return h+' <span style="color:#1a7a4a;font-weight:700">&#10003; matches supplier FOB</span>';
+  var up=c.gap>0;
+  h+=' &rarr; supplier '+_l90Num(c.target)+' &rarr; gap <b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(c.gap))+'</b>';
+  h+=' &rarr; new premium/discount <b>'+_l90Num(c.newPrem)+'</b> <button onclick="svApplyTgt('+id+')" style="background:#2980b9;color:#fff;border:none;border-radius:4px;padding:1px 8px;font-size:.62rem;font-weight:700;cursor:pointer;margin-left:4px">Apply</button>';
+  return h;
+}
+function _svUpdateTgtInfo(id){var el=document.getElementById('tgtInfo_'+id);if(el)el.innerHTML=_svTgtInfoHtml(SV_SUP,id);}
+function svOnTargetFob(inp){
+  var id=parseInt(inp.getAttribute('data-pkgid')),v=parseFloat(inp.value),k=SV_SUP+'|'+id;
+  if(isNaN(v))delete window._tgtFob[k];else window._tgtFob[k]=v;
+  _svUpdateTgtInfo(id); // only the small info line — the input being typed in is never rebuilt
+}
+function svApplyTgt(id){
+  var c=_svTgtCalc(SV_SUP,id);if(!c||c.target==null)return;
+  var inp=document.querySelector('#svPkgFields input[data-pkgid="'+id+'"][data-field="premium"]');
+  if(!inp)return;
+  if(Math.abs(c.gap)>=0.005){inp.value=c.newPrem;svOnPkgChange(inp);}
+  _svUpdateTgtInfo(id);
+}
+function svApplyTgtAll(){
+  var n=0;
+  document.querySelectorAll('#svPkgFields input[data-field="tgt"]').forEach(function(t){
+    if(t.value==='')return;
+    var id=parseInt(t.getAttribute('data-pkgid')),c=_svTgtCalc(SV_SUP,id);
+    if(c&&c.target!=null&&Math.abs(c.gap)>=0.005){svApplyTgt(id);n++;}
+  });
+  showToast(n?('Applied '+n+' premium/discount update'+(n>1?'s':'')+' — now Save & Log Reference'):'Nothing to apply');
+}
+// ===== END BALANCER =====
 
 function svOnPkgChange(inp){
   var s=SV_SUP;
