@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1815';
+  var _v='V17OCT1830';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6166,12 +6166,11 @@ function _migrateModelV2(oldRefs){
   return n;
 }
 function _svModelBanner(){
-  var el=document.getElementById('modelBanner');if(!el)return;
-  var li=window._listPending&&window._listInfo,show=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
-  el.style.display=show?'':'none';
-  var lh=li?('&#x1F4E5; KLK supplier prices of '+KLK_LIST_LABEL+' applied to '+li.found+' SKUs: <b>'+li.changed+' premium/discount changes</b> ('+li.up+' up, '+li.down+' down). '):'';
-  if(show&&!window._modelPending)el.innerHTML=lh+'Press <b>SAVE &amp; LOG REFERENCE</b> to store them and log the changes.';
-  else if(show)el.innerHTML=lh+'&#9889; PRICING MODEL UPGRADED &mdash; every product now = base oil + premium/discount + packaging (new RBD Palm Oil bases, Ghee &amp; Butter Oil Substitute = CP10 + 20). Press <b>SAVE &amp; LOG REFERENCE</b> once so this is stored for every device.';
+  // No more big banner: just a small note next to the Save button while updates are waiting to be saved
+  var el=document.getElementById('modelBanner');if(el){el.style.display='none';el.innerHTML='';}
+  var li=window._listPending&&window._listInfo,pend=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
+  var n=document.getElementById('svOilNote');
+  if(n&&pend&&!window._refDirty){n.textContent='New prices loaded'+(li?' ('+li.changed+' KLK premium changes)':'')+' \u2014 press Save & Log Reference to store them';n.style.color='#b45309';}
 }
 // ===== UNSAVED-CHANGES GUARD (User 0): changes to base oil / premium / packaging are lost if the page is closed =====
 function _svMarkDirty(){
