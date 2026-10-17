@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1530';
+  var _v='V17OCT1545';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -2410,7 +2410,7 @@ function rReport(){
   if(RPT_MODE==='table'){renderVTable();}
 }
 
-function copyReport(){
+function copyReport(){if(_svBlockSim('copying the WhatsApp message'))return;
   var text=RPT_MODE==='table'?buildTxtTable():el('reportTxt').value;
   if(!text)return;
   function doFlash(){var f=RPT_MODE==='table'?el('copyFlash2'):el('copyFlash');f.style.display='block';setTimeout(function(){f.style.display='none';},2500);}
@@ -3205,7 +3205,7 @@ thead='';
   thead+='<th class="hfob" style="font-weight:800">TOTAL FOB<br>CARGO (USD)</th>';
   thead+='</tr></thead><tbody>';
   }
-function doPrint(){
+function doPrint(){if(_svBlockSim('the PDF report'))return;
   var cust2=(el('qCust')||{value:''}).value||'';
   logPdfGeneration(cust2,QITEMS);
   var d=new Date();
@@ -3450,7 +3450,7 @@ function doPrint(){
 
 
 
-function openPrintPreview(){
+function openPrintPreview(){if(_svBlockSim('the PDF report'))return;
   if(!QITEMS.length){alert('Add items to the quote first.');return;}
   var pm=PRICE_MODE||'fob';
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
@@ -4119,14 +4119,14 @@ function printFmContent(){
 
 
 
-function downloadPdf(){
+function downloadPdf(){if(_svBlockSim('the PDF report'))return;
   openPrintPreview();
 }
 
 
 
 
-function copyAsImage(){
+function copyAsImage(){if(_svBlockSim('copying the quote'))return;
   if(!QITEMS.length){alert('Add items to the quote first.');return;}
   var pm=PRICE_MODE||'fob';
   var hasCifItem=QITEMS.some(function(x){return x.mode==='CIF'&&x.port;});
@@ -4523,7 +4523,7 @@ function saveAsPDF(){
 }
 
 
-function generatePDF(){
+function generatePDF(){if(_svBlockSim('the PDF report'))return;
   if(!QITEMS.length){alert('Add items to the quote first.');return;}
   try{
     // Capture SHOW_MT_PRICE at time of generation — not affected by later changes
@@ -6512,6 +6512,14 @@ function svRenderPkgFields(){
 
 
 
+
+// Outgoing documents (PDF report, WhatsApp copy, quote image) are disabled while a past date is simulated,
+// so an outdated price can never be sent to a customer by accident.
+function _svBlockSim(what){
+  if(!window._simMode)return false;
+  alert('Simulation of '+_l90Date(window._simDate)+' is active \u2014 '+what+' is disabled.\n\nPress "Back to current prices" first, so no outdated price is sent out.');
+  return true;
+}
 // ===== PAST-DATE PRICING SIMULATION (read-only) =====
 // Loads the base oil + premium/discount + packaging that were SAVED on (or before) a chosen day,
 // so the whole platform can be viewed as it was then. Nothing can be saved while simulating.
@@ -6541,6 +6549,7 @@ function _svSimBanner(){
     else{el.style.display='none';el.innerHTML='';}
   }
   var bk=document.getElementById('svSimBack');if(bk)bk.style.display=window._simMode?'':'none';
+  document.querySelectorAll('button[onclick*="copyReport"],button[onclick*="generatePDF"],button[onclick*="downloadPdf"],button[onclick*="doPrint"],button[onclick*="copyAsImage"],button[onclick*="openPrintPreview"]').forEach(function(b){b.style.opacity=window._simMode?'.4':'';});
   ['svOilSaveBtn','svSupSaveBtn'].forEach(function(id){var b=document.getElementById(id);if(b){b.style.opacity=window._simMode?'.4':'';b.title=window._simMode?'Disabled while simulating a past date':'';}});
 }
 function _svSimRefresh(){
