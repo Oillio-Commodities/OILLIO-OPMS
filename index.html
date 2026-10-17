@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1500';
+  var _v='V17OCT1445';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6530,11 +6530,11 @@ function _svTgtCalc(s,id){
 }
 function _svTgtInfoHtml(s,id){
   var c=_svTgtCalc(s,id);if(!c)return '';
-  var h='<span style="color:#777">System FOB '+_l90Num(c.sys)+'</span>';
+  var h='<span style="background:#34495e;color:#fff;font-weight:700;padding:1px 7px;border-radius:9px">System FOB '+_l90Num(c.sys)+'</span>';
   if(c.target==null)return h;
   if(Math.abs(c.gap)<0.005)return h+' <span style="color:#1a7a4a;font-weight:700">&#10003; matches supplier FOB</span>';
   var up=c.gap>0;
-  h+=' &rarr; supplier '+_l90Num(c.target)+' &rarr; gap <b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(c.gap))+'</b>';
+  h+=' &rarr; <span style="background:#2980b9;color:#fff;font-weight:700;padding:1px 7px;border-radius:9px">Supplier '+_l90Num(c.target)+'</span> &rarr; gap <b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(c.gap))+'</b>';
   h+=' &rarr; new premium/discount <b>'+_l90Num(c.newPrem)+'</b> <button onclick="svApplyTgt('+id+')" style="background:#2980b9;color:#fff;border:none;border-radius:4px;padding:1px 8px;font-size:.62rem;font-weight:700;cursor:pointer;margin-left:4px">Apply</button>';
   return h;
 }
