@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V17OCT1920';
+  var _v='V17OCT1935';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6811,6 +6811,10 @@ var KLK_LIST_16OCT26=[
   ['PFAD', '210L TIGHT HEAD STEEL DRUM - BLUE', 1299.37],
   ['VEGETABLE GHEE', '14KG REC-TIN W/LID', 1394.21]
 ];
+// The supplier list was quoted on 13 Oct pricing; 16 Oct is +USD 10/MT on every product, so each supplier FOB below is lifted by this amount.
+var KLK_LIST_ADJ=10;
+KLK_LIST_16OCT26.forEach(function(x){x[2]=Math.round((x[2]+KLK_LIST_ADJ)*100)/100;});
+
 
 // ===== KLK SUPPLIER PRICE LIST — bulk load =====
 // Fills every SKU's Supplier FOB box from the supplier's price list, then shows a review table.
@@ -6818,7 +6822,7 @@ var KLK_LIST_16OCT26=[
 // ===== KLK SUPPLIER LIST: auto-applied + monitored =====
 // The latest supplier list is applied automatically (premium/discount = supplier FOB - base oil - packaging) until it has been
 // SAVED once (the save stores KLK_LIST_ID). While it is unsaved, editing a base oil price re-balances it live.
-var KLK_LIST_ID='16OCT26',KLK_LIST_LABEL='16 Oct 2026';
+var KLK_LIST_ID='16OCT26+10',KLK_LIST_LABEL='16 Oct 2026';
 var _klkOnListSet=null;
 function _svKlkOnList(name,packing){
   if(!_klkOnListSet){_klkOnListSet={};KLK_LIST_16OCT26.forEach(function(x){_klkOnListSet[x[0]+'|'+x[1]]=1;});}
