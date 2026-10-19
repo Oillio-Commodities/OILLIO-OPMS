@@ -6866,7 +6866,7 @@ var KLK_LIST_16OCT26=[
   ['VEGETABLE GHEE', '14KG REC-TIN W/LID', 1394.21]
 ];
 // The supplier list was quoted on 13 Oct pricing; 16 Oct is +USD 10/MT on every product, so each supplier FOB below is lifted by this amount.
-var KLK_LIST_ADJ=10;
+var KLK_LIST_ADJ=10; // ONE-OFF: the 16 Oct list was on 13 Oct pricing, so +USD 10/MT was added ONCE. It belongs to THIS list only (id '16OCT26+10b'). Future KLK lists: NO uplift (uplift:0).
 KLK_LIST_16OCT26.forEach(function(x){x[2]=Math.round((x[2]+KLK_LIST_ADJ)*100)/100;});
 
 

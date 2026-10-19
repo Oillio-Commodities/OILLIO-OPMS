@@ -40,6 +40,8 @@ All changes to the GitHub Pages app are recorded here.
 - **KLK 16 Oct list**: 84 SKUs, **+USD 10/MT on every SKU** (list was 13 Oct pricing); the 12 SKUs not on the
   list also get the +10. **Apical 16 Oct list**: 22 rows (Jakarta table + Port Klang table), no uplift.
   Wing Agro: list still to come.
+  **The KLK +USD 10/MT is a ONE-OFF adjustment (16 Oct list only, because it was based on 13 Oct pricing).
+  It is already inside the saved premiums; future KLK lists get NO uplift.**
 - **Monitor strip + orange tags** mark SKUs NOT covered by the latest list ("NOT ON … LIST · +10 ONLY /
   UNCHANGED"). Big banner removed; small save reminder beside the Save button.
 - **Apical HPS Flakes 40ft FCL (960 bags)** SKU added at 1,260 (20ft stays 1,245).
