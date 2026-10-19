@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V19OCT2026C';
+  var _v='V19OCT2026D';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6874,29 +6874,29 @@ KLK_LIST_16OCT26.forEach(function(x){x[2]=Math.round((x[2]+KLK_LIST_ADJ)*100)/10
 // THE DRILL: the supplier's FOB list is added here; on load the app sets every listed SKU's premium/discount =
 // supplier FOB - base oil (as saved) - packaging, until it has been SAVED once (the save stores the list id).
 // While unsaved, editing a base oil price re-balances it live. SKUs not on the list are tagged orange.
-var APC_LIST_16OCT26=[
-  ['20kg Shortening 36/39','20kg carton',1190],
-  ['20kg Shortening 38/40 & 40/42','20kg carton',1185],
-  ['20kg Shortening 43/47','20kg carton',1180],
-  ['20kg Shortening 46/48','20kg carton',1175],
-  ['20kg Shortening 48/52','20kg carton',1160],
+var APC_LIST_19OCT26=[
+  ['20kg Shortening 36/39','20kg carton',1200],
+  ['20kg Shortening 38/40 & 40/42','20kg carton',1195],
+  ['20kg Shortening 43/47','20kg carton',1195],
+  ['20kg Shortening 46/48','20kg carton',1190],
+  ['20kg Shortening 48/52','20kg carton',1175],
   ['18kg BIB Spread Fat','18kg BIB',1325],
-  ['18kg RCNO','18kg BIB',2130],
-  ['20kg HCNO','20kg carton',2195],
-  ['HPS Flakes','25kg polywoven bag',1245], // 20ft FCL (640 bags)
-  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1260], // 40ft FCL (960 bags)
-  ['20L Yellow Jerry Can – CP10','20L Jerry Can',1365],
-  ['20L Yellow Jerry Can – CP8','20L Jerry Can',1375],
-  ['20kg Hpks 33.5/35.5','20kg carton',2585],
-  ['20kg Hpko 38/40','20kg carton',2250],
-  ['20kg Hpko 40/42','20kg carton',2255],
-  ['20kg Hpkl 41/43','20kg carton',2110],
-  ['20kg CBR 37/40','20kg carton',2000],
-  ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1208],
-  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1210],
-  ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1215],
-  ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1215], // supplier's 43/48 line covers 46/48
-  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1215]
+  ['18kg RCNO','18kg BIB',2150],
+  ['20kg HCNO','20kg carton',2215],
+  ['HPS Flakes','25kg polywoven bag',1260], // 20ft FCL (640 bags)
+  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1275], // 40ft FCL (960 bags)
+  ['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',1365],
+  ['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',1375],
+  ['20kg Hpks 33.5/35.5','20kg carton',2595],
+  ['20kg Hpko 38/40','20kg carton',2260],
+  ['20kg Hpko 40/42','20kg carton',2265],
+  ['20kg Hpkl 41/43','20kg carton',2120],
+  ['20kg CBR 37/40','20kg carton',2010],
+  ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1218],
+  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1225],
+  ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1230],
+  ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1230], // supplier's 43/48 line covers 46/48
+  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1230]
 ];
 
 // ===== APICAL QUALITY SPEC (from Apical supplier list, 16 Oct 2026) — shown in brackets after the product name =====
@@ -6931,7 +6931,7 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
 }
 var SUP_LISTS={
   klk:{id:'16OCT26+10b',label:'16 Oct 2026',uplift:KLK_LIST_ADJ,rows:KLK_LIST_16OCT26,name:'KLK'},
-  apical:{id:'16OCT26',label:'16 Oct 2026',uplift:0,rows:APC_LIST_16OCT26,name:'Apical'}
+  apical:{id:'19OCT26',label:'19 Oct 2026',uplift:0,rows:APC_LIST_19OCT26,name:'Apical'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
@@ -8274,11 +8274,12 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
   var byDay={};
   rows.forEach(function(r){
     var day=_myDay(r.saved_at),k=r.product_name+'|'+r.packing;
-    if(!byDay[day]) byDay[day]={_p:{}, _k:{}, _latestTs:r.saved_at, _updateDates:{}};
+    if(!byDay[day]) byDay[day]={_p:{}, _k:{}, _f:{}, _latestTs:r.saved_at, _updateDates:{}};
     var g=byDay[day];
     if(r.saved_at>g._latestTs) g._latestTs=r.saved_at;
     if(r.premium!=null){var a=g._p[k];if(!a||r.saved_at>=a.t)g._p[k]={v:Number(r.premium),t:r.saved_at};}   // the day's LAST save wins
     if(r.pkg_cost!=null){var b=g._k[k];if(!b||r.saved_at>=b.t)g._k[k]={v:Number(r.pkg_cost),t:r.saved_at};}
+    if(r.fob!=null){var f=g._f[k];if(!f||r.saved_at>=f.t)g._f[k]={v:Number(r.fob),t:r.saved_at};}
     g._updateDates[r.saved_at]=1;
   });
   function _val(o){return o?o.v:null;}
@@ -8287,7 +8288,7 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
   page=Math.min(Math.max(1,page),totalPages);
   var from=(page-1)*PAGE_SIZE, pageDays=days.slice(from, from+PAGE_SIZE);
 
-  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (last save of each day). Each cell shows <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</div>';
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (last save of each day). Each cell shows the <b>FOB</b> (total price), <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.</div>';
 
   if(!days.length){
     html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
@@ -8311,9 +8312,9 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
     html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
     cols.forEach(function(c){
-      var p=_val(g._p[c.key]),k=_val(g._k[c.key]);
-      var pp=pg?_val(pg._p[c.key]):null,kp=pg?_val(pg._k[c.key]):null;
-      var cell='<div><span style="color:#999;font-size:.56rem">PREM</span> '+(p!=null?Number(p).toFixed(2)+_l90Delta(p,pp):'-')+'</div>';
+      var p=_val(g._p[c.key]),k=_val(g._k[c.key]),fo=_val(g._f[c.key]);
+      var pp=pg?_val(pg._p[c.key]):null,kp=pg?_val(pg._k[c.key]):null,fp=pg?_val(pg._f[c.key]):null;
+      var cell='<div style="font-weight:700"><span style="color:#999;font-size:.56rem;font-weight:400">FOB</span> '+(fo!=null?Number(fo).toFixed(2)+_l90Delta(fo,fp):'-')+'</div><div><span style="color:#999;font-size:.56rem">PREM</span> '+(p!=null?Number(p).toFixed(2)+_l90Delta(p,pp):'-')+'</div>';
       cell+='<div><span style="color:#999;font-size:.56rem">PKG</span> '+(k!=null?Number(k).toFixed(2)+_l90Delta(k,kp):'-')+'</div>';
       html+='<td style="padding:5px 8px;text-align:right">'+cell+'</td>';
     });
