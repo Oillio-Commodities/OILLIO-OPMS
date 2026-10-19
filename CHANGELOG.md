@@ -5,6 +5,116 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-19] — Fix: base oil figures reverting to old values
+
+### Fixed
+- **Daily Oil Base Price showing figures 2–3 weeks old instead of the last saved ones.** Cause: if the
+  Oil Base (or a supplier) tab was opened before the saved prices finished loading, the sync skipped
+  applying them (and every 15-second refresh skipped too), so the page stayed on the built-in starting
+  figures. Now the FIRST successful load always applies; failed loads retry (up to 10x, every 3s);
+  opening a tab before load triggers a fresh load.
+- **Status line** on the Oil Base tab always says which saved prices are on screen
+  ("Showing saved prices from 16 Oct 2026, 23:59 (MY) · loaded from the database"), or warns in red that
+  they are NOT loaded and may be old.
+
+---
+
+## [2026-10-17] — Pricing model v2, supplier price lists, Compare, freight, security, many fixes
+
+### Pricing model (the standing rule)
+- **Every product on every supplier = base oil + premium/discount (balancing figure) + packaging.**
+  Apical, KLK and Wing Agro all priced the same way. FOB = base + premium + packaging (+ fob_delta where set).
+- **Model v2 migration** (`MODEL_V=2`): all 98 previously-linked SKUs re-linked to the correct base with the
+  premium re-balanced so **no FOB changed** (130 SKUs checked, 0 mismatches). Runs once per saved record.
+- **New / fixed bases**: RBD Palm Oil base (Malaysia = CP10 − 10, Indonesia = CP10 − 130); CP6 now always
+  CP10 + 60; Indonesia CP10 = CP10 − 120; Ghee and Butter Oil Substitute linked to CP10 + 20; KLK shortening,
+  margarine and Palm Oil 36-39 on RBD Palm Oil; stearin flexibags on stearin; Apical standard shortening on
+  RBD Palm Oil Indonesia; Apical Low GE & MCPDE shortening on RBD Palm Oil Malaysia.
+- **PFAD** price entered by hand (1,052.50 on 16 Oct). `oil_base_log` now also stores cp6, pfad, rbd_my, rbd_id
+  (needs the 4 SQL columns; falls back to the old columns if they are missing).
+
+### The "drill" for supplier price lists
+- Joel sends a supplier price file -> the list is added to the app -> on load the app **auto-applies it**:
+  `premium = supplier FOB − base − packaging`, then **Save & Log Reference** records the premium (green up /
+  red down) in the log. Live: base-oil edits re-balance the premiums until saved.
+- **KLK 16 Oct list**: 84 SKUs, **+USD 10/MT on every SKU** (list was 13 Oct pricing); the 12 SKUs not on the
+  list also get the +10. **Apical 16 Oct list**: 22 rows (Jakarta table + Port Klang table), no uplift.
+  Wing Agro: list still to come.
+- **Monitor strip + orange tags** mark SKUs NOT covered by the latest list ("NOT ON … LIST · +10 ONLY /
+  UNCHANGED"). Big banner removed; small save reminder beside the Save button.
+- **Apical HPS Flakes 40ft FCL (960 bags)** SKU added at 1,260 (20ft stays 1,245).
+- **Apical quality spec shown in brackets** from the supplier file, e.g. HCNO (SMP 29-34), CP8 (IV 58),
+  CP10 (IV 56). Display only — the product name underneath is unchanged so history/logs still match.
+
+### Live-day, weekend and saving rules
+- The **latest saved pricing day is always live** (weekends never locked). Weekend saves are dated the
+  **Friday before** (23:59 MY, in save order). Past-date simulation is read-only and cannot print/copy/save.
+- **Unsaved-change guard**: closing/leaving with unsaved base oil/premium/packaging changes prompts User 0.
+- **Reset to Last Saved** reloads the shared saved prices (not old code defaults).
+- **Margin factor**: Supplier Margin Factor fixed at **0.95** for Apical, KLK, Wing Agro — not editable
+  (display/log only; not used in any price calculation).
+- **Oillio margin % is independent per supplier** (changing Apical no longer changes KLK/Wing Agro); saved
+  on the device as soon as it is changed.
+
+### Logs
+- **Last-save-of-the-day** (not average) used in every log table (Product Table, Oil Base Table, Last 90 Days,
+  compare). Fixed the bug where two saves on one day showed half the move (+5.62 instead of +11.24).
+- Fixed **Product Table blank for Apical Shortening / Low GE**: names containing "&" are now URL-encoded.
+
+### Compare tab
+- Rebuilt: compares **equivalent products across suppliers by group**, using live FOB, Oillio/MT, Oillio/Unit,
+  profit and gap to the best FOB/MT. Groups: 20L/25L Yellow Jerry Can CP10, 20L White CP10, 20L Yellow CP8,
+  Shortening 36/39 (= KLK 36-39), 38/40 & 40/42 (= KLK 40-42), 43/47 (= KLK 42-46), 46/48, 48/52, Hpks 33.5/35.5,
+  Hpko 38/40. KLK RBD Palm Oil 36-39 shown as a different product; Low GE and label variants shown but not
+  counted as "Best". HPS Flakes and KLK Palm Stearin are different products (not compared).
+
+### Apical origin (JKT / KL)
+- Category chips, counts and the Packaging/Premium panel now follow the JKT/KL button (JKT 16 SKUs, KL 15).
+
+### Quotation: confirmation before Copy / Save PDF
+- Pop-up before **Copy** and **Save PDF**: customer, delivery period, freight (port + country + USD/FCL),
+  and per item: product/oil, packaging, Oillio margin, FOB/carton (+freight/carton), FOB/MT, FCL.
+- **Warns about missing details** (delivery period, freight port/country, product name, packaging, margin,
+  prices): red box + orange "Proceed anyway" button; green "Yes, confirm" when complete.
+
+### Freight and tabs
+- **Freight table updated from ETGB-PORT file: 638 ports** (173 rates changed, NAHA added); every port keeps its
+  own last-updated date (latest 16 Oct 2026). Freight formula unchanged: port rate ÷ cartons per container.
+- **"For Reference Only" tab removed** (entry points only; shared code kept).
+
+### Security / login
+- Passwords changed for all 3 user levels (stored in plain text in the page source — anyone can read them).
+- Login subtitle now "OPERATIONAL PRICE MANAGEMENT SYSTEM" (darker, semibold).
+
+---
+
+## [2026-10-16] — Oil Base tab, logs, balancer, simulation
+
+- Yellow base-oil box moved into its own **DAILY OIL BASE PRICE** tab; clearer save-failure message.
+- **Last 90 Days** view with green/red day-on-day changes (base oil + premium/packaging); reads the shared
+  base-oil log. Oil Base Table and Product Table (now with packaging cost, per name+packing) show green/red.
+- **Supplier FOB balancer**: key in the supplier FOB and the premium/discount is worked out (2dp, packaging
+  untouched); distinct colour chips for System vs Supplier FOB.
+- **Past-date pricing simulation** (read-only, up to 90 days); PDF, WhatsApp copy and quote image blocked while
+  simulating; save/PDF/copy buttons greyed out.
+- Temporary black camouflage overlay (28 Sep) removed.
+
+---
+
+## [2026-08-26 to 2026-09-18] — catch-up (not previously recorded)
+
+- 26 Aug: scroll-jump fixes (background sync no longer re-renders while the yellow panel is visible);
+  Packaging/Premium editor split into category tabs; cache-buster reload-loop fix.
+- 27–28 Aug: freight table refresh (637 ports) with per-port dates; **removed stale duplicate ALL_PORTS
+  declaration that was overwriting updates**; clean date-rows/value-columns history tables; day-averaged
+  compare (later replaced on 17 Oct by last-save-of-day).
+- 1 Sep: marine cargo insurance clause added to T&C then removed from CIF quotations (already included).
+- 17–18 Sep: password changes made and reverted (Bobby1/2/3 reinstated) — replaced on 17 Oct.
+
+---
+
+---
+
 ## [2026-08-25] — Price history system, base oil tracking, KLK expansion, scroll-jump investigation
 
 ### Added
