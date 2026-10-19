@@ -7,6 +7,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ## [2026-10-19] — Fix: base oil figures reverting to old values
 
+### Reverted
+- Apical 19 Oct 2026 supplier list (commit 7fb3ba7) was added and then **reverted at Joel's request**; the app is back to the
+  state before it (Apical list = 16 Oct 2026). Not applied.
+
 ### Fixed
 - **Daily Oil Base Price showing figures 2–3 weeks old instead of the last saved ones.** Cause: if the
   Oil Base (or a supplier) tab was opened before the saved prices finished loading, the sync skipped
