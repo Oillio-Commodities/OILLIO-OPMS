@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V19OCT2026E';
+  var _v='V19OCT2026F';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8288,7 +8288,7 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
   page=Math.min(Math.max(1,page),totalPages);
   var from=(page-1)*PAGE_SIZE, pageDays=days.slice(from, from+PAGE_SIZE);
 
-  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (last save of each day). Each cell shows the <b>FOB</b> (total price), <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.<br><b>FOB</b> moves with the base oil. <b>PREM</b> only moves when the supplier changed its price by MORE or LESS than the base oil move (a natural base-oil move shows in FOB only, not in PREM).</div>';
+  var html='<div style="color:var(--mut);margin-bottom:6px;font-size:.7rem">Displaying '+(from+1)+'-'+Math.min(from+PAGE_SIZE,days.length)+' of '+days.length+' results (last save of each day). Each cell shows <b>Premium/Discount</b> and <b>Packaging</b>; <span style="color:#1a7a4a;font-weight:700">&#9650; green</span> = up, <span style="color:#c0392b;font-weight:700">&#9660; red</span> = down vs the previous day.<br><b>PREM</b> only moves when the supplier changed its price by MORE or LESS than the base oil move. A natural move with the base oil is not shown here.</div>';
 
   if(!days.length){
     html+='<div style="padding:20px;text-align:center;color:var(--mut);border:1px dashed var(--bdr);border-radius:8px">No history for this packaging type/range.</div>';
@@ -8314,7 +8314,7 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
     cols.forEach(function(c){
       var p=_val(g._p[c.key]),k=_val(g._k[c.key]),fo=_val(g._f[c.key]);
       var pp=pg?_val(pg._p[c.key]):null,kp=pg?_val(pg._k[c.key]):null,fp=pg?_val(pg._f[c.key]):null;
-      var cell='<div style="font-weight:700"><span style="color:#999;font-size:.56rem;font-weight:400">FOB</span> '+(fo!=null?Number(fo).toFixed(2)+_l90Delta(fo,fp):'-')+'</div><div><span style="color:#999;font-size:.56rem">PREM</span> '+(p!=null?Number(p).toFixed(2)+_l90Delta(p,pp):'-')+'</div>';
+      var cell='<div><span style="color:#999;font-size:.56rem">PREM</span> '+(p!=null?Number(p).toFixed(2)+_l90Delta(p,pp):'-')+'</div>';
       cell+='<div><span style="color:#999;font-size:.56rem">PKG</span> '+(k!=null?Number(k).toFixed(2)+_l90Delta(k,kp):'-')+'</div>';
       html+='<td style="padding:5px 8px;text-align:right">'+cell+'</td>';
     });

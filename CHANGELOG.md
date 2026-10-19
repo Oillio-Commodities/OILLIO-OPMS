@@ -19,10 +19,8 @@ All changes to the GitHub Pages app are recorded here.
 ### Fixed
 
 ### Added
-- **Product Table now shows the FOB (total price) per day with a green ▲ / red ▼ change vs the previous day**, above
-  Premium/Discount and Packaging. Premium is only the balancing figure after the base oil move, so a supplier
-  price change that equals the base oil move shows in the FOB (and the Oil Base log) but not in the premium.
-- Product Table legend explains: FOB moves with the base oil; PREM moves only when the supplier moved beyond the base oil.
+- Product Table legend: PREM moves only when the supplier moved beyond the base oil; a natural base-oil move is not shown.
+  (A FOB line was added to the Product Table and then REMOVED at Joel's request: the log tracks supplier moves only.)
 - Apical 19 Oct list **re-applied** (it was reverted briefly by mistake; the saved 19 Oct record already used it).
 
 ### Fixed
