@@ -8,6 +8,11 @@ All changes to the GitHub Pages app are recorded here.
 ## [2026-10-19] — Apical 19 Oct supplier list; fix for base oil reverting to old values
 
 ### Added
+- **Same-day list rule (late base oils).** PK oil, PK olein, coconut etc. are usually entered later in the day (after ~1.30-3pm).
+  On the day of a supplier list (Apical 19 Oct, KLK 16 Oct), every base-oil edit re-balances all LISTED SKUs so the system FOB stays equal to
+  the supplier's list price. A late base-oil update therefore never shows up as a fake supplier move; save again and the log keeps the
+  LAST save of the day. From the next pricing day on, base moves are natural and premiums are no longer re-balanced.
+  Unlisted SKUs only move with the base (no uplift is re-applied).
 - **Apical 19 Oct 2026 supplier list** (22 rows: Jakarta table 12 + Port Klang table 9 + 40ft HPS), auto-applied on load
   (`premium = supplier FOB − base − packaging`), re-balances live when the base oil is edited, and the premium
   changes (green up / red down) are recorded under Log Reference on **Save & Log Reference**. No uplift.

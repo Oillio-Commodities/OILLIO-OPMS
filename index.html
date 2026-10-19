@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V19OCT2026F';
+  var _v='V19OCT2026G';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6930,8 +6930,8 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
   return q?name+' ('+q+')':name;
 }
 var SUP_LISTS={
-  klk:{id:'16OCT26+10b',label:'16 Oct 2026',uplift:KLK_LIST_ADJ,rows:KLK_LIST_16OCT26,name:'KLK'},
-  apical:{id:'19OCT26',label:'19 Oct 2026',uplift:0,rows:APC_LIST_19OCT26,name:'Apical'}
+  klk:{id:'16OCT26+10b',day:'2026-10-16',label:'16 Oct 2026',uplift:KLK_LIST_ADJ,rows:KLK_LIST_16OCT26,name:'KLK'},
+  apical:{id:'19OCT26',day:'2026-10-19',label:'19 Oct 2026',uplift:0,rows:APC_LIST_19OCT26,name:'Apical'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
@@ -6953,7 +6953,7 @@ function _svListTag(sup,name,packing){
   var L=SUP_LISTS[sup];if(!L||_svListOn(sup,name,packing))return '';
   return ' <span title="Not on the '+L.name+' supplier list of '+L.label+' — '+_svListNoteTxt(L)+'" style="background:#f39c12;color:#fff;font-size:.56rem;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap">&#9888; NOT ON '+L.label.toUpperCase()+' LIST &middot; '+(L.uplift?'+'+L.uplift+' ONLY':'UNCHANGED')+'</span>';
 }
-function _svApplyListAuto(sup,rebase){
+function _svApplyListAuto(sup,rebase,listedOnly){
   var L=SUP_LISTS[sup];if(!L)return null;
   var arr=getPkgArr(sup),R=_svListRef(sup);
   if(rebase||!window._listBase[sup]){window._listBase[sup]={};arr.forEach(function(r){window._listBase[sup][r.id]=r.premium;});}
@@ -6964,7 +6964,7 @@ function _svApplyListAuto(sup,rebase){
     var p=prod[row.name+'|'+row.packing];if(!p)return;
     var t=_svListTarget(sup,row.name,row.packing),b0=base[row.id];if(b0==null)b0=row.premium;
     if(t==null){ // not on the supplier list: only the market uplift (if any) on its last saved price
-      if(L.uplift){row.premium=Math.round((b0+L.uplift)*100)/100;changed++;up++;}
+      if(!listedOnly&&L.uplift){row.premium=Math.round((b0+L.uplift)*100)/100;changed++;up++;}
       return;
     }
     found++;
@@ -7180,7 +7180,11 @@ function svOnRefChange(inp){
       r.rbd_my=val-10; r.rbd_id=val-130;
     }
   });
-  try{Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k])_svApplyListAuto(k);});_svModelBanner();}catch(e){}
+  try{Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k])_svApplyListAuto(k);});
+    // SAME-DAY RULE: on the day of a supplier list, base oils that arrive later in the day (PK oil, PK olein, coconut, ...) must not
+    // look like supplier moves. Until the pricing day moves on, every listed SKU is re-balanced to the supplier's list price.
+    Object.keys(SUP_LISTS).forEach(function(k){var L=SUP_LISTS[k];if(!L||!L.day||window._listPending[k])return;if(_svRollWeekend(_svTodayMY())<=L.day)_svApplyListAuto(k,false,true);});
+    _svModelBanner();}catch(e){}
   // Surgical update only — never rebuild the whole panel here, that would
   // destroy the input the user is actively typing in and kick their cursor out.
   if(isMalaysiaCp10){
