@@ -5,18 +5,7 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
-## [2026-10-19] — Apical 19 Oct supplier list; fix for base oil reverting to old values
-
-### Added
-- **Apical 19 Oct 2026 supplier list** (22 rows: Jakarta table 12 + Port Klang table 9 + 40ft HPS), auto-applied on load
-  (`premium = supplier FOB − base − packaging`), re-balances live when the base oil is edited, and the premium
-  changes (green up / red down) are recorded under Log Reference on **Save & Log Reference**. No uplift.
-  New prices: Shortening 36/39 1,200 · 38/40&40/42 1,195 · 43/47 1,195 · 46/48 1,190 · 48/52 1,175 · 18kg Spread Fat
-  1,325 · 18kg RCNO 2,150 · HCNO 2,215 · HPS 20ft 1,260 / 40ft 1,275 · Jerry can CP10 1,365 / CP8 1,375 · Hpks 2,595 ·
-  Hpko 38/40 2,260 / 40/42 2,265 · Hpkl 41/43 2,120 · CBR 2,010 · Low GE 36/39 1,218 · 38/42 1,225 · 43/48 & 46/48 1,230 · 48/52 1,230.
-  Unlisted Apical SKUs keep their premium (they move only with the base oil).
-
-### Fixed
+## [2026-10-19] — Fix: base oil figures reverting to old values
 
 ### Fixed
 - **Daily Oil Base Price showing figures 2–3 weeks old instead of the last saved ones.** Cause: if the
