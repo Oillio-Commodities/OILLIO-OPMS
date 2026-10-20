@@ -5,6 +5,17 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-20] — KLK 20 Oct supplier list
+
+- **KLK 20 Oct 2026 list** (59 rows) loaded; auto-applied on load, premium = supplier FOB − base − packaging, same-day rule applies,
+  recorded under Log Reference on Save & Log Reference. **No uplift** (the +USD 10 on the 16 Oct list was a one-off, now removed).
+- Rows NOT loaded because the supplier file showed broken prices (stearin base missing): RBD Palm Stearin (9), PFAD (8),
+  Shortening 52-56 / 48-52 / 46-48 / 42-46 / 40-42 / 36-39 (6), Margarine All Purpose and Pastry (2). They stay unlisted and move with the base oil
+  until a corrected list is sent. Shortening 33-36 and Butter Oil Substitute are loaded. New SKU: Veg Ghee 20KG REC-TIN now on the list.
+  CP6 900ML is not on the 20 Oct list (unlisted).
+
+---
+
 ## [2026-10-20] — Apical 20 Oct supplier list
 
 - **Apical 20 Oct 2026 list** (22 rows) loaded; auto-applied on load, premium = supplier FOB − base − packaging, re-balances live as base
