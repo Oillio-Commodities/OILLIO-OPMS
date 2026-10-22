@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-23] — Dairies card uses the real can pictures
+
+- Dairies Products card now shows the Nutri Sweetened Condensed Milk and Oiliana Evaporated Milk cans, cut from Joel's Global Dairy Solutions poster
+  (`assets/dairy.png`); the drawn icon is removed. The right can's bottom was hidden behind a bowl in the poster and was rebuilt.
+
+---
+
 ## [2026-10-23] — Division page: logos redone, dairy picture
 
 - Nutri and Oiliana logos re-cut from Joel's full-size logo images: Oiliana's gold swoosh and Nutri's top and bottom green swooshes are now complete.
