@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V22OCT2026A';
+  var _v='V22OCT2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8155,7 +8155,12 @@ function _renderOilBaseTable(rawRows, fromDate, toDate, supplier, page){
     var dateOnly=d.toLocaleDateString('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric'});
     var countBadge=r._updateCount>1?' <span style="font-weight:400;color:#888;font-size:.62rem">('+r._updateCount+' updates, last shown)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
-    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
+    var gapNote='';
+    if(pg){var pk=days[from+i+1],nx=new Date(pk+'T00:00:00Z');do{nx.setUTCDate(nx.getUTCDate()+1);}while(nx.getUTCDay()===0||nx.getUTCDay()===6);
+      var nk=nx.toISOString().slice(0,10);
+      if(nk<day){var _f=function(k){return new Date(k+'T00:00:00Z').toLocaleDateString('en-GB',{timeZone:'UTC',day:'2-digit',month:'short'});};
+        gapNote='<br><span style="font-weight:700;color:#e67e22;font-size:.58rem">changes shown vs '+_f(pk)+' &middot; '+_f(nk)+(nk<_svPrevDay(day)?'&ndash;'+_f(_svPrevDay(day)):'')+' not saved</span>';}}
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+gapNote+'</td>';
     OIL_TABLE_COLS.forEach(function(c){
       var v=r[c.key];
       html+='<td style="padding:5px 8px;text-align:right">'+(v!=null?Number(v).toFixed(2)+_l90Delta(v,prevRow?prevRow[c.key]:null):'-')+'</td>';
@@ -8242,6 +8247,7 @@ function svViewProductTable(fromDate, toDate, page){
   .catch(function(){ resultEl.innerHTML='<div style="color:#c0392b;padding:10px">Failed to load.</div>'; });
 }
 
+function _svPrevDay(day){var d=new Date(day+'T00:00:00Z');do{d.setUTCDate(d.getUTCDate()-1);}while(d.getUTCDay()===0||d.getUTCDay()===6);return d.toISOString().slice(0,10);}
 function _renderProductTable(rows, cols, fromDate, toDate, page){
   var resultEl=document.getElementById('ptResult');
   var PAGE_SIZE=10;
@@ -8288,7 +8294,12 @@ function _renderProductTable(rows, cols, fromDate, toDate, page){
     var updCount=Object.keys(g._updateDates).length;
     var countBadge=updCount>1?' <span style="font-weight:400;color:#888;font-size:.6rem">('+updCount+' upd, last shown)</span>':'';
     html+='<tr style="background:'+bg+';border-top:1px solid #ddd">';
-    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+'</td>';
+    var gapNote='';
+    if(pg){var pk=days[from+i+1],nx=new Date(pk+'T00:00:00Z');do{nx.setUTCDate(nx.getUTCDate()+1);}while(nx.getUTCDay()===0||nx.getUTCDay()===6);
+      var nk=nx.toISOString().slice(0,10);
+      if(nk<day){var _f=function(k){return new Date(k+'T00:00:00Z').toLocaleDateString('en-GB',{timeZone:'UTC',day:'2-digit',month:'short'});};
+        gapNote='<br><span style="font-weight:700;color:#e67e22;font-size:.58rem">changes shown vs '+_f(pk)+' &middot; '+_f(nk)+(nk<_svPrevDay(day)?'&ndash;'+_f(_svPrevDay(day)):'')+' not saved</span>';}}
+    html+='<td style="padding:5px 8px;position:sticky;left:0;background:'+bg+';font-weight:600">'+dateOnly+countBadge+gapNote+'</td>';
     cols.forEach(function(c){
       var p=_val(g._p[c.key]),k=_val(g._k[c.key]),fo=_val(g._f[c.key]);
       var pp=pg?_val(pg._p[c.key]):null,kp=pg?_val(pg._k[c.key]):null,fp=pg?_val(pg._f[c.key]):null;

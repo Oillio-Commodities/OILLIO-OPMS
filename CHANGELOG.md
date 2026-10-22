@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-22] — Product Table: skipped-day label
+
+- When a day was not saved (e.g. 21 Oct), the next row's PREM change is versus the last SAVED day, so it can contain the missed day's supplier move.
+  The date cell now says "changes shown vs 20 Oct · 21 Oct not saved" so the +/− is not misread as that day's move. Logic unchanged.
+
+---
+
 ## [2026-10-22] — Apical 22 Oct supplier list
 
 - **Apical 22 Oct 2026 list** (22 rows) replaces the 21 Oct list; auto-applied on load, premium = supplier FOB − base − packaging, same-day rule, no uplift.
