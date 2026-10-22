@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V22OCT2026B';
+  var _v='V23OCT2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -385,6 +385,32 @@ body.user-mode #userPdfBar { display:flex !important; }
 }
 #userPdfBar h2 { font-size:1rem; font-weight:800; margin:0; }
 #userPdfBar p  { font-size:.82rem; opacity:.8; margin:0; }
+
+/* ===== DIVISION SELECT PAGE (after login) ===== */
+#divOverlay{position:fixed;inset:0;z-index:999990;display:none;flex-direction:column;align-items:center;overflow:auto;padding:28px 18px 24px;box-sizing:border-box;
+  background:radial-gradient(1200px 600px at 50% -10%,#fff8e1 0%,#fffdf6 45%,#f1f7ee 100%);font-family:inherit}
+#divOverlay .dv-brands{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:6px}
+#divOverlay .dv-brands img{display:block;height:110px;width:auto;max-width:42vw;object-fit:contain}
+#divOverlay .dv-sep{width:1px;height:62px;background:linear-gradient(#0000,#c9b46a,#0000)}
+#divOverlay .dv-title{margin:26px 0 4px;font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:#1b2a3a;font-weight:700;text-align:center}
+#divOverlay .dv-sub{font-size:.86rem;color:#6b7a6b;margin-bottom:22px;text-align:center}
+#divOverlay .dv-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:100%;max-width:880px}
+#divOverlay .dv-card{position:relative;background:#fff;border:1.5px solid #e3e8dc;border-radius:22px;padding:22px 20px 20px;text-align:center;cursor:pointer;
+  box-shadow:0 6px 26px rgba(30,60,20,.09);transition:transform .18s,box-shadow .18s,border-color .18s;display:flex;flex-direction:column;align-items:center}
+#divOverlay .dv-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(30,90,30,.18);border-color:#3a9430}
+#divOverlay .dv-pics{height:300px;display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:14px;width:100%}
+#divOverlay .dv-pics img{display:block;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(80,60,0,.22))}
+#divOverlay .dv-h{font-size:1.35rem;font-weight:800;color:#145214;margin:0 0 4px}
+#divOverlay .dv-d{font-size:.8rem;color:#667;margin:0 0 14px;min-height:2.4em}
+#divOverlay .dv-btn{display:inline-block;padding:11px 26px;border-radius:30px;background:linear-gradient(135deg,#3a9430,#1a6b1a);color:#fff;font-weight:700;font-size:.85rem;letter-spacing:.05em}
+#divOverlay .dv-card.soon{cursor:default;background:#fbfbf8}
+#divOverlay .dv-card.soon:hover{transform:none;box-shadow:0 6px 26px rgba(30,60,20,.09);border-color:#e3e8dc}
+#divOverlay .dv-card.soon .dv-h{color:#46607a}
+#divOverlay .dv-card.soon .dv-btn{background:#e6ebf0;color:#6b7a8a}
+#divOverlay .dv-ph{width:150px;height:200px;border:2px dashed #c5d3e0;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:4rem;color:#9db3c8;background:#f4f8fc;align-self:center}
+#divOverlay .dv-foot{margin-top:auto;padding-top:20px;font-size:.72rem;color:#8a948a}
+#divOverlay .dv-foot a{color:#3a7a3a;cursor:pointer;text-decoration:underline;margin-left:10px}
+@media(max-width:640px){#divOverlay .dv-grid{grid-template-columns:1fr;gap:16px}#divOverlay .dv-brands img{height:78px}#divOverlay .dv-pics{height:230px}}
 #authOverlay{display:none}
 /* SIMULATION LOCK: while a past date is loaded, every save / PDF / copy button is greyed out and unclickable */
 body.sim-on button[onclick*="svSaveRef"],body.sim-on button[onclick*="svResetRef"],body.sim-on button[onclick*="copyReport"],body.sim-on button[onclick*="doPrint"],body.sim-on button[onclick*="openPrintPreview"],body.sim-on button[onclick*="downloadPdf"],body.sim-on button[onclick*="generatePDF"],body.sim-on button[onclick*="copyAsImage"],body.sim-on button[onclick*="svLoadList"],body.sim-on button[onclick*="svApplyListAll"]{opacity:.3!important;filter:grayscale(1)!important;pointer-events:none!important;cursor:not-allowed!important}
@@ -395,6 +421,26 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 <div id="verBanner" style="display:none"></div>
 <div id="modelBanner" style="display:none;position:sticky;top:0;z-index:8999;background:#fff3cd;color:#7a4b00;border-bottom:2px solid #f0a500;padding:9px 14px;font-size:.78rem;font-weight:600;text-align:center"></div>
 <div id="simBanner" style="display:none;position:sticky;top:0;z-index:9000;background:#c0392b;color:#fff;padding:9px 14px;font-size:.78rem;font-weight:700;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)"></div>
+<div id="divOverlay">
+  <div class="dv-brands"><img src="assets/nutri.png" alt="Nutri"><div class="dv-sep"></div><img src="assets/oiliana.png" alt="Oiliana"></div>
+  <div class="dv-title">Operational Price Management System</div>
+  <div class="dv-sub">Select a division to continue</div>
+  <div class="dv-grid">
+    <div class="dv-card" onclick="chooseDivision('oil')" role="button" tabindex="0">
+      <div class="dv-pics"><img src="assets/bottle.png" alt="Oiliana cooking oil bottle" style="height:92%"><img src="assets/jug.png" alt="Oiliana cooking oil 5L" style="height:100%"></div>
+      <h2 class="dv-h">Oil &amp; Fats</h2>
+      <p class="dv-d">Palm oil, shortening, specialty fats &amp; packed oils &mdash; pricing, quotes and logs</p>
+      <span class="dv-btn">ENTER &rarr;</span>
+    </div>
+    <div class="dv-card soon" onclick="chooseDivision('dairy')" role="button" tabindex="0">
+      <div class="dv-pics"><div class="dv-ph">&#129371;</div></div>
+      <h2 class="dv-h">Dairies Products</h2>
+      <p class="dv-d">Dairy range &mdash; pricing and structure to be developed</p>
+      <span class="dv-btn">COMING SOON</span>
+    </div>
+  </div>
+  <div class="dv-foot">Nutri &middot; Oiliana <a onclick="doLogout()">Log out</a></div>
+</div>
 <div id="authOverlay" style="position:fixed;inset:0;z-index:999999;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;min-height:100vh">
   <!-- Oillio Logo -->
   <div style="margin-bottom:24px;display:flex;flex-direction:column;align-items:center;gap:0">
@@ -418,9 +464,19 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 
   // Always define doLogout globally FIRST
   window.doLogout=function(){
-    sessionStorage.removeItem(SK);
+    sessionStorage.removeItem(SK);try{sessionStorage.removeItem('oillio_div');}catch(e){}
     location.reload();
   };
+
+// ===== Division select (shown after login) =====
+window.showDivisions=function(){var o=document.getElementById('divOverlay');if(o)o.style.display='flex';};
+window.chooseDivision=function(d){
+  if(d==='dairy'){try{showToast('Dairies Products \u2014 coming soon',3000);}catch(e){}return;}
+  try{sessionStorage.setItem('oillio_div','oil');}catch(e){}
+  var o=document.getElementById('divOverlay');if(o)o.style.display='none';
+};
+window.backToDivisions=function(){try{sessionStorage.removeItem('oillio_div');}catch(e){}showDivisions();};
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('dv-card')){e.preventDefault();document.activeElement.click();}});
 
   var stored=sessionStorage.getItem(SK);
   if(stored==='0'||stored==='1'||stored==='2'){
@@ -457,6 +513,7 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
     window.IS_ADMIN=(lvl<=1);
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
+    try{ if(sessionStorage.getItem('oillio_div')!=='oil') showDivisions(); }catch(e){ showDivisions(); }
     // Load latest ref prices from Supabase (instant, real-time)
     try { _syncLoad(function(d) { if(d) _syncApply(d); }); } catch(e) {}
     // keep retrying until the saved prices have really been loaded (never silently stay on old figures)
@@ -513,6 +570,7 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
   <!-- Right controls -->
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
     <span id="roleBadge" class="role-badge" style="display:none"></span>
+    <button onclick="backToDivisions()" title="Back to division select" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);color:#fff;border-radius:16px;padding:5px 11px;font-size:.7rem;font-weight:700;cursor:pointer;margin-right:6px">&#8962; Divisions</button>
     <button onclick="doLogout()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);color:#fff;border-radius:16px;padding:5px 11px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap">&#x23CF; Logout</button>
   </div>
 </header>

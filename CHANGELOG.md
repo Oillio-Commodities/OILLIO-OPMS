@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-23] — Division select page after login
+
+- New page after login: **Nutri | Oiliana** logos top-centre, then two cards: **Oil & Fats** (enters the existing pricing app, unchanged) and
+  **Dairies Products** (shows "Coming soon" for now). Artwork in `assets/` (nutri.png, oiliana.png, bottle.png, jug.png, cut from Joel's Oiliana poster).
+- The choice is remembered for the browser session (a refresh stays in the app); a new **⌂ Divisions** button in the header returns to this page. Log out clears it.
+- Pricing, logs and supplier-list logic untouched.
+
+---
+
 ## [2026-10-22] — Product Table: skipped-day label
 
 - When a day was not saved (e.g. 21 Oct), the next row's PREM change is versus the last SAVED day, so it can contain the missed day's supplier move.
