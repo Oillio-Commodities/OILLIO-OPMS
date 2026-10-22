@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-22] — Apical 22 Oct supplier list
+
+- **Apical 22 Oct 2026 list** (22 rows) replaces the 21 Oct list; auto-applied on load, premium = supplier FOB − base − packaging, same-day rule, no uplift.
+  Changes vs 21 Oct: Shortening 36/39 1,225→1,220 · 38/40&40/42 1,220→1,215 · 43/47 1,220→1,215 · 46/48 1,215→1,210 · Spread Fat 1,355→1,350 ·
+  Jerry can CP10 1,395→1,390 · CP8 1,405→1,400 · Low GE 36/39 1,243→1,238 · 38/42 1,250→1,245 · 43/48 1,255→1,250 · 46/48 1,255→1,250.
+  Unchanged: Shortening 48/52 1,200 · RCNO 2,140 · HCNO 2,205 · HPS 1,285/1,300 · Hpks 2,620 · Hpko 2,285/2,290 · Hpkl 2,145 · CBR 2,035 · Low GE 48/52 1,255.
+
+---
+
 ## [2026-10-21] — Apical 21 Oct supplier list
 
 - **Apical 21 Oct 2026 list** (22 rows) replaces the 20 Oct list; auto-applied on load, premium = supplier FOB − base − packaging, same-day rule, no uplift.
