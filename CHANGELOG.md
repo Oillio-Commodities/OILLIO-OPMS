@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-23] — Division page: logos redone, dairy picture
+
+- Nutri and Oiliana logos re-cut from Joel's full-size logo images: Oiliana's gold swoosh and Nutri's top and bottom green swooshes are now complete.
+- Dairies Products card now has a picture (milk bottle, yogurt, cheese, butter; `assets/dairy.svg`) instead of an empty placeholder. Replace with real dairy packaging photos when available.
+
+---
+
 ## [2026-10-23] — Division select page after login
 
 - New page after login: **Nutri | Oiliana** logos top-centre, then two cards: **Oil & Fats** (enters the existing pricing app, unchanged) and
