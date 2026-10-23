@@ -5,6 +5,16 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## 2026-10-23 (V23OCT2026F) - Dairies division + shipment periods to Mar 2027
+- Dairies Products card is now live: F&B Nov'26 list (15 Oct, valid till 30 Oct, FOB Port Klang) with market selector (ASEAN / USA / Middle East / Other).
+- Model: offer FOB/ctn = supplier FOB (+ easy-open) x (1 + Oillio margin, default 5%). Internal columns (User 0/1): supplier FOB, est. cost (FOB x 0.95), room to push per ctn and per MT, target at est. cost, change vs previous list.
+- Easy-open option per line (+0.60 x24, +1.20 x48; none for 1kg/pouch/BIB/bottle) or on all eligible lines. Loading per 20ft (ctns and MT) on every line; 40ft shown for milk powder.
+- Quotation by entering FCL per line (else it is a price list). WhatsApp copy text + PDF (Oillio header/footer), FOB T&C: Incoterms, payment, shipment, delivery lead time, MOQ, validity, storage, documents, packaging, price revision, risk.
+- Lines without a supplier price (SCM 1.3%, SCM 2.3% outside USA/ME, milk powder, evaporated outside Other/ASEAN-EC) are listed under 'Awaiting supplier price'.
+- User 2 cannot set margin below 2.5% (same rule as oil side). Internal cost columns hidden for User 2.
+- Shipment / Delivery Period (oil side) now runs to March 2027.
+- PDF footer image moved to one shared constant (no change to the oil PDF).
+
 ## 2026-10-23 (V23OCT2026E) - Apical list 23 Oct
 - Apical 23 Oct 2026 list loaded (22 rows: Jakarta 12, Port Klang 10). No uplift. Auto-applies; press Save & Log Reference once.
 - Vs 22 Oct: Jakarta shortenings -5; Spread Fat -20; RCNO +20; HCNO +20; HPS -5; Jerry can CP10 -70 / CP8 -70. Port Klang HPKS/HPKO/HPKL/CBR unchanged; Low GE -5.
