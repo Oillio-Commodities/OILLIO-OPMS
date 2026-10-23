@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## 2026-10-23 (V23OCT2026E) - Apical list 23 Oct
+- Apical 23 Oct 2026 list loaded (22 rows: Jakarta 12, Port Klang 10). No uplift. Auto-applies; press Save & Log Reference once.
+- Vs 22 Oct: Jakarta shortenings -5; Spread Fat -20; RCNO +20; HCNO +20; HPS -5; Jerry can CP10 -70 / CP8 -70. Port Klang HPKS/HPKO/HPKL/CBR unchanged; Low GE -5.
+
 ## [2026-10-23] — Copyright footer
 
 - "© 2026 Oillio Commodities Sdn Bhd. All rights reserved." shown small at the bottom right of every page (login, division select, and the app). Hidden when printing/PDF.
