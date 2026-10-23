@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## [2026-10-23] — Copyright footer
+
+- "© 2026 Oillio Commodities Sdn Bhd. All rights reserved." shown small at the bottom right of every page (login, division select, and the app). Hidden when printing/PDF.
+
+---
+
 ## [2026-10-23] — Dairies card uses the real can pictures
 
 - Dairies Products card now shows the Nutri Sweetened Condensed Milk and Oiliana Evaporated Milk cans, cut from Joel's Global Dairy Solutions poster
