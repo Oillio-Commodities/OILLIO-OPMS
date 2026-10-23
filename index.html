@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23OCT2026F';
+  var _v='V23OCT2026G';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -414,6 +414,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 #dairyView .up{color:#1a7a4a;font-weight:700}#dairyView .dn{color:#c0392b;font-weight:700}
 #dairyView .dy-m,#dairyView .dy-q{width:58px;padding:4px 5px;border:1.5px solid #cbd5cb;border-radius:6px;text-align:right;font-size:.78rem}
 #dairyView .dy-t select{min-width:118px;padding:4px;border:1.5px solid #cbd5cb;border-radius:6px;font-size:.74rem}
+#dairyView .dy-sm{border:1px solid #1a5c18;background:#fff;color:#1a5c18;border-radius:6px;padding:4px 10px;font-weight:700;font-size:.72rem;cursor:pointer}
 #dairyView .dy-hint{font-size:.7rem;color:#667;margin-top:6px}
 #dairyView textarea{width:100%;min-height:300px;font-family:Consolas,monospace;font-size:.76rem;border:1.5px solid #cbd5cb;border-radius:8px;padding:10px;box-sizing:border-box;background:#fbfdfb}
 #dairyView .dy-act{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
@@ -8857,8 +8858,19 @@ var ROWS=[
  {id:'p5',f:'pwd',spec:'Instant full cream',pk:'6 x 2kg tin',u:6,g:2000,c20:828,c40:1925,t:'tin',P:{}},
  {id:'p6',f:'pwd',spec:'Full cream (bulk)',pk:'25kg x 1 kraft bag',u:1,g:25000,c20:620,c40:1100,t:'bag',P:{}}
 ];
-var PREV={}; // previous list (29 Sep 2026) prices by row|market. The 15 Oct list is identical, so every line shows "=". On the next list, replace PREV with the 15 Oct prices.
-ROWS.forEach(function(r){MK.forEach(function(k){if(r.P[k]!=null)PREV[r.id+'|'+k]=r.P[k];});});
+// ---- PRICE HISTORY: one entry per supplier list that is no longer current (oldest first). ----
+// DRILL for a new supplier list: (1) copy the CURRENT list's prices into HIST as a new entry (literal values), (2) update DAIRY_INFO and the P prices in ROWS.
+// The change log below is computed from consecutive lists, so every change is recorded with date, old price, new price.
+var HIST=[{id:'29SEP26',date:'29 Sep 2026',valid:"Nov'26 shipment",P:{"s15z|USA":12.2,"s15z|ME":12.2,"s15z|OTH":12,"s15a|ASEAN":22.5,"s15a|ME":22.7,"s15a|OTH":22.5,"s15b|ASEAN":26.5,"s15b|ME":26.2,"s15b|OTH":26.2,"s15c|ASEAN":21.8,"s15c|OTH":21,"s15d|OTH":24.5,"s18z|USA":12.5,"s18z|ME":12.5,"s18z|OTH":12.6,"s18a|ASEAN":23,"s18a|ME":23.2,"s18a|OTH":23,"s18b|ASEAN":27.3,"s18b|ME":27.2,"s18b|OTH":27.2,"s18c|ASEAN":22.3,"s18c|OTH":22,"s18d|OTH":25,"s23z|USA":13,"s23z|ME":13,"s23a|ME":24.2,"s23b|ME":28.2,"e10a|ASEAN":22.8,"e10a|OTH":22.6,"e3a|OTH":12.4,"e3b|OTH":12.5,"e3c|OTH":22.5,"e56a|OTH":15,"e56b|OTH":15,"e56c|OTH":28.2,"e56d|OTH":19}}];
+function curSnap(){var o={};ROWS.forEach(function(r){MK.forEach(function(k){if(r.P[k]!=null)o[r.id+'|'+k]=r.P[k];});});return o;}
+function allLists(){return HIST.concat([{id:DAIRY_INFO.id,date:DAIRY_INFO.date,valid:DAIRY_INFO.validTill,P:curSnap()}]);}
+function prevPrice(id,mk){var L=allLists();return L.length<2?null:L[L.length-2].P[id+'|'+mk];}
+function rowOf(id){for(var i=0;i<ROWS.length;i++)if(ROWS[i].id===id)return ROWS[i];return null;}
+function changeLog(){var L=allLists(),out=[];
+  for(var i=1;i<L.length;i++){var a=L[i-1],b=L[i],keys={};Object.keys(a.P).concat(Object.keys(b.P)).forEach(function(k){keys[k]=1;});
+    Object.keys(keys).forEach(function(k){var pa=a.P[k],pb=b.P[k];if(pa===pb)return;var p=k.split('|'),r=rowOf(p[0]);if(!r)return;
+      out.push({listId:b.id,date:b.date,from:a.date,mk:p[1],r:r,old:pa==null?null:pa,nw:pb==null?null:pb});});}
+  return out.reverse();}
 var PERIODS=["November 2026","LH November / FH December 2026","December 2026","LH December 2026 / FH January 2027","January 2027","LH January / FH February 2027","February 2027","LH February / FH March 2027","March 2027"];
 
 // ---- customer-facing terms (adapted from the supplier's terms) - edit here ----
@@ -8904,7 +8916,7 @@ function calc(r,mk){
   var est=r4(fob*(1-D.supM/100)),room=r4(fob-est);
   var off=r4(fob*(1+m));var kg=kgc(r);
   var frU=D.fr>0?r4(D.fr/r.c20):0;
-  var pv=PREV[r.id+'|'+mk];
+  var pv=prevPrice(r.id,mk);
   return {base:base,eo:eo,sur:sur,fob:fob,est:est,room:room,target:r4(est*(1+m)),off:off,offMT:r4(off/kg*1000),frU:frU,tot:r4(off+frU),
     totMT:r4((off+frU)/kg*1000),kg:kg,mt20:r4(kg*r.c20/1000),d:pv==null?null:r4(base-pv),m:m*100};
 }
@@ -8934,6 +8946,7 @@ function build(){
   '<div class="dy-tw"><table class="dy-t" id="dyTbl"></table></div>'+
   '<div class="dy-hint">Enter FCL (20ft) in the last column to add a line to the quotation. Lines with 0 FCL show as a price list.</div></div>'+
   '<details class="dy-card" id="dyAw"><summary class="dy-h" style="cursor:pointer"><span id="dyAwT"></span></summary><div class="dy-tw"><table class="dy-t" id="dyAwTbl"></table></div></details>'+
+  '<details class="dy-card" id="dyHist"><summary class="dy-h" style="cursor:pointer"><span id="dyHistT"></span></summary><div id="dyHistB"></div></details>'+
   '<div class="dy-card"><div class="dy-h">Report <small id="dyRptMode"></small></div>'+
   '<textarea id="dyTxt" readonly></textarea>'+
   '<div class="dy-act"><button class="g" onclick="dyCopy()">📋 Copy for WhatsApp</button><button class="b" id="dyPdfBtn" onclick="dyPdf()">💾 Save PDF</button></div></div>'+
@@ -8962,7 +8975,7 @@ function render(){
     h+='<td class="r">'+fm(r.c20,0)+' ctn<div class="dim">'+fm(c.mt20,2)+' MT</div></td>';
     if(I){
       h+='<td class="r dy-i">'+fm(c.fob)+(c.eo?'<div class="dim">incl. EO</div>':'')+'</td><td class="r dy-i">'+fm(c.est)+'</td><td class="r dy-i">'+fm(c.room)+'<div class="dim">'+fm(c.room/c.kg*1000,0)+'/MT</div></td><td class="r dy-i">'+fm(c.target)+'</td>'+
-        '<td class="r dy-i">'+(c.d==null?'<span class="dim">new</span>':(c.d===0?'<span class="dim">=</span>':'<span class="'+(c.d>0?'up':'dn')+'">'+(c.d>0?'+':'')+fm(c.d)+'</span>'))+'</td>';
+        '<td class="r dy-i" title="'+esc(histTip(r.id,mk))+'">'+(c.d==null?'<span class="dim">new</span>':(c.d===0?'<span class="dim">=</span>':'<span class="'+(c.d>0?'up':'dn')+'">'+(c.d>0?'+':'')+fm(c.d)+'</span>'))+'</td>';
     }
     h+='<td class="r"><input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></td>';
     h+='<td class="r"><b>'+fm(c.off)+'</b></td><td class="r">'+fm(c.offMT)+'</td>';
@@ -8973,9 +8986,38 @@ function render(){
   $('dyAwT').textContent='Awaiting supplier price for '+MK_LBL[mk]+' ('+aw.length+' lines) ▾';
   $('dyAwTbl').innerHTML='<thead><tr><th>Product</th><th>Pack</th><th class="r">Load / 20ft</th><th class="r">Load / 40ft</th></tr></thead><tbody>'+aw.map(function(r){
     return'<tr><td>'+esc(name(r))+'</td><td>'+esc(r.pk)+'</td><td class="r">'+fm(r.c20,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c20/1000,2)+' MT)</span></td><td class="r">'+(r.c40?fm(r.c40,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c40/1000,2)+' MT)</span>':'&mdash;')+'</td></tr>';}).join('')+'</tbody>';
+  try{renderHist();}catch(e){console.error(e);}
   $('dyTxt').value=buildText();
   var q=sel().length;$('dyRptMode').textContent=q?'— Quotation ('+q+' line'+(q>1?'s':'')+')':'— Price list (no FCL entered)';
 }
+
+function renderHist(){
+  var L=allLists(),ch=changeLog(),mk=D.histAll?null:D.market,vis_=ch.filter(function(c){return !mk||c.mk===mk;});
+  var lastChg=ch.length?ch[0].date:'none yet';
+  $('dyHistT').textContent='Price history & change log \u2014 '+L.length+' lists on record \u00B7 '+ch.length+' price change'+(ch.length===1?'':'s')+' \u00B7 last change: '+lastChg+' \u25BE';
+  var h='<div class="dy-hint" style="margin-bottom:6px">Every supplier list is kept. Any price that moves, appears or disappears between two lists is recorded here (green = price up, red = price down). All prices are supplier FOB Port Klang, USD per carton.</div>';
+  h+='<div class="dy-tw"><table class="dy-t"><thead><tr><th>List</th><th>Date</th><th>Valid</th><th class="r">Priced lines</th><th class="r">Changes vs previous</th></tr></thead><tbody>';
+  for(var i=L.length-1;i>=0;i--){var n=Object.keys(L[i].P).length,c=i===0?'\u2014 (first on record)':ch.filter(function(x){return x.listId===L[i].id;}).length;
+    h+='<tr><td>'+esc(L[i].id)+(i===L.length-1?' <b>(current)</b>':'')+'</td><td>'+esc(L[i].date)+'</td><td>'+esc(L[i].valid||'')+'</td><td class="r">'+n+'</td><td class="r">'+c+'</td></tr>';}
+  h+='</tbody></table></div>';
+  h+='<div style="margin:10px 0 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:.8rem;color:#1a5c18">Change log</b>'+
+    '<label style="font-size:.72rem"><input type="checkbox" '+(D.histAll?'checked':'')+' onchange="dyHistAll(this.checked)"> show all markets (otherwise '+esc(MK_LBL[D.market])+' only)</label>'+
+    '<button class="dy-sm" onclick="dyCsv()">\u2B07 Download CSV</button></div>';
+  if(!vis_.length)h+='<div class="dy-hint">No price changes recorded'+(mk?' for '+esc(MK_LBL[mk]):'')+'. Prices on the latest list are the same as the previous list.</div>';
+  else{h+='<div class="dy-tw"><table class="dy-t"><thead><tr><th>New list</th><th>Market</th><th>Product</th><th>Pack</th><th class="r">Old /ctn</th><th class="r">New /ctn</th><th class="r">Change /ctn</th><th class="r">%</th><th class="r">Change /MT</th></tr></thead><tbody>';
+    vis_.forEach(function(c){var kg=kgc(c.r),d=(c.old==null||c.nw==null)?null:r4(c.nw-c.old);
+      h+='<tr><td>'+esc(c.date)+'</td><td>'+esc(MK_LBL[c.mk])+'</td><td>'+esc(name(c.r))+'</td><td>'+esc(c.r.pk)+'</td><td class="r">'+(c.old==null?'\u2014':fm(c.old))+'</td><td class="r">'+(c.nw==null?'\u2014':fm(c.nw))+'</td>'+
+      (d==null?'<td class="r" colspan="3"><b>'+(c.old==null?'NEW line':'REMOVED')+'</b></td>':'<td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d)+'</span></td><td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d/c.old*100,1)+'%</span></td><td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d/kg*1000,0)+'</span></td>')+'</tr>';});
+    h+='</tbody></table></div>';}
+  $('dyHistB').innerHTML=h;
+}
+window.dyHistAll=function(v){D.histAll=!!v;var o=$('dyHist').open;render();$('dyHist').open=o;};
+window.dyCsv=function(){var ch=changeLog(),rows=[['New list date','Previous list date','Market','Product','Pack','Old USD/ctn','New USD/ctn','Change USD/ctn','Change %','Change USD/MT','Status']];
+  ch.forEach(function(c){var kg=kgc(c.r),d=(c.old==null||c.nw==null)?null:r4(c.nw-c.old);rows.push([c.date,c.from,MK_LBL[c.mk],name(c.r),c.r.pk,c.old==null?'':c.old,c.nw==null?'':c.nw,d==null?'':d,d==null?'':fm(d/c.old*100,2),d==null?'':fm(d/kg*1000,2).replace(/,/g,''),c.old==null?'NEW':c.nw==null?'REMOVED':(d>0?'UP':'DOWN')]);});
+  if(rows.length===1)rows.push(['No price changes recorded']);
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(x){x=String(x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Oillio_Dairies_Price_Changes_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);};
+function histTip(id,mk){return allLists().map(function(l){var p=l.P[id+'|'+mk];return l.date+': '+(p==null?'-':fm(p));}).join('  |  ');}
 function sel(){return vis().filter(function(r){return D.rows[r.id].fcl>0;});}
 window.dyMarket=function(k){D.market=k;render();};
 window.dyRow=function(id,f,v){var s=D.rows[id];if(f==='eo')s.eo=!!v;else if(f==='fcl'){s.fcl=Math.max(0,parseInt(v)||0);}else if(f==='mgn'){if(v===''||v==null)s.mgn=null;else{var n=clampMargin(parseFloat(v),true);s.mgn=n;}}render();};
@@ -9102,7 +9144,7 @@ window.openDairies=function(){
 };
 window.dairyBack=function(){var v=$('dairyView');if(v)v.style.display='none';try{sessionStorage.removeItem('oillio_div');}catch(e){}if(window.showDivisions)showDivisions();};
 window.dairyHide=function(){var v=$('dairyView');if(v)v.style.display='none';};
-window._dairyTest={D:D,ROWS:ROWS,calc:calc,buildText:buildText,vis:vis,awaiting:awaiting};
+window._dairyTest={HIST:HIST,changeLog:changeLog,allLists:allLists,D:D,ROWS:ROWS,calc:calc,buildText:buildText,vis:vis,awaiting:awaiting};
 })();
 </script>
 </body>

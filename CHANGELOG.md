@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## 2026-10-23 (V23OCT2026G) - Dairies price history & change log
+- Every supplier list is kept (HIST in the Dairies block; 29 Sep + 15 Oct on record). Any price that moves, is added or removed between two lists is logged: date, market, product, pack, old / new per ctn, change per ctn, %, per MT (green up / red down).
+- 'vs prev list' column in the price table now reads from the history; hover shows each list's price. CSV download of the whole change log.
+- New-list drill: copy the current prices into HIST as a literal entry, then update DAIRY_INFO and ROWS prices.
+
 ## 2026-10-23 (V23OCT2026F) - Dairies division + shipment periods to Mar 2027
 - Dairies Products card is now live: F&B Nov'26 list (15 Oct, valid till 30 Oct, FOB Port Klang) with market selector (ASEAN / USA / Middle East / Other).
 - Model: offer FOB/ctn = supplier FOB (+ easy-open) x (1 + Oillio margin, default 5%). Internal columns (User 0/1): supplier FOB, est. cost (FOB x 0.95), room to push per ctn and per MT, target at est. cost, change vs previous list.
