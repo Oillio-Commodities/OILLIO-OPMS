@@ -7,7 +7,7 @@ All changes to the GitHub Pages app are recorded here.
 
 ## 2026-10-27 (V27OCT2026A) - Apical list 27 Oct
 - Apical 27 Oct 2026 list loaded (22 rows, no uplift). Auto-applies; press Save & Log Reference once.
-- Vs 23 Oct: Jakarta shortenings +5 (46/48 +10); Spread Fat +10; RCNO / HCNO unchanged; HPS +10; Jerry can -(CP10 / CP8) 10 each; Port Klang HPKS -5, HPKO -25, HPKL -25, CBR -10; Low GE +5 / +5 / +10 / +10.
+- Vs 23 Oct (supplier FOB): Jakarta shortenings 36/39, 38/40, 43/47 +5, 46/48 and 48/52 +10; Spread Fat +10; RCNO / HCNO unchanged; HPS 20ft / 40ft +10; Jerry can CP10 / CP8 +10 each. Port Klang HPKS -5, HPKO 38/40 and 40/42 -25, HPKL -25, CBR -10; Low GE 36/39 and 38/42 +5, 43/48 (and 46/48) and 48/52 +10.
 
 ## 2026-10-23 (V23OCT2026G) - Dairies price history & change log
 - Every supplier list is kept (HIST in the Dairies block; 29 Sep + 15 Oct on record). Any price that moves, is added or removed between two lists is logged: date, market, product, pack, old / new per ctn, change per ctn, %, per MT (green up / red down).
