@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V27OCT2026A';
+  var _v='V27OCT2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -392,6 +392,9 @@ body.user-mode #userPdfBar { display:flex !important; }
 #dairyView .dy-ttl{font-weight:800;font-size:1.05rem}#dairyView .dy-ttl span{font-weight:500;font-size:.75rem;opacity:.8;margin-left:8px}
 #dairyView .dy-btns button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 12px;font-weight:700;font-size:.78rem;cursor:pointer;margin-left:6px}
 #dairyView .dy-wrap{max-width:1280px;margin:0 auto;padding:14px 14px 60px}
+#dairyView .dy-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+#dairyView .dy-tabs button{flex:1;min-width:150px;max-width:280px;border:2px solid #1a5c18;background:#fff;color:#1a5c18;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;font-size:.9rem}
+#dairyView .dy-tabs button.on{background:#1a5c18;color:#fff}
 #dairyView .dy-banner{background:#fff8e1;border:1px solid #f0c75e;color:#6b4a00;border-radius:8px;padding:9px 12px;font-size:.78rem;margin-bottom:12px}
 #dairyView .dy-sup{color:#8a6d1a}
 #dairyView .dy-card{background:#fff;border:1px solid #dde5dd;border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
@@ -8864,17 +8867,34 @@ var ROWS=[
 var HIST=[{id:'29SEP26',date:'29 Sep 2026',valid:"Nov'26 shipment",P:{"s15z|USA":12.2,"s15z|ME":12.2,"s15z|OTH":12,"s15a|ASEAN":22.5,"s15a|ME":22.7,"s15a|OTH":22.5,"s15b|ASEAN":26.5,"s15b|ME":26.2,"s15b|OTH":26.2,"s15c|ASEAN":21.8,"s15c|OTH":21,"s15d|OTH":24.5,"s18z|USA":12.5,"s18z|ME":12.5,"s18z|OTH":12.6,"s18a|ASEAN":23,"s18a|ME":23.2,"s18a|OTH":23,"s18b|ASEAN":27.3,"s18b|ME":27.2,"s18b|OTH":27.2,"s18c|ASEAN":22.3,"s18c|OTH":22,"s18d|OTH":25,"s23z|USA":13,"s23z|ME":13,"s23a|ME":24.2,"s23b|ME":28.2,"e10a|ASEAN":22.8,"e10a|OTH":22.6,"e3a|OTH":12.4,"e3b|OTH":12.5,"e3c|OTH":22.5,"e56a|OTH":15,"e56b|OTH":15,"e56c|OTH":28.2,"e56d|OTH":19}}];
 function curSnap(){var o={};ROWS.forEach(function(r){MK.forEach(function(k){if(r.P[k]!=null)o[r.id+'|'+k]=r.P[k];});});return o;}
 function allLists(){return HIST.concat([{id:DAIRY_INFO.id,date:DAIRY_INFO.date,valid:DAIRY_INFO.validTill,P:curSnap()}]);}
+function prevCovers(r){var L=allLists();return L.length>=2&&covers(L[L.length-2],r.f)&&covers(L[L.length-1],r.f);}
 function prevPrice(id,mk){var L=allLists();return L.length<2?null:L[L.length-2].P[id+'|'+mk];}
 function rowOf(id){for(var i=0;i<ROWS.length;i++)if(ROWS[i].id===id)return ROWS[i];return null;}
 function changeLog(){var L=allLists(),out=[];
   for(var i=1;i<L.length;i++){var a=L[i-1],b=L[i],keys={};Object.keys(a.P).concat(Object.keys(b.P)).forEach(function(k){keys[k]=1;});
-    Object.keys(keys).forEach(function(k){var pa=a.P[k],pb=b.P[k];if(pa===pb)return;var p=k.split('|'),r=rowOf(p[0]);if(!r)return;
+    Object.keys(keys).forEach(function(k){var pa=a.P[k],pb=b.P[k];if(pa===pb)return;var p=k.split('|'),r=rowOf(p[0]);if(!r)return;if(!(covers(a,r.f)&&covers(b,r.f)))return;
       out.push({listId:b.id,date:b.date,from:a.date,mk:p[1],r:r,old:pa==null?null:pa,nw:pb==null?null:pb});});}
   return out.reverse();}
+
+// ===== SUPPLIERS: each has its own tab, list, history, margin and terms =====
+var SUPS={};
+DAIRY_INFO.key='fnb';DAIRY_INFO.internalNote='F&B Nutrition \u00B7 MOQ 3 FCL per pack \u00B7 easy-open +USD '+DAIRY_INFO.eo[24].toFixed(2)+' (x24) / +USD '+DAIRY_INFO.eo[48].toFixed(2)+' (x48)';
+SUPS.fnb={key:'fnb',label:'F&B Nutrition',defMarket:'ASEAN',MK:MK,MK_LBL:MK_LBL,MK_NOTE:MK_NOTE,INFO:DAIRY_INFO,FAM:FAM,ROWS:ROWS,HIST:HIST,tc:function(a,b,c,d){return tcFnb(a,b,c,d);},noteInReport:false};
+// ---- Able Dairies: indicative MINIMUM prices (supplier says other markets may be higher). Columns on their list: 14 Jul 2026 / Sep 2026 / Oct 2026 (current = Oct).
+// Evaporated: single price 'Effective 01.04.2026'. UHT: no date. Loading for durian SCM is local-truck loading, not export (TBC).
+var ABLE_ROWS=[{"id": "a1", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "24 tins x 1kg", "u": 24, "g": 1000, "c20": 1000, "t": "tin", "P": {"ALL": 29.2}}, {"id": "a2", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "48 tins x 500g", "u": 48, "g": 500, "c20": 1030, "t": "tin", "P": {"ALL": 29.75}}, {"id": "a3", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "48 tins x 380g", "u": 48, "g": 380, "c20": 1325, "t": "tin", "P": {"ALL": 24.15}}, {"id": "a4", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "8 pouch x 2.5kg", "u": 8, "g": 2500, "c20": 1310, "t": "pouch", "P": {"ALL": 23.7}}, {"id": "a5", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "10 pouch x 2.0kg", "u": 10, "g": 2000, "c20": 1315, "t": "pouch", "P": {"ALL": 24.0}}, {"id": "a6", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "20 pouch x 1.0kg", "u": 20, "g": 1000, "c20": 1303, "t": "pouch", "P": {"ALL": 25.2}}, {"id": "a7", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "360 pp x 40g", "u": 360, "g": 40, "c20": 1584, "t": "pp", "P": {"ALL": 25.5}}, {"id": "a8", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P2%", "pk": "600 pp x 20g", "u": 600, "g": 20, "c20": 1600, "t": "pp", "P": {"ALL": 25.3}}, {"id": "a9", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P1.5%", "pk": "24 tins x 1kg", "u": 24, "g": 1000, "c20": 1000, "t": "tin", "P": {"ALL": 28.1}}, {"id": "a10", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P1.5%", "pk": "48 tins x 500g", "u": 48, "g": 500, "c20": 1030, "t": "tin", "P": {"ALL": 28.7}}, {"id": "a11", "f": "scm", "nm": "Sweetened Condensed Milk / Sweetened Creamer", "spec": "F10% / P1.5%", "pk": "48 tins x 380g", "u": 48, "g": 380, "c20": 1325, "t": "tin", "P": {"ALL": 23.7}}, {"id": "a12", "f": "scm", "nm": "Sweetened Condensed FILLED Milk", "spec": "F7% / P5.5%", "pk": "48 tins x 385g", "u": 48, "g": 385, "c20": 1325, "t": "tin", "P": {"ALL": 30.8}}, {"id": "a13", "f": "scm", "nm": "Sweetened Condensed FILLED Milk", "spec": "F7% / P5.5%", "pk": "24 tins x 1kg", "u": 24, "g": 1000, "c20": 1000, "t": "tin", "P": {"ALL": 36.8}}, {"id": "a14", "f": "scm", "nm": "FULL CREAM Sweetened Condensed Milk", "spec": "F7% / P5.5%", "pk": "48 tins x 385g", "u": 48, "g": 385, "c20": 1325, "t": "tin", "P": {"ALL": 39.8}}, {"id": "a15", "f": "scm", "nm": "FULL CREAM Sweetened Condensed Milk", "spec": "F7% / P5.5%", "pk": "24 tins x 1kg", "u": 24, "g": 1000, "c20": 1000, "t": "tin", "P": {"ALL": 47.6}}, {"id": "a16", "f": "scm", "nm": "Sweetened Condensed Milk - CHOCOLATE flavour", "spec": "F10% / P2%", "pk": "48 tins x 380g", "u": 48, "g": 380, "c20": 1325, "t": "tin", "P": {"ALL": 31.5}, "lid": "EOE"}, {"id": "a17", "f": "scm", "nm": "Sweetened Condensed Milk - CHOCOLATE flavour", "spec": "F10% / P2%", "pk": "24 tins x 380g", "u": 24, "g": 380, "c20": 2650, "t": "tin", "P": {"ALL": 16.35}, "lid": "EOE"}, {"id": "a18", "f": "scm", "nm": "Sweetened Condensed Milk - PANDAN flavour", "spec": "F10% / P1.5%", "pk": "48 tins x 380g", "u": 48, "g": 380, "c20": 1325, "t": "tin", "P": {"ALL": 29.8}, "lid": "EOE"}, {"id": "a19", "f": "scm", "nm": "Sweetened Condensed Milk - PANDAN flavour", "spec": "F10% / P1.5%", "pk": "24 tins x 380g", "u": 24, "g": 380, "c20": 2650, "t": "tin", "P": {"ALL": 15.2}, "lid": "EOE"}, {"id": "a20", "f": "scm", "nm": "Sweetened Condensed Milk - UBE YAM flavour", "spec": "F10% / P1.5%", "pk": "48 tins x 380g", "u": 48, "g": 380, "c20": 1325, "t": "tin", "P": {"ALL": 29.8}, "lid": "EOE"}, {"id": "a21", "f": "scm", "nm": "Sweetened Condensed Milk - UBE YAM flavour", "spec": "F10% / P1.5%", "pk": "24 tins x 380g", "u": 24, "g": 380, "c20": 2650, "t": "tin", "P": {"ALL": 15.2}, "lid": "EOE"}, {"id": "a22", "f": "scm", "nm": "Sweetened Condensed Milk - DURIAN flavour", "spec": "F10% / P2%", "pk": "24 tins x 380g", "u": 24, "g": 380, "c20": null, "t": "tin", "P": {"ALL": 15.4}, "lid": "EOE", "flag": "Supplier loading (1,325 / 2,250 ctn) is for local truck delivery - export 20ft loading to be confirmed"}, {"id": "a23", "f": "scm", "nm": "Sweetened Condensed Milk - DURIAN flavour", "spec": "F10% / P2%", "pk": "24 tins x 500g", "u": 24, "g": 500, "c20": null, "t": "tin", "P": {"ALL": 19.1}, "lid": "EOE", "flag": "Supplier loading (1,325 / 2,250 ctn) is for local truck delivery - export 20ft loading to be confirmed"}, {"id": "a24", "f": "scm", "nm": "Sweetened Creamer with Vitamin Premix (FGV formula)", "spec": "F10% / P1.5%", "pk": "48 tins x 500g", "u": 48, "g": 500, "c20": 1030, "t": "tin", "P": {"ALL": 31.5}}, {"id": "ae1", "f": "evap", "nm": "Sterilized Milk", "spec": "Fat 3 / TS 12 / P 3.0", "pk": "48 tins x 155ml (160g)", "u": 48, "g": 160, "c20": 2250, "t": "tin", "lid": "EOE lid", "P": {"ALL": 13.8}}, {"id": "ae2", "f": "evap", "nm": "Evaporated Value Creamer / Evaporated Milk / Evaporated Creamer", "spec": "Fat 8 / TS 1.8 / P 1.8", "pk": "48 tins x 390g", "u": 48, "g": 390, "c20": 1043, "t": "tin", "lid": "Normal lid", "P": {"ALL": 21.1}, "flag": "Supplier shows total solids as 1.8 (probably 18) - to confirm"}, {"id": "ae3", "f": "evap", "nm": "Evaporated Value Creamer / Evaporated Milk / Evaporated Creamer", "spec": "Fat 8 / TS 1.8 / P 1.8", "pk": "48 tins x 160g", "u": 48, "g": 160, "c20": 2250, "t": "tin", "lid": "Normal lid", "P": {"ALL": 11.2}, "flag": "Supplier shows total solids as 1.8 (probably 18) - to confirm"}, {"id": "ae4", "f": "evap", "nm": "Evaporated Milk / Evaporated Creamer", "spec": "Fat 6 / TS 24 / P 4.0", "pk": "48 tins x 390g", "u": 48, "g": 390, "c20": 1043, "t": "tin", "lid": "Normal lid", "P": {"ALL": 23.0}}, {"id": "ae5", "f": "evap", "nm": "Evaporated Milk / Evaporated Creamer", "spec": "Fat 6 / TS 24 / P 4.0", "pk": "48 tins x 160g", "u": 48, "g": 160, "c20": 2250, "t": "tin", "lid": "Normal lid", "P": {"ALL": 12.7}}, {"id": "ae6", "f": "evap", "nm": "Evaporated Creamer", "spec": "Fat 8 / TS 23 / P 3.0", "pk": "48 tins x 390g", "u": 48, "g": 390, "c20": 1043, "t": "tin", "lid": "Normal lid", "P": {"ALL": 21.7}}, {"id": "ae7", "f": "evap", "nm": "Evaporated Creamer", "spec": "Fat 8 / TS 23 / P 3.0", "pk": "48 tins x 160g", "u": 48, "g": 160, "c20": 2250, "t": "tin", "lid": "Normal lid", "P": {"ALL": 12.1}}, {"id": "ae8", "f": "evap", "nm": "Evaporated Filled Milk", "spec": "Fat 8 / TS 28 / P 7.0", "pk": "48 tins x 390g", "u": 48, "g": 390, "c20": 1043, "t": "tin", "lid": "Normal lid", "P": {"ALL": 30.45}}, {"id": "ae9", "f": "evap", "nm": "Evaporated Filled Milk", "spec": "Fat 8 / TS 28 / P 7.0", "pk": "48 tins x 160g", "u": 48, "g": 160, "c20": 2250, "t": "tin", "lid": "Normal lid", "P": {"ALL": 15.7}}, {"id": "au1", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "200ml x 24 pcs", "u": 24, "g": 200, "c20": 3500, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 6.3}, "flag": "Supplier shows both 3,500 and 4,000 ctn per 20ft - 3,500 used, to confirm"}, {"id": "au2", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "1L x 12 pcs", "u": 12, "g": 1000, "c20": 1309, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 12.8}, "c40": 2150}, {"id": "au3", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "115ml x 32 pcs (8 brick x 4)", "u": 32, "g": 115, "c20": 5300, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 5.5}}, {"id": "au4", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "115ml x 40 pcs (10 brick x 4)", "u": 40, "g": 115, "c20": 4000, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 6.8}, "flag": "List shows \"20ct\" - 20ft assumed"}, {"id": "au5", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "125ml x 32 pcs (8 brick x 4)", "u": 32, "g": 125, "c20": 5300, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 5.7}}, {"id": "au6", "f": "uht", "nm": "UHT Milk (aseptic carton) - full cream, banana, chocolate, strawberry, low fat", "spec": "", "pk": "125ml x 40 pcs (10 brick x 4)", "u": 40, "g": 125, "c20": 4000, "t": "uht", "lid": "Aseptic carton", "vol": 1, "P": {"ALL": 7.1}}];
+var ABLE_HIST=[{id:"14JUL26",date:"14 Jul 2026",valid:"",only:["scm"],P:{"a1|ALL": 26.5, "a2|ALL": 27.0, "a3|ALL": 21.9, "a4|ALL": 21.5, "a5|ALL": 21.8, "a6|ALL": 22.85, "a7|ALL": 23.15, "a8|ALL": 23.0, "a9|ALL": 25.5, "a10|ALL": 26.0, "a11|ALL": 21.5, "a12|ALL": 28.0, "a13|ALL": 33.4, "a14|ALL": 36.1, "a15|ALL": 43.15, "a16|ALL": 28.6, "a17|ALL": 14.8, "a18|ALL": 27.0, "a19|ALL": 13.75, "a20|ALL": 27.0, "a21|ALL": 13.75, "a22|ALL": 14.0, "a23|ALL": 17.35, "a24|ALL": 28.55}},{id:"SEP26",date:"Sep 2026",valid:"",only:["scm"],P:{"a1|ALL": 27.85, "a2|ALL": 28.35, "a3|ALL": 23.0, "a4|ALL": 22.6, "a5|ALL": 22.9, "a6|ALL": 24.0, "a7|ALL": 24.3, "a8|ALL": 24.15, "a9|ALL": 26.8, "a10|ALL": 27.3, "a11|ALL": 22.6, "a12|ALL": 29.4, "a13|ALL": 35.0, "a14|ALL": 37.9, "a15|ALL": 45.3, "a16|ALL": 30.0, "a17|ALL": 15.55, "a18|ALL": 28.35, "a19|ALL": 14.5, "a20|ALL": 28.35, "a21|ALL": 14.5, "a22|ALL": 14.7, "a23|ALL": 18.2, "a24|ALL": 30.0}}];
+var ABLE_INFO={key:'able',id:'OCT26',date:'Oct 2026',validTill:'10 Nov 2026 (2 weeks from 27 Oct 2026)',shipFor:'Indicative MINIMUM prices \u2014 other markets may be higher',origin:'FOB Port Klang, Malaysia',supplier:'Able Dairies',eo:null,supMargin:5,minMarginLvl2:2.5,
+  internalNote:'Able Dairies \u00B7 list received 27 Oct 2026 \u00B7 validity 2 weeks \u00B7 MOQ 1 FCL \u00B7 payment & lead time as F&B \u00B7 UHT per-MT uses 1.03 kg/L'};
+SUPS.able={key:'able',label:'Able Dairies',defMarket:'ALL',MK:['ALL'],MK_LBL:{ALL:'All markets (indicative minimum prices)'},MK_NOTE:{ALL:'Indicative minimum price \u2014 other markets may be higher, subject to confirmation.'},INFO:ABLE_INFO,
+  FAM:{scm:'Sweetened Condensed Milk / Creamer',evap:'Evaporated',uht:'UHT Milk'},ROWS:ABLE_ROWS,HIST:ABLE_HIST,tc:function(a,b,c,d){return tcAble(a,b,c,d);},noteInReport:true};
+var CUR=SUPS.fnb;
+function useSup(k){CUR=SUPS[k];ROWS=CUR.ROWS;HIST=CUR.HIST;DAIRY_INFO=CUR.INFO;MK=CUR.MK;MK_LBL=CUR.MK_LBL;MK_NOTE=CUR.MK_NOTE;FAM=CUR.FAM;}
+function covers(L,f){return !L.only||L.only.indexOf(f)>=0;}
 var PERIODS=["November 2026","LH November / FH December 2026","December 2026","LH December 2026 / FH January 2027","January 2027","LH January / FH February 2027","February 2027","LH February / FH March 2027","March 2027"];
 
 // ---- customer-facing terms (adapted from the supplier's terms) - edit here ----
-function dairyTc(sd,hasFr,frName,fr){
+function tcFnb(sd,hasFr,frName,fr){
   var t=[];
   t.push(['Incoterms','FOB Port Klang, Malaysia'+(hasFr?' (freight shown separately'+(frName?' to '+frName:'')+')':'')]);
   t.push(['Payment','30% TT deposit, balance 70% TT before shipment, or 100% LC at sight']);
@@ -8888,16 +8908,38 @@ function dairyTc(sd,hasFr,frName,fr){
   t.push(['Packaging','Labels, cartons and other packaging printed or customised for the buyer\'s order are non-cancellable and non-refundable.']);
   t.push(['Price','Subject to revision for changes in ingredient, raw material, labour, transport or currency costs, and to final confirmation.']);
   t.push(['Risk','Risk of loss or damage passes to the Buyer upon loading at the port of origin. We recommend marine cargo insurance.']);
-  t.push(['Documents info','Buyer to ensure all required documents are informed to seller prior to any sales contract.']);
-  t.push(['Force majeure','Force majeure and supply allocation are at the seller\'s discretion.']);
+  t.push(['Doc. notice','Buyer to ensure all required documents are informed to seller prior to any sales contract.']);
+  t.push(['Force maj.','Force majeure and supply allocation are at the seller\'s discretion.']);
   return t;
 }
 function tcPad(l){return (l+Array(13).join(' ')).slice(0,12);}
+function tcAble(sd,hasFr,frName,fr){
+  var t=[];
+  t.push(['Incoterms','FOB Port Klang, Malaysia'+(hasFr?' (freight shown separately'+(frName?' to '+frName:'')+')':'')]);
+  t.push(['Payment','30% TT deposit, balance 70% TT before shipment, or 100% LC at sight']);
+  t.push(['Shipment',sd||'To be advised']);
+  t.push(['Delivery','Minimum 6 weeks after deposit received and label / carton artwork finalised (subject to production schedule)']);
+  t.push(['Min. order','1 FCL per pack size per shipment']);
+  t.push(['Validity','Prices valid until '+ABLE_INFO.validTill.replace(/ \(.*$/,'')+'. Indicative minimum prices \u2014 prices for other markets may be higher and are subject to confirmation.']);
+  t.push(['Lid / pack','As stated per line (EOE = easy-open end).']);
+  t.push(['Documents','Standard export documents: Invoice, Packing List, Bill of Lading, Certificate of Origin, Certificate of Analysis. Other documents at buyer\'s cost.']);
+  t.push(['Packaging','Labels, cartons and other packaging printed or customised for the buyer\'s order are non-cancellable and non-refundable.']);
+  t.push(['Price','Subject to revision for changes in ingredient, raw material, labour, transport or currency costs, and to final confirmation.']);
+  t.push(['Risk','Risk of loss or damage passes to the Buyer upon loading at the port of origin. We recommend marine cargo insurance.']);
+  t.push(['Doc. notice','Buyer to ensure all required documents are informed to seller prior to any sales contract.']);
+  t.push(['Force maj.','Force majeure and supply allocation are at the seller\'s discretion.']);
+  return t;
+}
+function dairyTc(){return CUR.tc.apply(null,arguments);}
+
 
 // ---- state ----
-var D={market:'ASEAN',eoAll:false,rows:{},open:false,margin:5,supM:DAIRY_INFO.supMargin,fr:0,frName:'',cust:'',period:''};
-ROWS.forEach(function(r){D.rows[r.id]={eo:false,mgn:null,fcl:0};});
-try{var sv=JSON.parse(localStorage.getItem('oillio_dairy')||'null');if(sv){if(sv.margin!=null)D.margin=sv.margin;if(sv.supM!=null)D.supM=sv.supM;}}catch(e){}
+var D={market:CUR.defMarket,eoAll:false,rows:{},open:false,margin:5,supM:CUR.INFO.supMargin,fr:0,frName:'',cust:'',period:'',sup:'fnb',by:{},histAll:false};
+Object.keys(SUPS).forEach(function(k){var S=SUPS[k],rw={};S.ROWS.forEach(function(r){rw[r.id]={eo:false,mgn:null,fcl:0};});D.by[k]={market:S.defMarket,eoAll:false,rows:rw,margin:5,supM:S.INFO.supMargin,histAll:false};});
+D.rows=D.by.fnb.rows;
+try{var sv=JSON.parse(localStorage.getItem('oillio_dairy')||'null');if(sv){var sv2=(sv.fnb||sv.able)?sv:{fnb:sv};Object.keys(D.by).forEach(function(k){var x=sv2[k];if(x){if(x.margin!=null)D.by[k].margin=x.margin;if(x.supM!=null)D.by[k].supM=x.supM;}});D.margin=D.by.fnb.margin;D.supM=D.by.fnb.supM;}}catch(e){}
+function saveSupState(){var s=D.by[D.sup];s.market=D.market;s.eoAll=D.eoAll;s.rows=D.rows;s.margin=D.margin;s.supM=D.supM;s.histAll=D.histAll;}
+function loadSupState(k){var s=D.by[k];D.market=s.market;D.eoAll=s.eoAll;D.rows=s.rows;D.margin=s.margin;D.supM=s.supM;D.histAll=s.histAll;}
 function lvl(){return window.USER_LEVEL!=null?window.USER_LEVEL:2;}
 function internal(){return lvl()<=1;}
 function $(id){return document.getElementById(id);}
@@ -8905,9 +8947,11 @@ function fm(v,d){if(v==null||isNaN(v))return'—';d=d==null?2:d;return(+v).toLoc
 function r4(v){return Math.round(v*10000)/10000;}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(m){try{showToast(m,3000);}catch(e){}}
-function eoOK(r){return r.t==='can'&&(r.u===24||r.u===48);}
-function kgc(r){return r.u*r.g/1000;}
-function name(r){return FAM[r.f]+' '+r.spec;}
+function eoOK(r){return r.t==='can'&&!!DAIRY_INFO.eo&&(r.u===24||r.u===48);}
+function kgc(r){return r.u*r.g/1000*(r.vol?1.03:1);} // UHT: litres x 1.03 kg/L
+function wtTxt(r,c){return r.vol?fm(r.u*r.g/1000,2)+' L/ctn':fm(c.kg,2)+' kg/ctn';}
+function ldTxt(r,c){return r.c20?fm(r.c20,0)+' ctns/20ft ('+fm(c.mt20,2)+' MT)'+(r.c40?' | '+fm(r.c40,0)+' ctns/40ft':''):'loading TBC';}
+function name(r){return r.nm?(r.nm+(r.spec?' ('+r.spec+')':'')):FAM[r.f]+' '+r.spec;}
 function effMargin(r){var m=D.rows[r.id].mgn;return m==null||isNaN(m)?D.margin:m;}
 function calc(r,mk){
   var base=r.P[mk];if(base==null)return null;
@@ -8915,10 +8959,10 @@ function calc(r,mk){
   var fob=r4(base+sur);var m=Math.max(effMargin(r),lvl()===2?DAIRY_INFO.minMarginLvl2:0)/100;
   var est=r4(fob*(1-D.supM/100)),room=r4(fob-est);
   var off=r4(fob*(1+m));var kg=kgc(r);
-  var frU=D.fr>0?r4(D.fr/r.c20):0;
+  var frU=D.fr>0&&r.c20?r4(D.fr/r.c20):0;var pcv=prevCovers(r);
   var pv=prevPrice(r.id,mk);
   return {base:base,eo:eo,sur:sur,fob:fob,est:est,room:room,target:r4(est*(1+m)),off:off,offMT:r4(off/kg*1000),frU:frU,tot:r4(off+frU),
-    totMT:r4((off+frU)/kg*1000),kg:kg,mt20:r4(kg*r.c20/1000),d:pv==null?null:r4(base-pv),m:m*100};
+    totMT:r4((off+frU)/kg*1000),kg:kg,mt20:r.c20?r4(kg*r.c20/1000):null,d:(pv==null||!pcv)?null:r4(base-pv),nd:!pcv,m:m*100};
 }
 function vis(){return ROWS.filter(function(r){return r.P[D.market]!=null;});}
 function awaiting(){return ROWS.filter(function(r){return r.P[D.market]==null&&!r.nl;});}
@@ -8931,6 +8975,7 @@ function build(){
   '<div class="dy-top"><div class="dy-ttl">Dairies Products <span>Nutri &middot; Oiliana</span></div>'+
   '<div class="dy-btns"><button onclick="dairyBack()">⌂ Divisions</button><button onclick="doLogout()">Log out</button></div></div>'+
   '<div class="dy-wrap">'+
+  '<div class="dy-tabs" id="dyTabs"></div>'+
   '<div class="dy-banner" id="dyBanner"></div>'+
   '<div class="dy-card"><div class="dy-mk" id="dyMk"></div><div class="dy-note" id="dyMkNote"></div>'+
   '<div class="dy-grid">'+
@@ -8940,7 +8985,7 @@ function build(){
    '<label class="dy-int">Supplier margin in FOB %<input id="dySup" type="number" step="0.1" min="0" max="30" onchange="dyCtl(2)"></label>'+
    '<label>Freight USD / 20ft FCL (optional)<input id="dyFr" type="number" step="1" min="0" placeholder="0 = FOB only" oninput="dyCtl()"></label>'+
    '<label>Freight to (port)<input id="dyFrN" placeholder="e.g. Manzanillo, Mexico" oninput="dyCtl()"></label>'+
-   '<label>Easy-open cans<select id="dyEo" onchange="dyCtl()"><option value="0">Standard (set per line)</option><option value="1">Easy-open on ALL eligible lines</option></select></label>'+
+   '<label id="dyEoL">Easy-open cans<select id="dyEo" onchange="dyCtl()"><option value="0">Standard (set per line)</option><option value="1">Easy-open on ALL eligible lines</option></select></label>'+
   '</div></div>'+
   '<div class="dy-card"><div class="dy-h">Price list &mdash; <span id="dyMkName"></span> <small>(FOB Port Klang, USD per carton)</small></div>'+
   '<div class="dy-tw"><table class="dy-t" id="dyTbl"></table></div>'+
@@ -8956,33 +9001,34 @@ function build(){
 }
 function render(){
   var mk=D.market;
+  $('dyTabs').innerHTML=Object.keys(SUPS).map(function(k){return'<button class="'+(k===D.sup?'on':'')+'" onclick="dySup(\''+k+'\')">'+SUPS[k].label+'</button>';}).join('');
+  $('dyMk').style.display=MK.length>1?'':'none';$('dyEoL').style.display=DAIRY_INFO.eo?'':'none';
   $('dyMk').innerHTML=MK.map(function(k){return'<button class="'+(k===mk?'on':'')+'" onclick="dyMarket(\''+k+'\')">'+MK_LBL[k]+'</button>';}).join('');
   $('dyMkNote').textContent=MK_NOTE[mk]||'';$('dyMkName').textContent=MK_LBL[mk];
   document.querySelectorAll('#dairyView .dy-int').forEach(function(e){e.style.display=internal()?'':'none';});
-  $('dyBanner').innerHTML='<b>Supplier list '+esc(DAIRY_INFO.date)+'</b> &middot; '+esc(DAIRY_INFO.origin)+' &middot; valid till <b>'+esc(DAIRY_INFO.validTill)+'</b> &middot; '+esc(DAIRY_INFO.shipFor)+
-    (internal()?' <span class="dy-sup">['+esc(DAIRY_INFO.supplier)+' &middot; MOQ 3 FCL per pack &middot; easy-open +USD '+fm(DAIRY_INFO.eo[24])+' (x24) / +USD '+fm(DAIRY_INFO.eo[48])+' (x48)]</span>':'');
-  var I=internal();var h='<thead><tr><th>Product</th><th>Pack</th><th>Can</th><th class="r">Load / 20ft</th>'+
+  $('dyBanner').innerHTML='<b>Supplier list '+esc(DAIRY_INFO.date)+'</b> &middot; '+esc(DAIRY_INFO.origin)+' &middot; valid till <b>'+esc(DAIRY_INFO.validTill)+'</b> &middot; '+esc(DAIRY_INFO.shipFor)+(internal()?' <span class="dy-sup">['+esc(DAIRY_INFO.internalNote)+']</span>':'');
+  var I=internal();var h='<thead><tr><th>Product</th><th>Pack</th><th>Can / lid</th><th class="r">Load / 20ft</th>'+
    (I?'<th class="r dy-i">Supplier FOB /ctn</th><th class="r dy-i">Est. cost /ctn</th><th class="r dy-i">Room /ctn</th><th class="r dy-i">Target /ctn</th><th class="r dy-i">vs prev list</th>':'')+
    '<th class="r">Mgn %</th><th class="r">Offer /ctn</th><th class="r">Offer /MT</th><th class="r">FCL</th></tr></thead><tbody>';
   var last='';
   vis().forEach(function(r){
     var c=calc(r,mk),st=D.rows[r.id];
-    var grp=FAM[r.f]+' '+r.spec;
+    var grp=name(r);
     h+='<tr>'+'<td class="nm">'+(grp!==last?'<b>'+esc(grp)+'</b>':'<span class="dim">&#8627; same</span>')+(r.flag?'<div class="flag">&#9888; '+esc(r.flag)+'</div>':'')+(r.nl?'<div class="dim">not on product list</div>':'')+'</td>';
     last=grp;
     h+='<td>'+esc(r.pk)+'</td>';
-    h+='<td>'+(eoOK(r)?'<select onchange="dyRow(\''+r.id+'\',\'eo\',this.value==\'1\')"><option value="0"'+(!c.eo?' selected':'')+'>Standard</option><option value="1"'+(c.eo?' selected':'')+'>Easy-open +'+fm(DAIRY_INFO.eo[r.u])+'</option></select>':'<span class="dim">'+(r.t==='can'?'Standard':'&mdash;')+'</span>')+'</td>';
-    h+='<td class="r">'+fm(r.c20,0)+' ctn<div class="dim">'+fm(c.mt20,2)+' MT</div></td>';
+    h+='<td>'+(eoOK(r)?'<select onchange="dyRow(\''+r.id+'\',\'eo\',this.value==\'1\')"><option value="0"'+(!c.eo?' selected':'')+'>Standard</option><option value="1"'+(c.eo?' selected':'')+'>Easy-open +'+fm(DAIRY_INFO.eo[r.u])+'</option></select>':'<span class="dim">'+(r.lid?esc(r.lid):(r.t==='can'?'Standard':'&mdash;'))+'</span>')+'</td>';
+    h+='<td class="r">'+(r.c20?fm(r.c20,0)+' ctn<div class="dim">'+fm(c.mt20,2)+' MT'+(r.c40?' &middot; 40ft: '+fm(r.c40,0):'')+'</div>':'<b style="color:#b45309">TBC</b><div class="dim">export loading not confirmed</div>')+'</td>';
     if(I){
       h+='<td class="r dy-i">'+fm(c.fob)+(c.eo?'<div class="dim">incl. EO</div>':'')+'</td><td class="r dy-i">'+fm(c.est)+'</td><td class="r dy-i">'+fm(c.room)+'<div class="dim">'+fm(c.room/c.kg*1000,0)+'/MT</div></td><td class="r dy-i">'+fm(c.target)+'</td>'+
-        '<td class="r dy-i" title="'+esc(histTip(r.id,mk))+'">'+(c.d==null?'<span class="dim">new</span>':(c.d===0?'<span class="dim">=</span>':'<span class="'+(c.d>0?'up':'dn')+'">'+(c.d>0?'+':'')+fm(c.d)+'</span>'))+'</td>';
+        '<td class="r dy-i" title="'+esc(histTip(r.id,mk))+'">'+(c.d==null?'<span class="dim">'+(c.nd?'n/a':'new')+'</span>':(c.d===0?'<span class="dim">=</span>':'<span class="'+(c.d>0?'up':'dn')+'">'+(c.d>0?'+':'')+fm(c.d)+'</span>'))+'</td>';
     }
     h+='<td class="r"><input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></td>';
     h+='<td class="r"><b>'+fm(c.off)+'</b></td><td class="r">'+fm(c.offMT)+'</td>';
-    h+='<td class="r"><input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="0" onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></td></tr>';
+    h+='<td class="r"><input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="'+(r.c20?'0':'TBC')+'"'+(r.c20?'':' disabled')+' onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></td></tr>';
   });
   $('dyTbl').innerHTML=h+'</tbody>';
-  var aw=awaiting();
+  var aw=awaiting();$('dyAw').style.display=aw.length?'':'none';
   $('dyAwT').textContent='Awaiting supplier price for '+MK_LBL[mk]+' ('+aw.length+' lines) ▾';
   $('dyAwTbl').innerHTML='<thead><tr><th>Product</th><th>Pack</th><th class="r">Load / 20ft</th><th class="r">Load / 40ft</th></tr></thead><tbody>'+aw.map(function(r){
     return'<tr><td>'+esc(name(r))+'</td><td>'+esc(r.pk)+'</td><td class="r">'+fm(r.c20,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c20/1000,2)+' MT)</span></td><td class="r">'+(r.c40?fm(r.c40,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c40/1000,2)+' MT)</span>':'&mdash;')+'</td></tr>';}).join('')+'</tbody>';
@@ -8992,7 +9038,7 @@ function render(){
 }
 
 function renderHist(){
-  var L=allLists(),ch=changeLog(),mk=D.histAll?null:D.market,vis_=ch.filter(function(c){return !mk||c.mk===mk;});
+  var L=allLists(),ch=changeLog(),mk=(D.histAll||MK.length<2)?null:D.market,vis_=ch.filter(function(c){return !mk||c.mk===mk;});
   var lastChg=ch.length?ch[0].date:'none yet';
   $('dyHistT').textContent='Price history & change log \u2014 '+L.length+' lists on record \u00B7 '+ch.length+' price change'+(ch.length===1?'':'s')+' \u00B7 last change: '+lastChg+' \u25BE';
   var h='<div class="dy-hint" style="margin-bottom:6px">Every supplier list is kept. Any price that moves, appears or disappears between two lists is recorded here (green = price up, red = price down). All prices are supplier FOB Port Klang, USD per carton.</div>';
@@ -9001,12 +9047,12 @@ function renderHist(){
     h+='<tr><td>'+esc(L[i].id)+(i===L.length-1?' <b>(current)</b>':'')+'</td><td>'+esc(L[i].date)+'</td><td>'+esc(L[i].valid||'')+'</td><td class="r">'+n+'</td><td class="r">'+c+'</td></tr>';}
   h+='</tbody></table></div>';
   h+='<div style="margin:10px 0 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:.8rem;color:#1a5c18">Change log</b>'+
-    '<label style="font-size:.72rem"><input type="checkbox" '+(D.histAll?'checked':'')+' onchange="dyHistAll(this.checked)"> show all markets (otherwise '+esc(MK_LBL[D.market])+' only)</label>'+
+    (MK.length>1?'<label style="font-size:.72rem"><input type="checkbox" '+(D.histAll?'checked':'')+' onchange="dyHistAll(this.checked)"> show all markets (otherwise '+esc(MK_LBL[D.market])+' only)</label>':'')+
     '<button class="dy-sm" onclick="dyCsv()">\u2B07 Download CSV</button></div>';
   if(!vis_.length)h+='<div class="dy-hint">No price changes recorded'+(mk?' for '+esc(MK_LBL[mk]):'')+'. Prices on the latest list are the same as the previous list.</div>';
   else{h+='<div class="dy-tw"><table class="dy-t"><thead><tr><th>New list</th><th>Market</th><th>Product</th><th>Pack</th><th class="r">Old /ctn</th><th class="r">New /ctn</th><th class="r">Change /ctn</th><th class="r">%</th><th class="r">Change /MT</th></tr></thead><tbody>';
     vis_.forEach(function(c){var kg=kgc(c.r),d=(c.old==null||c.nw==null)?null:r4(c.nw-c.old);
-      h+='<tr><td>'+esc(c.date)+'</td><td>'+esc(MK_LBL[c.mk])+'</td><td>'+esc(name(c.r))+'</td><td>'+esc(c.r.pk)+'</td><td class="r">'+(c.old==null?'\u2014':fm(c.old))+'</td><td class="r">'+(c.nw==null?'\u2014':fm(c.nw))+'</td>'+
+      h+='<tr><td>'+esc(c.date)+'</td><td>'+esc(c.mk==='ALL'?'All':MK_LBL[c.mk])+'</td><td>'+esc(name(c.r))+'</td><td>'+esc(c.r.pk)+'</td><td class="r">'+(c.old==null?'\u2014':fm(c.old))+'</td><td class="r">'+(c.nw==null?'\u2014':fm(c.nw))+'</td>'+
       (d==null?'<td class="r" colspan="3"><b>'+(c.old==null?'NEW line':'REMOVED')+'</b></td>':'<td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d)+'</span></td><td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d/c.old*100,1)+'%</span></td><td class="r"><span class="'+(d>0?'up':'dn')+'">'+(d>0?'+':'')+fm(d/kg*1000,0)+'</span></td>')+'</tr>';});
     h+='</tbody></table></div>';}
   $('dyHistB').innerHTML=h;
@@ -9018,14 +9064,15 @@ window.dyCsv=function(){var ch=changeLog(),rows=[['New list date','Previous list
   var csv='\uFEFF'+rows.map(function(r){return r.map(function(x){x=String(x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Oillio_Dairies_Price_Changes_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);};
 function histTip(id,mk){return allLists().map(function(l){var p=l.P[id+'|'+mk];return l.date+': '+(p==null?'-':fm(p));}).join('  |  ');}
-function sel(){return vis().filter(function(r){return D.rows[r.id].fcl>0;});}
+function sel(){return vis().filter(function(r){return D.rows[r.id].fcl>0&&r.c20;});}
 window.dyMarket=function(k){D.market=k;render();};
+window.dySup=function(k){if(k===D.sup)return;saveSupState();useSup(k);D.sup=k;loadSupState(k);if($('dyMgn')){$('dyMgn').value=D.margin;$('dySup').value=D.supM;$('dyEo').value=D.eoAll?'1':'0';}render();};
 window.dyRow=function(id,f,v){var s=D.rows[id];if(f==='eo')s.eo=!!v;else if(f==='fcl'){s.fcl=Math.max(0,parseInt(v)||0);}else if(f==='mgn'){if(v===''||v==null)s.mgn=null;else{var n=clampMargin(parseFloat(v),true);s.mgn=n;}}render();};
 window.dyCtl=function(k){
   D.cust=$('dyCust').value;D.period=$('dyPer').value;D.fr=Math.max(0,parseFloat($('dyFr').value)||0);D.frName=$('dyFrN').value;D.eoAll=$('dyEo').value==='1';
   if(k===1){var n=clampMargin(parseFloat($('dyMgn').value),true);if(n!=null){D.margin=n;if(parseFloat($('dyMgn').value)<n)$('dyMgn').value=n;}}
   if(k===2){var s=parseFloat($('dySup').value);if(!isNaN(s)&&s>=0&&s<=30)D.supM=s;}
-  try{localStorage.setItem('oillio_dairy',JSON.stringify({margin:D.margin,supM:D.supM}));}catch(e){}
+  saveSupState();try{var o={};Object.keys(D.by).forEach(function(k){o[k]={margin:D.by[k].margin,supM:D.by[k].supM};});localStorage.setItem('oillio_dairy',JSON.stringify(o));}catch(e){}
   render();
 };
 
@@ -9040,6 +9087,7 @@ function buildText(){
   if(D.period)r+='Shipment  : '+D.period+NL;
   r+='Origin    : FOB Port Klang, Malaysia'+NL;
   r+='Market    : '+MK_LBL[mk]+(mk==='ME'?' (SCM without TiO2)':'')+NL;
+  if(CUR.noteInReport&&MK_NOTE[mk])r+='Note      : '+MK_NOTE[mk]+NL;
   if(hasFr)r+='Freight   : '+(D.frName||'As quoted')+' (USD '+Math.round(D.fr)+'/20ft FCL)'+NL;
   r+=NL;
   var gF=0,gFr=0,gMt=0,gFcl=0;
@@ -9049,12 +9097,12 @@ function buildText(){
     if(isQ){
       var tu=f*r_.c20,tm=r4(tu*c.kg/1000),tf=r4(tu*c.off),tfr=r4(f*D.fr);gF+=tf;gFr+=tfr;gMt+=tm;gFcl+=f;
       r+=SEP+NL+'*Item '+(i+1)+': '+title+'*'+NL;
-      r+='Load/20ft : '+fm(r_.c20,0)+' ctns | '+fm(c.kg,2)+' kg/ctn | '+fm(c.mt20,2)+' MT'+NL;
+      r+='Load/20ft : '+fm(r_.c20,0)+' ctns | '+wtTxt(r_,c)+' | '+fm(c.mt20,2)+' MT'+(r_.c40?' | 40ft: '+fm(r_.c40,0)+' ctns':'')+NL;
       r+='FCL       : '+f+' | Cartons: '+fm(tu,0)+' | Volume: '+fm(tm,2)+' MT'+NL+NL;
       r+='FOB Price/ctn : USD '+fm(c.off)+NL+'FOB/MT        : USD '+fm(c.offMT)+NL+'Total FOB     : USD '+fm(tf)+NL;
       if(hasFr){r+=NL+'🚢 Freight : USD '+Math.round(D.fr)+'/FCL ÷ '+fm(r_.c20,0)+' ctns = +USD '+fm(c.frU)+'/ctn'+NL+'Total Freight : USD '+fm(tfr)+NL+'FOB+Fr/ctn    : USD '+fm(c.tot)+NL+'FOB+Fr/MT     : USD '+fm(c.totMT)+NL+'Total FOB+Fr  : USD '+fm(tf+tfr)+NL;}
     }else{
-      r+='*'+(i+1)+'. '+title+'*'+NL+'   '+fm(r_.c20,0)+' ctns/20ft ('+fm(c.mt20,2)+' MT) | USD '+fm(c.off)+'/ctn | USD '+fm(c.offMT)+'/MT'+NL;
+      r+='*'+(i+1)+'. '+title+'*'+NL+'   '+ldTxt(r_,c)+' | USD '+fm(c.off)+'/ctn | USD '+fm(c.offMT)+'/MT'+NL;
     }
   });
   if(isQ){r+=NL+SEP+NL+'*TOTAL SUMMARY*'+NL+'Items     : '+S.length+' | FCL: '+gFcl+' | Volume: '+fm(gMt,2)+' MT'+NL+'Total FOB : USD '+fm(gF)+NL;
@@ -9100,6 +9148,7 @@ function build_pdf(lg){
   doc.text((isQ?(hasFr?'FOB (with Freight) PRICE QUOTATION':'FOB PRICE QUOTATION'):'FOB PRICE LIST')+' - DAIRIES',mg,y);
   y+=9;doc.setFontSize(8.5);
   var meta=[['Date:',dateStr],['Reference No:',fname],['To:',D.cust||''],['Shipment Period:',D.period||'To be advised'],['Origin / Incoterms:','FOB Port Klang, Malaysia'],['Market:',MK_LBL[mk]+(mk==='ME'?' (SCM without TiO2)':'')]];
+  if(CUR.noteInReport&&MK_NOTE[mk])meta.push(['Note:',MK_NOTE[mk]]);
   if(hasFr)meta.push(['Freight:',(D.frName||'As quoted')+' (USD '+Math.round(D.fr)+'/20ft FCL)']);
   meta.forEach(function(r){doc.setFont('helvetica','bold');doc.setTextColor.apply(doc,DK);doc.text(r[0],mg,y);doc.setFont('helvetica','normal');doc.text(r[1],mg+42,y);y+=5;});
   y+=3;doc.setFillColor(235,245,235);doc.roundedRect(mg,y-4,cW,7,1,1,'F');doc.setTextColor.apply(doc,G);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text(isQ?'Price Schedule':'Price List',mg+2,y+0.5);y+=7;
@@ -9107,13 +9156,13 @@ function build_pdf(lg){
   if(isQ){
     head=[['#','Product / Description','Load / 20ft','Price / ctn','FCL','Total (USD)']];
     list.forEach(function(r,i){var c=calc(r,mk),f=D.rows[r.id].fcl,tu=f*r.c20,tf=r4(tu*c.off),tfr=r4(f*D.fr);gF+=tf;gFr+=tfr;gMt+=tu*c.kg/1000;gFcl+=f;
-      var desc=name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+fm(c.kg,2)+' kg/ctn';
+      var desc=name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+wtTxt(r,c);
       body.push([String(i+1),desc,fm(r.c20,0)+' ctns\n'+fm(c.mt20,2)+' MT','USD '+fm(c.off)+'\nUSD '+fm(c.offMT)+'/MT',String(f)+' FCL\n'+fm(tu,0)+' ctns','USD '+fm(tf)]);
       if(hasFr)body.push(['','  + Freight (USD '+Math.round(D.fr)+' / '+fm(r.c20,0)+' ctns)','','+USD '+fm(c.frU)+'/ctn','','USD '+fm(tfr)]);});
     body.push(['','TOTAL '+(hasFr?'FOB + FREIGHT':'FOB')+'  ('+fm(gMt,2)+' MT)','','',String(gFcl)+' FCL','USD '+fm(gF+gFr)]);
   }else{
     head=[['#','Product / Description','Load / 20ft','Price / ctn','Price / MT']];
-    list.forEach(function(r,i){var c=calc(r,mk);body.push([String(i+1),name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+fm(c.kg,2)+' kg/ctn',fm(r.c20,0)+' ctns\n'+fm(c.mt20,2)+' MT','USD '+fm(c.off),'USD '+fm(c.offMT)]);});
+    list.forEach(function(r,i){var c=calc(r,mk);body.push([String(i+1),name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+wtTxt(r,c),(r.c20?fm(r.c20,0)+' ctns\n'+fm(c.mt20,2)+' MT'+(r.c40?'\n40ft: '+fm(r.c40,0):''):'TBC'),'USD '+fm(c.off),'USD '+fm(c.offMT)]);});
   }
   var nb=body.length;
   doc.autoTable({head:head,body:body,startY:y,margin:{left:mg,right:mg,top:15,bottom:42},rowPageBreak:'avoid',styles:{fontSize:7.5,cellPadding:2.2,valign:'middle',lineWidth:0.15,lineColor:[210,215,220]},
@@ -9132,7 +9181,7 @@ function build_pdf(lg){
   doc.setFont('helvetica','italic');doc.setTextColor(90,90,90);need(8);doc.text('Pricing is subject to final confirmation. Quotation valid as per Validity clause above.',mg,ty+1);
   var n=doc.getNumberOfPages();
   for(var p=1;p<=n;p++){doc.setPage(p);try{doc.addImage(window._PDF_FOOT_JPG,'JPEG',0,259.8,210,37.2);}catch(e){}doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(30,30,30);doc.text('Page '+p+' of '+n,pgW-mg,p===1?20:8,{align:'right'});}
-  try{if(typeof _logActivity==='function')_logActivity({event:'DAIRY_PDF_GENERATED',customer:D.cust||'',supplier:'DAIRY',products:list.map(function(r){return name(r)+' '+r.pk;}).join(' | '),fobTotal:fm(gF,2),filename:fname,incoterms:hasFr?'FOB (with Freight)':'FOB'});}catch(e){}
+  try{if(typeof _logActivity==='function')_logActivity({event:'DAIRY_PDF_GENERATED',customer:D.cust||'',supplier:'DAIRY-'+CUR.key.toUpperCase(),products:list.map(function(r){return name(r)+' '+r.pk;}).join(' | '),fobTotal:fm(gF,2),filename:fname,incoterms:hasFr?'FOB (with Freight)':'FOB'});}catch(e){}
   doc.save(fname+'.pdf');toast('✅ Saved: '+fname+'.pdf');
 }
 
@@ -9144,7 +9193,7 @@ window.openDairies=function(){
 };
 window.dairyBack=function(){var v=$('dairyView');if(v)v.style.display='none';try{sessionStorage.removeItem('oillio_div');}catch(e){}if(window.showDivisions)showDivisions();};
 window.dairyHide=function(){var v=$('dairyView');if(v)v.style.display='none';};
-window._dairyTest={HIST:HIST,changeLog:changeLog,allLists:allLists,D:D,ROWS:ROWS,calc:calc,buildText:buildText,vis:vis,awaiting:awaiting};
+window._dairyTest={get HIST(){return HIST;},changeLog:changeLog,allLists:allLists,D:D,get ROWS(){return ROWS;},get SUPS(){return SUPS;},calc:calc,buildText:buildText,vis:vis,awaiting:awaiting};
 })();
 </script>
 </body>

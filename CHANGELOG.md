@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## 2026-10-27 (V27OCT2026B) - Dairies: separate Able Dairies tab
+- Dairies page now has two supplier tabs: F&B Nutrition and Able Dairies. Each has its own list banner, margin, supplier margin, quotation lines, price history / change log and T&C.
+- Able Dairies (Oct 2026 list, received 27 Oct): 39 lines - SCM / creamer / flavoured / filled (24), evaporated incl. sterilised (9, 'effective 01.04.2026'), UHT aseptic (6 sizes, same price all flavours). FOB Port Klang, MOQ 1 FCL, validity 2 weeks (to 10 Nov 2026), payment / lead time as F&B, supplier margin 5%, Oillio margin default 5%.
+- Banner, WhatsApp text, PDF and T&C all carry: indicative minimum price - other markets may be higher, subject to confirmation. Staff-sales / ex-factory RM prices are NOT loaded.
+- History: SCM 14 Jul / Sep / Oct 2026 (48 price changes on record); evaporated and UHT start from Oct (no earlier prices).
+- Durian SCM (24x380g, 24x500g): supplier loading is local-truck loading - shown as TBC, FCL entry disabled until export loading is confirmed.
+- UHT per-MT figure uses 1.03 kg/L. 200ml loading 3,500 ctn used (supplier shows 3,500 and 4,000) - flagged.
+
 ## 2026-10-27 (V27OCT2026A) - Apical list 27 Oct
 - Apical 27 Oct 2026 list loaded (22 rows, no uplift). Auto-applies; press Save & Log Reference once.
 - Vs 23 Oct (supplier FOB): Jakarta shortenings 36/39, 38/40, 43/47 +5, 46/48 and 48/52 +10; Spread Fat +10; RCNO / HCNO unchanged; HPS 20ft / 40ft +10; Jerry can CP10 / CP8 +10 each. Port Klang HPKS -5, HPKO 38/40 and 40/42 -25, HPKL -25, CBR -10; Low GE 36/39 and 38/42 +5, 43/48 (and 46/48) and 48/52 +10.
