@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## 2026-10-27 (V27OCT2026C) - Dairies mobile layout
+- On screens up to 760px the Dairies price list shows one card per pack (offer per ctn large, loading, margin / FCL / easy-open inputs, supplier cost detail collapsible for User 0/1) instead of the wide table; settings in 2 columns, bigger tap targets. Desktop table unchanged.
+
 ## 2026-10-27 (V27OCT2026B) - Dairies: separate Able Dairies tab
 - Dairies page now has two supplier tabs: F&B Nutrition and Able Dairies. Each has its own list banner, margin, supplier margin, quotation lines, price history / change log and T&C.
 - Able Dairies (Oct 2026 list, received 27 Oct): 39 lines - SCM / creamer / flavoured / filled (24), evaporated incl. sterilised (9, 'effective 01.04.2026'), UHT aseptic (6 sizes, same price all flavours). FOB Port Klang, MOQ 1 FCL, validity 2 weeks (to 10 Nov 2026), payment / lead time as F&B, supplier margin 5%, Oillio margin default 5%.

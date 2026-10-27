@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V27OCT2026B';
+  var _v='V27OCT2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -395,6 +395,20 @@ body.user-mode #userPdfBar { display:flex !important; }
 #dairyView .dy-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 #dairyView .dy-tabs button{flex:1;min-width:150px;max-width:280px;border:2px solid #1a5c18;background:#fff;color:#1a5c18;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;font-size:.9rem}
 #dairyView .dy-tabs button.on{background:#1a5c18;color:#fff}
+#dairyView .dy-cards{display:none}
+#dairyView .dy-gh{background:#eaf2ea;color:#1a5c18;font-weight:800;font-size:.84rem;padding:8px 10px;border-radius:8px;margin:12px 0 6px}
+#dairyView .dy-c{border:1px solid #dde5dd;border-radius:10px;padding:10px;margin-bottom:8px;background:#fff}
+#dairyView .dy-c1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#dairyView .dy-pk{font-weight:800;font-size:.95rem}
+#dairyView .dy-of{text-align:right;white-space:nowrap}#dairyView .dy-of small{display:block;font-size:.62rem;color:#667}#dairyView .dy-of b{font-size:1.12rem;color:#1a5c18}
+#dairyView .dy-c2{display:flex;justify-content:space-between;gap:8px;font-size:.76rem;color:#556;margin:4px 0 8px;flex-wrap:wrap}
+#dairyView .dy-c3{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;align-items:end}
+#dairyView .dy-c3 label{font-size:.64rem;font-weight:700;color:#556;display:flex;flex-direction:column;gap:2px}
+#dairyView .dy-c3 input,#dairyView .dy-c3 select{width:100%;box-sizing:border-box;padding:8px 6px;border:1.5px solid #cbd5cb;border-radius:7px;font-size:.88rem;text-align:left}
+#dairyView .dy-lid{font-size:.72rem;color:#667;align-self:center}
+#dairyView .dy-cd{margin:0 0 8px;background:#fffaf0;border:1px solid #f3dfb2;border-radius:8px;padding:5px 9px;font-size:.74rem}
+#dairyView .dy-cd summary{cursor:pointer;font-weight:700;color:#8a5a00}
+#dairyView .dy-cg{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin-top:5px}#dairyView .dy-cg b{text-align:right}
 #dairyView .dy-banner{background:#fff8e1;border:1px solid #f0c75e;color:#6b4a00;border-radius:8px;padding:9px 12px;font-size:.78rem;margin-bottom:12px}
 #dairyView .dy-sup{color:#8a6d1a}
 #dairyView .dy-card{background:#fff;border:1px solid #dde5dd;border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
@@ -423,6 +437,24 @@ body.user-mode #userPdfBar { display:flex !important; }
 #dairyView .dy-act{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
 #dairyView .dy-act button{border:none;border-radius:8px;padding:10px 18px;font-weight:800;font-size:.84rem;color:#fff;cursor:pointer}
 #dairyView .dy-act .g{background:#25a244}#dairyView .dy-act .b{background:#1a5478}
+@media(max-width:760px){
+ #dairyView .dy-pl{display:none}
+ #dairyView .dy-cards{display:block}
+ #dairyView .dy-wrap{padding:10px 8px 70px}
+ #dairyView .dy-card{padding:10px}
+ #dairyView .dy-top{padding:8px 10px}#dairyView .dy-ttl{font-size:.95rem}#dairyView .dy-ttl span{display:none}
+ #dairyView .dy-btns button{padding:6px 9px;font-size:.72rem;margin-left:4px}
+ #dairyView .dy-grid{grid-template-columns:1fr 1fr}
+ #dairyView .dy-tabs button{min-width:0;flex:1;padding:10px 6px;font-size:.84rem}
+ #dairyView .dy-mk button{flex:1 1 44%;padding:9px 6px}
+ #dairyView .dy-banner{font-size:.72rem}
+ #dairyView .dy-h{font-size:.86rem}
+ #dairyView textarea{min-height:260px;font-size:.7rem}
+ #dairyView .dy-act button{flex:1;padding:12px 8px}
+ #dairyView .dy-t{font-size:.7rem}
+ #dairyView .dy-grid label{min-width:0}
+ #dairyView .dy-grid input,#dairyView .dy-grid select{width:100%;min-width:0;box-sizing:border-box}
+}
 @media print{#dairyView{display:none!important}}
 #copyFooter{position:fixed;right:10px;bottom:6px;z-index:1000000;font-size:.68rem;color:#5b6670;background:rgba(255,255,255,.88);padding:3px 9px;border-radius:10px;pointer-events:none;letter-spacing:.01em;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 @media print{#copyFooter{display:none!important}}
@@ -8988,7 +9020,7 @@ function build(){
    '<label id="dyEoL">Easy-open cans<select id="dyEo" onchange="dyCtl()"><option value="0">Standard (set per line)</option><option value="1">Easy-open on ALL eligible lines</option></select></label>'+
   '</div></div>'+
   '<div class="dy-card"><div class="dy-h">Price list &mdash; <span id="dyMkName"></span> <small>(FOB Port Klang, USD per carton)</small></div>'+
-  '<div class="dy-tw"><table class="dy-t" id="dyTbl"></table></div>'+
+  '<div class="dy-tw dy-pl"><table class="dy-t" id="dyTbl"></table></div><div class="dy-cards" id="dyCards"></div>'+
   '<div class="dy-hint">Enter FCL (20ft) in the last column to add a line to the quotation. Lines with 0 FCL show as a price list.</div></div>'+
   '<details class="dy-card" id="dyAw"><summary class="dy-h" style="cursor:pointer"><span id="dyAwT"></span></summary><div class="dy-tw"><table class="dy-t" id="dyAwTbl"></table></div></details>'+
   '<details class="dy-card" id="dyHist"><summary class="dy-h" style="cursor:pointer"><span id="dyHistT"></span></summary><div id="dyHistB"></div></details>'+
@@ -9010,7 +9042,7 @@ function render(){
   var I=internal();var h='<thead><tr><th>Product</th><th>Pack</th><th>Can / lid</th><th class="r">Load / 20ft</th>'+
    (I?'<th class="r dy-i">Supplier FOB /ctn</th><th class="r dy-i">Est. cost /ctn</th><th class="r dy-i">Room /ctn</th><th class="r dy-i">Target /ctn</th><th class="r dy-i">vs prev list</th>':'')+
    '<th class="r">Mgn %</th><th class="r">Offer /ctn</th><th class="r">Offer /MT</th><th class="r">FCL</th></tr></thead><tbody>';
-  var last='';
+  var last='',cardsH='',lastC='';
   vis().forEach(function(r){
     var c=calc(r,mk),st=D.rows[r.id];
     var grp=name(r);
@@ -9026,7 +9058,18 @@ function render(){
     h+='<td class="r"><input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></td>';
     h+='<td class="r"><b>'+fm(c.off)+'</b></td><td class="r">'+fm(c.offMT)+'</td>';
     h+='<td class="r"><input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="'+(r.c20?'0':'TBC')+'"'+(r.c20?'':' disabled')+' onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></td></tr>';
+    // ---- mobile card for this line ----
+    if(grp!==lastC){cardsH+='<div class="dy-gh">'+esc(grp)+'</div>';lastC=grp;}
+    var dtx=c.d==null?(c.nd?'n/a':'new'):(c.d===0?'=':(c.d>0?'+':'')+fm(c.d));
+    var eoSel=eoOK(r)?'<label>Can (easy-open +'+fm(DAIRY_INFO.eo[r.u])+')<select onchange="dyRow(\''+r.id+'\',\'eo\',this.value==\'1\')"><option value="0"'+(!c.eo?' selected':'')+'>Standard</option><option value="1"'+(c.eo?' selected':'')+'>Easy-open</option></select></label>':(r.lid?'<div class="dy-lid">'+esc(r.lid)+'</div>':'');
+    cardsH+='<div class="dy-c"><div class="dy-c1"><div class="dy-pk">'+esc(r.pk)+(r.nl?'<div class="dim">not on product list</div>':'')+'</div><div class="dy-of"><small>Offer / ctn</small><b>USD '+fm(c.off)+'</b></div></div>'+
+      '<div class="dy-c2"><span>'+(r.c20?fm(r.c20,0)+' ctn &middot; '+fm(c.mt20,2)+' MT'+(r.c40?' &middot; 40ft '+fm(r.c40,0):''):'<b style="color:#b45309">Loading TBC</b>')+'</span><span>USD '+fm(c.offMT)+' / MT</span></div>'+
+      (r.flag?'<div class="flag">&#9888; '+esc(r.flag)+'</div>':'')+
+      (I?'<details class="dy-cd"><summary>Supplier cost detail</summary><div class="dy-cg"><span>Supplier FOB'+(c.eo?' (incl. EO)':'')+'</span><b>'+fm(c.fob)+'</b><span>Est. cost</span><b>'+fm(c.est)+'</b><span>Room to push</span><b>'+fm(c.room)+' ('+fm(c.room/c.kg*1000,0)+'/MT)</b><span>Target at est. cost</span><b>'+fm(c.target)+'</b><span>vs previous list</span><b>'+dtx+'</b></div></details>':'')+
+      '<div class="dy-c3">'+eoSel+'<label>Margin %<input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></label>'+
+      '<label>FCL (20ft)<input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="'+(r.c20?'0':'TBC')+'"'+(r.c20?'':' disabled')+' onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></label></div></div>';
   });
+  var _cEl=$('dyCards');if(_cEl)_cEl.innerHTML=cardsH;
   $('dyTbl').innerHTML=h+'</tbody>';
   var aw=awaiting();$('dyAw').style.display=aw.length?'':'none';
   $('dyAwT').textContent='Awaiting supplier price for '+MK_LBL[mk]+' ('+aw.length+' lines) ▾';
