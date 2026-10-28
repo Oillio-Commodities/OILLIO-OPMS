@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V28OCT2026C — Apical list 28 Oct 2026
+- 22 lines loaded (FOB Jakarta lines and Port Klang lines). Changes vs 27 Oct: shortening 36/39, 38/40&40/42, 46/48 -5; spread fat -5; RCNO -20; HCNO -20; CP10/CP8 jerry can +45; HPKS +30; Low GE 36/39 -5, 43/48 & 46/48 -5; rest unchanged. Supplier note: ETD Jan 2027, validity EOD 28 Oct.
+
 ## V28OCT2026B — Dairies: FCL / quantity column removed
 - Removed the FCL input (table and mobile cards). Dairy documents are now price quotations per carton and per MT for the ticked lines, with loading per 20ft shown for reference.
 - Optional freight (USD per 20ft) now shows freight per carton and FOB+freight per carton/MT in the WhatsApp text and PDF.
