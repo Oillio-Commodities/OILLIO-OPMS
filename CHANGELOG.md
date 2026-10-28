@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V28OCT2026D — KLK list 28 Oct 2026
+- 85 SKUs loaded (CP6 bottles, CP10 cans/tins/BIB/drums/flexibags, RBD PO 36-39, stearin, PFAD, 7 shortenings, 2 margarines, butter oil substitute, vegetable ghee). Stearin, PFAD, shortening and margarine lines are loaded this time (previously held back as broken).
+- Unlisted this time (stay on the base oil): CP6 1.5L x12 and 4.5L x6, CP10 4.5L x4 and 8L x2, shortening 48-52 16kg and 36-39 25kg, vegetable ghee 4L, 6L, 8L, 8kg, 14kg. Supplier: shipment Nov 2026, MOQ 5 FCL, 10% advance / 90% against copy of shipping documents.
+
 ## V28OCT2026C — Apical list 28 Oct 2026
 - 22 lines loaded (FOB Jakarta lines and Port Klang lines). Changes vs 27 Oct: shortening 36/39, 38/40&40/42, 46/48 -5; spread fat -5; RCNO -20; HCNO -20; CP10/CP8 jerry can +45; HPKS +30; Low GE 36/39 -5, 43/48 & 46/48 -5; rest unchanged. Supplier note: ETD Jan 2027, validity EOD 28 Oct.
 
