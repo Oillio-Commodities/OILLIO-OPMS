@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V28OCT2026A — Dairies: line-by-line quote selection + Emerging Trend Global branding
+- Dairies: new **Quote** tick box on every line (table and mobile cards), Select all / Clear; only ticked lines go into the WhatsApp text and PDF. Typing FCL auto-ticks the line.
+- Dairies quotations are issued by **Emerging Trend Global Sdn Bhd**: WhatsApp header, redesigned PDF (ETG logo, orange theme, info panel, footer band).
+- Copyright line on Dairies/division pages and dairy PDF: Oillio Commodities Sdn Bhd & Emerging Trend Global Sdn Bhd. Oil side unchanged.
+
 ## 2026-10-27 (V27OCT2026C) - Dairies mobile layout
 - On screens up to 760px the Dairies price list shows one card per pack (offer per ctn large, loading, margin / FCL / easy-open inputs, supplier cost detail collapsible for User 0/1) instead of the wide table; settings in 2 columns, bigger tap targets. Desktop table unchanged.
 
