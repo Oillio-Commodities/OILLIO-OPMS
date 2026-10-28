@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V28OCT2026B — Dairies: FCL / quantity column removed
+- Removed the FCL input (table and mobile cards). Dairy documents are now price quotations per carton and per MT for the ticked lines, with loading per 20ft shown for reference.
+- Optional freight (USD per 20ft) now shows freight per carton and FOB+freight per carton/MT in the WhatsApp text and PDF.
+- Mixed-container quoting not built; revisit if Able Dairies permits it.
+
 ## V28OCT2026A — Dairies: line-by-line quote selection + Emerging Trend Global branding
 - Dairies: new **Quote** tick box on every line (table and mobile cards), Select all / Clear; only ticked lines go into the WhatsApp text and PDF. Typing FCL auto-ticks the line.
 - Dairies quotations are issued by **Emerging Trend Global Sdn Bhd**: WhatsApp header, redesigned PDF (ETG logo, orange theme, info panel, footer band).

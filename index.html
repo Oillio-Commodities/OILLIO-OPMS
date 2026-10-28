@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V28OCT2026A';
+  var _v='V28OCT2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -9032,7 +9032,7 @@ function build(){
   '<div class="dy-card"><div class="dy-h">Price list &mdash; <span id="dyMkName"></span> <small>(FOB Port Klang, USD per carton)</small></div>'+
   '<div class="dy-sel"><button onclick="dyAll(true)">\u2611 Select all</button><button onclick="dyAll(false)">\u2610 Clear</button><span id="dySelN"></span></div>'+
   '<div class="dy-tw dy-pl"><table class="dy-t" id="dyTbl"></table></div><div class="dy-cards" id="dyCards"></div>'+
-  '<div class="dy-hint">Tick the lines to include in the WhatsApp text and PDF. Enter FCL (20ft) on every ticked line for a priced quotation; otherwise the report is a price list of the ticked lines.</div></div>'+
+  '<div class="dy-hint">Tick the lines to include in the WhatsApp text and PDF. Prices are per carton and per MT (loading per 20ft shown for reference); add freight above if quoting FOB + freight.</div></div>'+
   '<details class="dy-card" id="dyAw"><summary class="dy-h" style="cursor:pointer"><span id="dyAwT"></span></summary><div class="dy-tw"><table class="dy-t" id="dyAwTbl"></table></div></details>'+
   '<details class="dy-card" id="dyHist"><summary class="dy-h" style="cursor:pointer"><span id="dyHistT"></span></summary><div id="dyHistB"></div></details>'+
   '<div class="dy-card"><div class="dy-h">Report <small id="dyRptMode"></small></div>'+
@@ -9052,7 +9052,7 @@ function render(){
   $('dyBanner').innerHTML='<b>Supplier list '+esc(DAIRY_INFO.date)+'</b> &middot; '+esc(DAIRY_INFO.origin)+' &middot; valid till <b>'+esc(DAIRY_INFO.validTill)+'</b> &middot; '+esc(DAIRY_INFO.shipFor)+(internal()?' <span class="dy-sup">['+esc(DAIRY_INFO.internalNote)+']</span>':'');
   var I=internal();var h='<thead><tr><th>Quote</th><th>Product</th><th>Pack</th><th>Can / lid</th><th class="r">Load / 20ft</th>'+
    (I?'<th class="r dy-i">Supplier FOB /ctn</th><th class="r dy-i">Est. cost /ctn</th><th class="r dy-i">Room /ctn</th><th class="r dy-i">Target /ctn</th><th class="r dy-i">vs prev list</th>':'')+
-   '<th class="r">Mgn %</th><th class="r">Offer /ctn</th><th class="r">Offer /MT</th><th class="r">FCL</th></tr></thead><tbody>';
+   '<th class="r">Mgn %</th><th class="r">Offer /ctn</th><th class="r">Offer /MT</th></tr></thead><tbody>';
   var last='',cardsH='',lastC='';
   vis().forEach(function(r){
     var c=calc(r,mk),st=D.rows[r.id];
@@ -9068,7 +9068,7 @@ function render(){
     }
     h+='<td class="r"><input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></td>';
     h+='<td class="r"><b>'+fm(c.off)+'</b></td><td class="r">'+fm(c.offMT)+'</td>';
-    h+='<td class="r"><input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="'+(r.c20?'0':'TBC')+'"'+(r.c20?'':' disabled')+' onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></td></tr>';
+    h+='</tr>';
     // ---- mobile card for this line ----
     if(grp!==lastC){cardsH+='<div class="dy-gh">'+esc(grp)+'</div>';lastC=grp;}
     var dtx=c.d==null?(c.nd?'n/a':'new'):(c.d===0?'=':(c.d>0?'+':'')+fm(c.d));
@@ -9078,7 +9078,7 @@ function render(){
       (r.flag?'<div class="flag">&#9888; '+esc(r.flag)+'</div>':'')+
       (I?'<details class="dy-cd"><summary>Supplier cost detail</summary><div class="dy-cg"><span>Supplier FOB'+(c.eo?' (incl. EO)':'')+'</span><b>'+fm(c.fob)+'</b><span>Est. cost</span><b>'+fm(c.est)+'</b><span>Room to push</span><b>'+fm(c.room)+' ('+fm(c.room/c.kg*1000,0)+'/MT)</b><span>Target at est. cost</span><b>'+fm(c.target)+'</b><span>vs previous list</span><b>'+dtx+'</b></div></details>':'')+
       '<div class="dy-c3">'+eoSel+'<label>Margin %<input class="dy-m" type="number" step="0.1" placeholder="'+fm(D.margin,1)+'" value="'+(st.mgn==null?'':st.mgn)+'" onchange="dyRow(\''+r.id+'\',\'mgn\',this.value)"></label>'+
-      '<label>FCL (20ft)<input class="dy-q" type="number" min="0" step="1" value="'+(st.fcl||'')+'" placeholder="'+(r.c20?'0':'TBC')+'"'+(r.c20?'':' disabled')+' onchange="dyRow(\''+r.id+'\',\'fcl\',this.value)"></label></div></div>';
+      ''+'</div></div>';
   });
   var _cEl=$('dyCards');if(_cEl)_cEl.innerHTML=cardsH;
   $('dyTbl').innerHTML=h+'</tbody>';
@@ -9088,7 +9088,7 @@ function render(){
     return'<tr><td>'+esc(name(r))+'</td><td>'+esc(r.pk)+'</td><td class="r">'+fm(r.c20,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c20/1000,2)+' MT)</span></td><td class="r">'+(r.c40?fm(r.c40,0)+' ctn <span class="dim">('+fm(kgc(r)*r.c40/1000,2)+' MT)</span>':'&mdash;')+'</td></tr>';}).join('')+'</tbody>';
   try{renderHist();}catch(e){console.error(e);}
   $('dyTxt').value=buildText();
-  var P_=picked(),q_=P_.length;$('dyRptMode').textContent=!q_?'— nothing ticked yet':(isQuote(P_)?'— Quotation ('+q_+' line'+(q_>1?'s':'')+')':'— Price list ('+q_+' line'+(q_>1?'s':'')+') — enter FCL on every ticked line for a quotation');var sn=$('dySelN');if(sn)sn.textContent=q_+' of '+vis().length+' lines ticked';
+  var P_=picked(),q_=P_.length;$('dyRptMode').textContent=!q_?'— nothing ticked yet':'— Price quotation ('+q_+' line'+(q_>1?'s':'')+')';var sn=$('dySelN');if(sn)sn.textContent=q_+' of '+vis().length+' lines ticked';
 }
 
 function renderHist(){
@@ -9119,7 +9119,7 @@ window.dyCsv=function(){var ch=changeLog(),rows=[['New list date','Previous list
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Oillio_Dairies_Price_Changes_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);};
 function histTip(id,mk){return allLists().map(function(l){var p=l.P[id+'|'+mk];return l.date+': '+(p==null?'-':fm(p));}).join('  |  ');}
 function picked(){return vis().filter(function(r){return D.rows[r.id].inc;});}
-function isQuote(P){return P.length>0&&P.every(function(r){return D.rows[r.id].fcl>0&&r.c20;});}
+function isQuote(P){return false;}
 function sel(){var P=picked();return isQuote(P)?P:[];}
 window.dyAll=function(v){vis().forEach(function(r){D.rows[r.id].inc=!!v;});render();};
 window.dyMarket=function(k){D.market=k;render();};
@@ -9137,15 +9137,15 @@ window.dyCtl=function(k){
 function today(){return new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
 function buildText(){
   var NL='\n',SEP=Array(42).join('-'),mk=D.market,P=picked();if(!P.length)return 'No lines ticked yet.'+NL+'Tick the lines you want to quote (Quote box on each line).';var S=isQuote(P)?P:[],list=P,isQ=S.length>0;
-  var hasFr=D.fr>0&&isQ;
-  var r='*EMERGING TREND GLOBAL SDN BHD*'+NL+'*'+(isQ?(hasFr?'FOB (WITH FREIGHT) PRICE QUOTATION':'FOB PRICE QUOTATION'):'FOB PRICE LIST')+' – DAIRIES*'+NL+SEP+NL;
+  var hasFr=D.fr>0;
+  var r='*EMERGING TREND GLOBAL SDN BHD*'+NL+'*'+(hasFr?'FOB + FREIGHT PRICE QUOTATION':'FOB PRICE QUOTATION')+' – DAIRIES*'+NL+SEP+NL;
   if(D.cust)r+='To        : '+D.cust+NL;
   r+='Date      : '+today()+NL;
   if(D.period)r+='Shipment  : '+D.period+NL;
   r+='Origin    : FOB Port Klang, Malaysia'+NL;
   r+='Market    : '+MK_LBL[mk]+(mk==='ME'?' (SCM without TiO2)':'')+NL;
   if(CUR.noteInReport&&MK_NOTE[mk])r+='Note      : '+MK_NOTE[mk]+NL;
-  if(hasFr)r+='Freight   : '+(D.frName||'As quoted')+' (USD '+Math.round(D.fr)+'/20ft FCL)'+NL;
+  if(hasFr)r+='Freight   : '+(D.frName||'As quoted')+' (USD '+Math.round(D.fr)+'/20ft container, spread over cartons per container)'+NL;
   r+=NL;
   var gF=0,gFr=0,gMt=0,gFcl=0;
   list.forEach(function(r_,i){
@@ -9159,7 +9159,7 @@ function buildText(){
       r+='FOB Price/ctn : USD '+fm(c.off)+NL+'FOB/MT        : USD '+fm(c.offMT)+NL+'Total FOB     : USD '+fm(tf)+NL;
       if(hasFr){r+=NL+'🚢 Freight : USD '+Math.round(D.fr)+'/FCL ÷ '+fm(r_.c20,0)+' ctns = +USD '+fm(c.frU)+'/ctn'+NL+'Total Freight : USD '+fm(tfr)+NL+'FOB+Fr/ctn    : USD '+fm(c.tot)+NL+'FOB+Fr/MT     : USD '+fm(c.totMT)+NL+'Total FOB+Fr  : USD '+fm(tf+tfr)+NL;}
     }else{
-      r+='*'+(i+1)+'. '+title+'*'+NL+'   '+ldTxt(r_,c)+' | USD '+fm(c.off)+'/ctn | USD '+fm(c.offMT)+'/MT'+NL;
+      r+='*'+(i+1)+'. '+title+'*'+NL+'   '+ldTxt(r_,c)+' | USD '+fm(c.off)+'/ctn | USD '+fm(c.offMT)+'/MT'+NL+(hasFr&&r_.c20?'   + Freight USD '+fm(c.frU)+'/ctn = FOB+Fr USD '+fm(c.tot)+'/ctn | USD '+fm(c.totMT)+'/MT'+NL:'');
     }
   });
   if(isQ){r+=NL+SEP+NL+'*TOTAL SUMMARY*'+NL+'Items     : '+S.length+' | FCL: '+gFcl+' | Volume: '+fm(gMt,2)+' MT'+NL+'Total FOB : USD '+fm(gF)+NL;
@@ -9187,25 +9187,25 @@ window.dyPdf=function(){
     if(!(window.jspdf&&window.jspdf.jsPDF)){toast('PDF library could not load - check internet');done();return;}go();});});}
 };
 function build_pdf(lg){
-  var mk=D.market,P=picked(),S=isQuote(P)?P:[],isQ=S.length>0,list=P,hasFr=D.fr>0&&isQ;
+  var mk=D.market,P=picked(),S=isQuote(P)?P:[],isQ=S.length>0,list=P,hasFr=D.fr>0;
   var OR=[232,88,32],ORD=[160,52,10],TINT=[253,243,237],GR=[100,100,100],DK=[30,30,30];
   var doc=new window.jspdf.jsPDF('p','mm','a4');var pgW=210,mg=14,cW=pgW-mg*2;
   var d=new Date(),dd=('0'+d.getDate()).slice(-2),mm=('0'+(d.getMonth()+1)).slice(-2),yy=d.getFullYear(),hh=('0'+d.getHours()).slice(-2),mi=('0'+d.getMinutes()).slice(-2);
-  var safe=(D.cust||(isQ?'Quotation':'PriceList')).replace(/[\/\\:*?"<>|]/g,'').trim().slice(0,30)||'Quote';
+  var safe=(D.cust||'Quotation').replace(/[\/\\:*?"<>|]/g,'').trim().slice(0,30)||'Quote';
   var fname='EmergingTrendGlobal_'+safe+'_'+dd+mm+yy+'_'+hh+mi;
   var dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   var ratio=window._ETG_LOGO_R||0.285;
   // ---------- header ----------
   if(lg){try{doc.addImage(lg,'PNG',mg,8,60,60*ratio);}catch(e){lg=null;}}
   if(!lg){doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor.apply(doc,OR);doc.text('EMERGING TREND GLOBAL',mg,16);}
-  doc.setFont('helvetica','bold');doc.setFontSize(21);doc.setTextColor.apply(doc,OR);doc.text(isQ?'QUOTATION':'PRICE LIST',pgW-mg,16,{align:'right'});
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor.apply(doc,OR);doc.text('PRICE QUOTATION',pgW-mg,16,{align:'right'});
   doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor.apply(doc,GR);
   doc.text('Dairy Products  |  FOB Port Klang, Malaysia',pgW-mg,22,{align:'right'});doc.text(dateStr,pgW-mg,26.5,{align:'right'});
   doc.setDrawColor.apply(doc,OR);doc.setLineWidth(0.9);doc.line(mg,31,pgW-mg,31);
   // ---------- info panel ----------
   var L=[['TO',D.cust||'-'],['DATE',dateStr],['REFERENCE',fname]];
   var R=[['SHIPMENT PERIOD',D.period||'To be advised'],['MARKET',MK_LBL[mk]+(mk==='ME'?' (SCM without TiO2)':'')],['INCOTERMS',hasFr?'FOB Port Klang (with freight)':'FOB Port Klang, Malaysia']];
-  if(hasFr)R.push(['FREIGHT',(D.frName||'As quoted')+' - USD '+Math.round(D.fr)+' / 20ft FCL']);
+  if(hasFr)R.push(['FREIGHT',(D.frName||'As quoted')+' - USD '+Math.round(D.fr)+' / 20ft container']);
   var nr=Math.max(L.length,R.length),py=36,ph=nr*10+4;
   doc.setFillColor.apply(doc,TINT);doc.setDrawColor(246,208,188);doc.setLineWidth(0.3);doc.roundedRect(mg,py,cW,ph,2,2,'FD');
   function cell(x,y,lab,val,w){doc.setFont('helvetica','bold');doc.setFontSize(6.3);doc.setTextColor.apply(doc,ORD);doc.text(lab,x,y);doc.setFont('helvetica','normal');doc.setFontSize(8.6);doc.setTextColor.apply(doc,DK);var ln=doc.splitTextToSize(String(val),w);doc.text(ln[0],x,y+4.2);}
@@ -9214,7 +9214,7 @@ function build_pdf(lg){
   var y=py+ph+5;
   if(CUR.noteInReport&&MK_NOTE[mk]){doc.setFont('helvetica','italic');doc.setFontSize(7.6);doc.setTextColor.apply(doc,ORD);var nl=doc.splitTextToSize('Note: '+MK_NOTE[mk],cW);doc.text(nl,mg,y);y+=nl.length*3.8+2;}
   // section heading
-  y+=2;doc.setFillColor.apply(doc,OR);doc.rect(mg,y-3.6,1.7,5.2,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor.apply(doc,DK);doc.text(isQ?'Price Schedule':'Price List',mg+4,y+0.4);y+=4;
+  y+=2;doc.setFillColor.apply(doc,OR);doc.rect(mg,y-3.6,1.7,5.2,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor.apply(doc,DK);doc.text('Price Schedule',mg+4,y+0.4);y+=4;
   // ---------- table ----------
   var head,body=[],gF=0,gFr=0,gMt=0,gFcl=0;
   if(isQ){
@@ -9225,15 +9225,16 @@ function build_pdf(lg){
       if(hasFr)body.push(['','  + Freight (USD '+Math.round(D.fr)+' / '+fm(r.c20,0)+' ctns)','','+USD '+fm(c.frU)+'/ctn','','USD '+fm(tfr)]);});
     body.push(['','TOTAL '+(hasFr?'FOB + FREIGHT':'FOB')+'  ('+fm(gMt,2)+' MT)','','',String(gFcl)+' FCL','USD '+fm(gF+gFr)]);
   }else{
-    head=[['#','Product / Description','Load / 20ft','Price / ctn','Price / MT']];
-    list.forEach(function(r,i){var c=calc(r,mk);body.push([String(i+1),name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+wtTxt(r,c),(r.c20?fm(r.c20,0)+' ctns\n'+fm(c.mt20,2)+' MT'+(r.c40?'\n40ft: '+fm(r.c40,0):''):'TBC'),'USD '+fm(c.off),'USD '+fm(c.offMT)]);});
+    head=[hasFr?['#','Product / Description','Load / 20ft','FOB / ctn','FOB / MT','Freight / ctn','FOB+Freight / ctn']:['#','Product / Description','Load / 20ft','Price / ctn','Price / MT']];
+    list.forEach(function(r,i){var c=calc(r,mk);var row=[String(i+1),name(r)+'\n'+r.pk+(c.eo?' (easy-open)':'')+' | '+wtTxt(r,c),(r.c20?fm(r.c20,0)+' ctns\n'+fm(c.mt20,2)+' MT'+(r.c40?'\n40ft: '+fm(r.c40,0):''):'TBC'),'USD '+fm(c.off),'USD '+fm(c.offMT)];
+      if(hasFr){row.push(r.c20?'USD '+fm(c.frU):'TBC');row.push(r.c20?'USD '+fm(c.tot)+'\nUSD '+fm(c.totMT)+'/MT':'TBC');}body.push(row);});
   }
   var nb=body.length;
   doc.autoTable({head:head,body:body,startY:y,margin:{left:mg,right:mg,top:24,bottom:30},rowPageBreak:'avoid',theme:'grid',
     styles:{fontSize:7.6,cellPadding:2.4,valign:'middle',lineWidth:0.15,lineColor:[238,224,216],textColor:DK},
     headStyles:{fillColor:OR,textColor:[255,255,255],fontStyle:'bold',lineColor:OR},
     alternateRowStyles:{fillColor:[254,249,246]},
-    columnStyles:isQ?{0:{cellWidth:8,halign:'center'},2:{halign:'right',cellWidth:27},3:{halign:'right',cellWidth:29},4:{halign:'right',cellWidth:22},5:{halign:'right',cellWidth:30}}:{0:{cellWidth:8,halign:'center'},2:{halign:'right',cellWidth:34},3:{halign:'right',cellWidth:30},4:{halign:'right',cellWidth:30}},
+    columnStyles:isQ?{0:{cellWidth:8,halign:'center'},2:{halign:'right',cellWidth:27},3:{halign:'right',cellWidth:29},4:{halign:'right',cellWidth:22},5:{halign:'right',cellWidth:30}}:(hasFr?{0:{cellWidth:8,halign:'center'},2:{halign:'right',cellWidth:25},3:{halign:'right',cellWidth:22},4:{halign:'right',cellWidth:24},5:{halign:'right',cellWidth:22},6:{halign:'right',cellWidth:30}}:{0:{cellWidth:8,halign:'center'},2:{halign:'right',cellWidth:34},3:{halign:'right',cellWidth:30},4:{halign:'right',cellWidth:30}}),
     didParseCell:function(x){var raw=x.row.raw;if(x.section==='body'){if(raw&&raw[1]&&String(raw[1]).indexOf('+ Freight')>=0){x.cell.styles.textColor=[26,82,118];x.cell.styles.fontStyle='italic';x.cell.styles.fillColor=[240,246,255];}
       if(isQ&&x.row.index===nb-1){x.cell.styles.fontStyle='bold';x.cell.styles.fillColor=[252,228,215];x.cell.styles.textColor=ORD;x.cell.styles.fontSize=8.4;}}}});
   // ---------- terms ----------
@@ -9251,7 +9252,7 @@ function build_pdf(lg){
   // ---------- footer / continuation header on every page ----------
   var n=doc.getNumberOfPages();
   for(var p=1;p<=n;p++){doc.setPage(p);
-    if(p>1){if(lg){try{doc.addImage(lg,'PNG',mg,7,34,34*ratio);}catch(e){}}doc.setDrawColor.apply(doc,OR);doc.setLineWidth(0.6);doc.line(mg,19,pgW-mg,19);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor.apply(doc,GR);doc.text((isQ?'Quotation':'Price list')+'  |  '+(D.cust||dateStr),pgW-mg,14,{align:'right'});}
+    if(p>1){if(lg){try{doc.addImage(lg,'PNG',mg,7,34,34*ratio);}catch(e){}}doc.setDrawColor.apply(doc,OR);doc.setLineWidth(0.6);doc.line(mg,19,pgW-mg,19);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor.apply(doc,GR);doc.text('Price quotation  |  '+(D.cust||dateStr),pgW-mg,14,{align:'right'});}
     doc.setFillColor.apply(doc,OR);doc.rect(0,283,pgW,14,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(8.6);doc.setTextColor(255,255,255);doc.text('EMERGING TREND GLOBAL SDN BHD',mg,289);
     doc.setFont('helvetica','normal');doc.setFontSize(6.6);doc.text('© 2026 Oillio Commodities Sdn Bhd & Emerging Trend Global Sdn Bhd. All rights reserved.',mg,293.4);
