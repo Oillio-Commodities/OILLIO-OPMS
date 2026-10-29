@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V28OCT2026D';
+  var _v='V29OCT2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7019,29 +7019,29 @@ var KLK_LIST_28OCT26=[
 // THE DRILL: the supplier's FOB list is added here; on load the app sets every listed SKU's premium/discount =
 // supplier FOB - base oil (as saved) - packaging, until it has been SAVED once (the save stores the list id).
 // While unsaved, editing a base oil price re-balances it live. SKUs not on the list are tagged orange.
-var APC_LIST_28OCT26=[
+var APC_LIST_29OCT26=[
   ['20kg Shortening 36/39','20kg carton',1215],
   ['20kg Shortening 38/40 & 40/42','20kg carton',1210],
-  ['20kg Shortening 43/47','20kg carton',1215],
+  ['20kg Shortening 43/47','20kg carton',1210],
   ['20kg Shortening 46/48','20kg carton',1210],
-  ['20kg Shortening 48/52','20kg carton',1205],
-  ['18kg BIB Spread Fat','18kg BIB',1335],
+  ['20kg Shortening 48/52','20kg carton',1200],
+  ['18kg BIB Spread Fat','18kg BIB',1340],
   ['18kg RCNO','18kg BIB',2140],
   ['20kg HCNO','20kg carton',2205],
-  ['HPS Flakes','25kg polywoven bag',1290], // 20ft FCL (640 bags)
-  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1305], // 40ft FCL (960 bags)
-  ['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',1375],
-  ['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',1385],
+  ['HPS Flakes','25kg polywoven bag',1285], // 20ft FCL (640 bags)
+  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1300], // 40ft FCL (960 bags)
+  ['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',1380],
+  ['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',1390],
   ['20kg Hpks 33.5/35.5','20kg carton',2645],
   ['20kg Hpko 38/40','20kg carton',2260],
   ['20kg Hpko 40/42','20kg carton',2265],
   ['20kg Hpkl 41/43','20kg carton',2120],
-  ['20kg CBR 37/40','20kg carton',2025],
+  ['20kg CBR 37/40','20kg carton',2020],
   ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1233],
-  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1245],
+  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1240],
   ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1250],
   ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1250], // supplier's 43/48 line covers 46/48
-  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1260]
+  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1255]
 ];
 
 
@@ -7077,7 +7077,7 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
 }
 var SUP_LISTS={
   klk:{id:'28OCT26',day:'2026-10-28',label:'28 Oct 2026',uplift:0,rows:KLK_LIST_28OCT26,name:'KLK'},
-  apical:{id:'28OCT26',day:'2026-10-28',label:'28 Oct 2026',uplift:0,rows:APC_LIST_28OCT26,name:'Apical'}
+  apical:{id:'29OCT26',day:'2026-10-29',label:'29 Oct 2026',uplift:0,rows:APC_LIST_29OCT26,name:'Apical'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
