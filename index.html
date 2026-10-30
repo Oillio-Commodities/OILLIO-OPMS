@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V30OCT2026A';
+  var _v='V30OCT2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1781,7 +1781,7 @@ function el(id){return document.getElementById(id);}
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
     var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
     if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
-    ['klk','apical'].forEach(function(sup){
+    ['klk','apical','wingagro'].forEach(function(sup){
       var sv = (d[sup] && d[sup].list_id) || '';
       if (sv !== SUP_LISTS[sup].id) { _svApplyListAuto(sup, true); window._listPending[sup] = true; } else { window._listPending[sup] = false; }
     });
@@ -1824,7 +1824,7 @@ function el(id){return document.getElementById(id);}
     var payload = {
       apical: Object.assign({}, APC_REF, {model_v: MODEL_V, list_id: SUP_LISTS.apical.id}),
       klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: SUP_LISTS.klk.id}),
-      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V}),
+      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V, list_id: SUP_LISTS.wingagro.id}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
@@ -6346,7 +6346,7 @@ function _svRollWeekend(day){var d=new Date(day+'T00:00:00Z'),w=d.getUTCDay();if
 // "Current" pricing = the LAST SAVED pricing day (weekends/holidays keep Friday's prices live — never locked)
 function _svSyncStatus(){ // always tell the user which saved figures are on screen
   var n=document.getElementById('svOilNote');if(!n||window._refDirty)return;
-  if(window._listPending&&(window._listPending.klk||window._listPending.apical))return; // the 'new prices loaded' note has priority
+  if(window._listPending&&(window._listPending.klk||window._listPending.apical||window._listPending.wingagro))return; // the 'new prices loaded' note has priority
   if(window._syncLoadedOnce&&window._refLastSaved){n.textContent='Showing saved prices from '+new Date(window._refLastSaved).toLocaleString('en-GB',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' (MY) \u00b7 loaded from the database';n.style.color='#1a7a4a';}
   else if(!window._syncLoadedOnce){n.textContent='\u26a0 Saved prices NOT loaded from the database yet \u2014 figures shown may be OLD. Press "Reset to Last Saved" or refresh.';n.style.color='#c0392b';}
 }
@@ -7077,14 +7077,16 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
 }
 var SUP_LISTS={
   klk:{id:'28OCT26',day:'2026-10-28',label:'28 Oct 2026',uplift:0,rows:KLK_LIST_28OCT26,name:'KLK'},
-  apical:{id:'30OCT26',day:'2026-10-30',label:'30 Oct 2026',uplift:0,rows:APC_LIST_30OCT26,name:'Apical'}
+  apical:{id:'30OCT26',day:'2026-10-30',label:'30 Oct 2026',uplift:0,rows:APC_LIST_30OCT26,name:'Apical'},
+  // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
+  wingagro:{id:'30OCT26',day:'2026-10-30',label:'30 Oct 2026',uplift:0,partial:true,rows:[['20L/ 25l Yellow Jerry Can \u2013 CP10','20L Jerry Can',1275]],name:'Wing Agro'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
-function _svListData(sup){return sup==='apical'?APICAL_DATA:KLK_DATA;}
-function _svListRef(sup){return sup==='apical'?APC_REF:KLK_REF;}
+function _svListData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:KLK_DATA;}
+function _svListRef(sup){return sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:KLK_REF;}
 function _svListOn(sup,name,packing){
-  var L=SUP_LISTS[sup];if(!L)return true;
+  var L=SUP_LISTS[sup];if(!L||L.partial)return true;
   if(!_listOnSets[sup]){_listOnSets[sup]={};L.rows.forEach(function(x){_listOnSets[sup][x[0]+'|'+x[1]]=1;});}
   return !!_listOnSets[sup][name+'|'+packing];
 }
