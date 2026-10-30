@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V30OCT2026A — Apical list 30 Oct 2026
+- 22 lines loaded. Changes vs 29 Oct: HPKS -20; HPKO 38/40 and 40/42 -10 each; HPL -10; CBR -5; all Jakarta lines and Low GE shortenings unchanged. ETD Jan 2027, validity EOD 30 Oct; documents: Commercial Invoice, Packing List, Manufacturer COA, COO.
+
 ## V29OCT2026A — Apical list 29 Oct 2026
 - 22 lines loaded. Changes vs 28 Oct: shortening 43/47 -5, 48/52 -5; spread fat +5; HPS flakes 20ft/40ft -5 each; CP10/CP8 jerry can +5 each; CBR -5; Low GE 38/42 -5, 48/52 -5; rest unchanged. ETD Jan 2027, validity EOD 29 Oct.
 
