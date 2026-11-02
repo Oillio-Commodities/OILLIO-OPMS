@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V02NOV2026D';
+  var _v='V02NOV2026E';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -387,6 +387,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 #userPdfBar p  { font-size:.82rem; opacity:.8; margin:0; }
 
 /* ===== Dairies view ===== */
+body.not-u0 .u0-only{display:none!important}
 #dairyView .dy-sel{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
 #dairyView .dy-sel button{border:1px solid #1a5c18;background:#fff;color:#1a5c18;border-radius:6px;padding:5px 11px;font-weight:700;font-size:.74rem;cursor:pointer}
 #dairyView .dy-sel span{font-size:.74rem;color:#667}
@@ -699,6 +700,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
   <button class="sup-btn" id="supWing" onclick="setSupplier('wingagro')">&#x1F33F; Wing Agro</button>
   <button class="sup-btn" id="supCompare" onclick="setSupplier('compare')">&#x1F4CA; Compare</button>
   <button class="sup-btn" id="supCustomers" onclick="setSupplier('customers')">&#x1F465; Customers</button>
+  <button class="sup-btn u0-only" id="supActivity" onclick="openActivityTab()" style="border-color:#1a5c18;color:#1a5c18">&#x1F4C8; Activity</button>
   <span class="sup-hint">Select supplier to load pricing data &amp; SKUs</span>
 </div>
 
@@ -9072,7 +9074,7 @@ function build(){
   var v=$('dairyView');if(!v)return;
   v.innerHTML=
   '<div class="dy-top"><div class="dy-ttl">Dairies Products <span>Quotations by Emerging Trend Global Sdn Bhd</span></div>'+
-  '<div class="dy-btns"><button onclick="dairyBack()">⌂ Divisions</button><button onclick="doLogout()">Log out</button></div></div>'+
+  '<div class="dy-btns"><button class="u0-only" onclick="openActivityTab()">&#x1F4C8; Activity</button><button onclick="dairyBack()">⌂ Divisions</button><button onclick="doLogout()">Log out</button></div></div>'+
   '<div class="dy-wrap">'+
   '<div class="dy-tabs" id="dyTabs"></div>'+
   '<div class="dy-banner" id="dyBanner"></div>'+
@@ -9370,26 +9372,22 @@ window._dairyTest={get HIST(){return HIST;},changeLog:changeLog,allLists:allList
   // login / reopened-tab events and the User 0 button
   var t0=setInterval(function(){
     if(window.USER_ID==null)return;clearInterval(t0);
+    if(window.USER_ID!==0)document.body.classList.add('not-u0');
+    if(window.USER_ID!==0){var sa=document.getElementById('supActivity');if(sa)sa.style.display='none';}
     var fresh=sessionStorage.getItem('oillio_act_logged')!==String(window.USER_ID);
     window._act(fresh?'login':'open',null);try{sessionStorage.setItem('oillio_act_logged',String(window.USER_ID));}catch(e){}
-    if(window.USER_ID===0){
-      var b=document.getElementById('roleBadge');
-      if(b&&!document.getElementById('actBtn')){
-        var x=document.createElement('button');x.id='actBtn';x.textContent='\u{1F4CA} Activity';
-        x.style.cssText='margin-left:8px;background:#fff;color:#1a5c18;border:1.5px solid #1a5c18;border-radius:6px;padding:3px 9px;font-size:.72rem;font-weight:800;cursor:pointer';
-        x.onclick=openAct;b.parentNode.insertBefore(x,b.nextSibling);
-      }
-    }
   },300);
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   var tf=function(iso){try{return new Date(iso).toLocaleTimeString('en-GB',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}};
   var dfmt=function(iso){try{return new Date(iso).toLocaleString('en-GB',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}};
-  function openAct(){
+  window.openActivityTab=function(){
+    if(window.USER_ID!==0)return;
     var m=document.getElementById('actModal');if(m)m.remove();
     m=document.createElement('div');m.id='actModal';
-    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px';
-    m.innerHTML='<div style="background:#fff;border-radius:12px;max-width:980px;width:100%;padding:16px 18px;font-family:inherit"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:1.05rem">\u{1F4CA} User activity (Malaysia time)</b><button onclick="document.getElementById(\'actModal\').remove()" style="border:none;background:#eee;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:800">Close</button></div>'+
-      '<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="actPw" type="password" placeholder="Confirm User 0 password" style="width:230px;padding:7px 9px;border:1.5px solid #bbb;border-radius:6px"><select id="actDays" style="width:140px;padding:7px;border:1.5px solid #bbb;border-radius:6px"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option></select><button id="actGo" style="background:#1a5c18;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;cursor:pointer">Load</button><span id="actMsg" style="font-size:.78rem;color:#b00"></span></div><div id="actBody" style="font-size:.8rem;color:#555">Active min = minutes with real clicks/typing while the tab was open. Docs = PDFs and WhatsApp copies generated.</div></div>';
+    m.style.cssText='position:fixed;inset:0;background:#f4f6f4;z-index:9000;overflow:auto';
+    m.innerHTML='<div style="background:#0b3d2e;color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;top:0"><b style="font-size:1.05rem">\u{1F4C8} User Activity <span style="font-weight:400;font-size:.8rem;opacity:.8">(Malaysia time)</span></b><button onclick="document.getElementById(\'actModal\').remove()" style="border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;border-radius:16px;padding:5px 14px;cursor:pointer;font-weight:700">\u2190 Back to OPMS</button></div>'+
+      '<div style="max-width:1000px;margin:16px auto;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 6px rgba(0,0,0,.08)">'+
+      '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="actPw" type="password" placeholder="Confirm User 0 password" style="width:230px;padding:7px 9px;border:1.5px solid #bbb;border-radius:6px"><select id="actDays" style="width:140px;padding:7px;border:1.5px solid #bbb;border-radius:6px"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option></select><button id="actGo" style="background:#1a5c18;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;cursor:pointer">Load</button><span id="actMsg" style="font-size:.78rem;color:#b00"></span></div><div id="actBody" style="font-size:.8rem;color:#555">Enter your User 0 password and press Load. Active min = minutes with real clicks/typing while the tab was open. Docs = PDFs and WhatsApp copies generated.</div></div>';
     document.body.appendChild(m);
     var go=function(){
       var pw=document.getElementById('actPw').value,days=+document.getElementById('actDays').value,msg=document.getElementById('actMsg');

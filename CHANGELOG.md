@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026E — Activity is now its own tab
+- Activity moved from a pop-up near the role badge to a full-page "Activity" tab: in the supplier bar (oil) and the Dairies header, visible to User 0 only. Opens a separate page with a Back to OPMS button.
+
 ## V02NOV2026D — Activity monitor
 - Every login, real-activity minute (clicks/typing with the tab open), tab view, quote add, PDF and WhatsApp copy is logged to Supabase (opms_activity, write-only for the page). User 0 gets an Activity button: per-user, per-day table (first/last activity, active minutes, docs, actions, logins), flags days with no/low activity, and a recent-events list. Needs opms_activity_setup.sql run once; logging fails silently until then.
 
