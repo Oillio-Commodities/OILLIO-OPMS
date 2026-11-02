@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V30OCT2026B';
+  var _v='V02NOV2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -594,6 +594,12 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 
   function applyLevel(lvl){
     window.USER_LEVEL=lvl;
+    window._mgFloor=function(){
+      if(window.USER_LEVEL!==2)return;
+      var m=document.getElementById('margin');if(!m)return;
+      if((parseFloat(m.value)||0)<2.5){m.value='2.5';try{m.dispatchEvent(new Event('input'));}catch(e){}if(window.showToast)showToast('Minimum margin for your user level is 2.5%');}
+    };
+
     window.IS_ADMIN=(lvl<=1);
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
@@ -627,6 +633,10 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
     if(lvl===2){
       var mg=document.getElementById('suppMargin');
       if(mg) mg.min='2.5';
+      // User 2 may set the Oillio margin on the calculator too (min 2.5%); cost fields stay hidden
+      var mg2=document.getElementById('margin');if(mg2)mg2.min='2.5';
+      document.querySelectorAll('.u2-note').forEach(function(e){e.style.display='';});
+      setTimeout(function _f(){var m=document.getElementById('margin');if(m&&(parseFloat(m.value)||0)<2.5){m.value='2.5';try{m.dispatchEvent(new Event('input'));}catch(e){}}},400);
     }
   }
 
@@ -832,7 +842,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
     <div class="pb">
       <div class="irow">
         <div class="field admin-only"><label>Additive (USD/MT)</label><input type="number" id="additive" value="0" min="0" step="0.01" oninput="updBanner();rTable();rSum()"></div>
-        <div class="field admin-only"><label>Margin (%)</label><input type="number" id="margin" value="0" min="0" step="0.01" oninput="updBanner();rTable();rSum()"></div>
+        <div class="field"><label>Margin (%) <span class="u2-note" style="display:none;font-size:.62rem;font-weight:400;text-transform:none;color:var(--mut)">(min 2.5%)</span></label><input type="number" id="margin" value="0" min="0" step="0.01" oninput="updBanner();rTable();rSum()" onchange="_mgFloor()"></div>
       </div>
       <div class="field" style="margin-top:4px">
         <label>Additive Type <span style="font-size:.67rem;color:var(--mut);font-weight:400;text-transform:none">(optional)</span></label>

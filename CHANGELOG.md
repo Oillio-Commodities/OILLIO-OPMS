@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026A — User 2 can set the Oillio margin on the calculator
+- The Margin (%) field on the calculator (Step 3) is now visible to User 2 (additive stays hidden). Minimum 2.5%, same as the supplier pages and Dairies; below that it snaps back to 2.5%. Starts at 2.5% for User 2.
+
 ## V30OCT2026B — Wing Agro price 30 Oct 2026
 - Wing Agro now uses the same supplier-list drill as Apical/KLK (partial list: only quoted SKUs move, others keep their saved price, no orange tags). 20L/25L Yellow Jerry Can CP10 = USD 1,275/MT FOB. List id is stored on save for Wing Agro too.
 
