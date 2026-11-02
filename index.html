@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V02NOV2026C';
+  var _v='V02NOV2026D';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -9329,5 +9329,97 @@ window.dairyHide=function(){var v=$('dairyView');if(v)v.style.display='none';};
 window._dairyTest={get HIST(){return HIST;},changeLog:changeLog,allLists:allLists,D:D,get ROWS(){return ROWS;},get SUPS(){return SUPS;},calc:calc,buildText:buildText,vis:vis,awaiting:awaiting};
 })();
 </script>
+<script>
+/* ===== Activity monitor (User 0 can review; every login/active-minute/quote/PDF is logged to Supabase) ===== */
+(function(){
+  var URL_='https://oqljeueohqyzhslceakj.supabase.co/rest/v1/rpc/',KEY_='sb_publishable_pzlKbPZl6jjMU2f9ta7mYQ_FRXW2ama';
+  var SID=Math.random().toString(36).slice(2,12),lastInt=Date.now(),page='';
+  function H(){return {'apikey':KEY_,'Authorization':'Bearer '+KEY_,'Content-Type':'application/json'};}
+  window._act=function(ev,detail){
+    if(window.USER_ID==null)return;
+    try{fetch(URL_+'opms_log',{method:'POST',headers:H(),keepalive:true,body:JSON.stringify({p_uid:window.USER_ID,p_sid:SID,p_event:ev,p_detail:detail||null,p_ua:navigator.userAgent})}).catch(function(){});}catch(e){}
+  };
+  // real interaction (not just an open tab)
+  ['click','keydown','input','touchstart','scroll'].forEach(function(t){document.addEventListener(t,function(){lastInt=Date.now();},{passive:true,capture:true});});
+  var mm=0;document.addEventListener('mousemove',function(){var n=Date.now();if(n-mm>5000){mm=n;lastInt=n;}},{passive:true});
+  setInterval(function(){
+    if(window.USER_ID==null||document.visibilityState!=='visible')return;
+    if(Date.now()-lastInt<60000)window._act('hb',{page:page});
+  },60000);
+  // wrap existing actions (silent if a function is missing)
+  function wrap(name,ev,detailFn,setPage){
+    var f=window[name];if(typeof f!=='function')return;
+    window[name]=function(){
+      var r=f.apply(this,arguments);
+      try{if(setPage)page=setPage(arguments);window._act(ev,detailFn?detailFn(arguments):null);}catch(e){}
+      return r;
+    };
+  }
+  wrap('setSupplier','view',function(a){return {tab:String(a[0])};},function(a){return 'oil:'+a[0];});
+  wrap('chooseDivision','view',function(a){return {division:String(a[0])};},function(a){return 'div:'+a[0];});
+  wrap('dySup','view',function(a){return {dairy:String(a[0])};},function(a){return 'dairy:'+a[0];});
+  wrap('addToQuote','quote_add',function(){return {src:'calc'};});
+  wrap('addApicalToQuote','quote_add',function(){return {src:'apical'};});
+  wrap('addKlkToQuote','quote_add',function(){return {src:'klk'};});
+  wrap('addKLKToQuote','quote_add',function(){return {src:'klk'};});
+  wrap('addWAToQuote','quote_add',function(){return {src:'wingagro'};});
+  wrap('copyReport','copy',function(){return {kind:'oil whatsapp'};});
+  wrap('logPdfGeneration','pdf',function(a){var it=a[1]||[];return {kind:'oil pdf',customer:String(a[0]||'').slice(0,60),items:it.length};});
+  wrap('dyCopy','copy',function(){var D_=document.getElementById('dyCust');return {kind:'dairy whatsapp',customer:D_?String(D_.value||'').slice(0,60):''};});
+  wrap('dyPdf','pdf',function(){var D_=document.getElementById('dyCust');return {kind:'dairy pdf',customer:D_?String(D_.value||'').slice(0,60):''};});
+  // login / reopened-tab events and the User 0 button
+  var t0=setInterval(function(){
+    if(window.USER_ID==null)return;clearInterval(t0);
+    var fresh=sessionStorage.getItem('oillio_act_logged')!==String(window.USER_ID);
+    window._act(fresh?'login':'open',null);try{sessionStorage.setItem('oillio_act_logged',String(window.USER_ID));}catch(e){}
+    if(window.USER_ID===0){
+      var b=document.getElementById('roleBadge');
+      if(b&&!document.getElementById('actBtn')){
+        var x=document.createElement('button');x.id='actBtn';x.textContent='\u{1F4CA} Activity';
+        x.style.cssText='margin-left:8px;background:#fff;color:#1a5c18;border:1.5px solid #1a5c18;border-radius:6px;padding:3px 9px;font-size:.72rem;font-weight:800;cursor:pointer';
+        x.onclick=openAct;b.parentNode.insertBefore(x,b.nextSibling);
+      }
+    }
+  },300);
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var tf=function(iso){try{return new Date(iso).toLocaleTimeString('en-GB',{timeZone:'Asia/Kuala_Lumpur',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}};
+  var dfmt=function(iso){try{return new Date(iso).toLocaleString('en-GB',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}};
+  function openAct(){
+    var m=document.getElementById('actModal');if(m)m.remove();
+    m=document.createElement('div');m.id='actModal';
+    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px';
+    m.innerHTML='<div style="background:#fff;border-radius:12px;max-width:980px;width:100%;padding:16px 18px;font-family:inherit"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:1.05rem">\u{1F4CA} User activity (Malaysia time)</b><button onclick="document.getElementById(\'actModal\').remove()" style="border:none;background:#eee;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:800">Close</button></div>'+
+      '<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="actPw" type="password" placeholder="Confirm User 0 password" style="width:230px;padding:7px 9px;border:1.5px solid #bbb;border-radius:6px"><select id="actDays" style="width:140px;padding:7px;border:1.5px solid #bbb;border-radius:6px"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option></select><button id="actGo" style="background:#1a5c18;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;cursor:pointer">Load</button><span id="actMsg" style="font-size:.78rem;color:#b00"></span></div><div id="actBody" style="font-size:.8rem;color:#555">Active min = minutes with real clicks/typing while the tab was open. Docs = PDFs and WhatsApp copies generated.</div></div>';
+    document.body.appendChild(m);
+    var go=function(){
+      var pw=document.getElementById('actPw').value,days=+document.getElementById('actDays').value,msg=document.getElementById('actMsg');
+      if(!pw){msg.textContent='Enter the User 0 password.';return;}msg.style.color='#555';msg.textContent='Loading...';
+      fetch(URL_+'opms_activity_report',{method:'POST',headers:H(),body:JSON.stringify({p:pw,p_days:days})}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
+        if(!d){msg.style.color='#b00';msg.textContent='Wrong password.';return;}msg.textContent='';render(d,days);
+      }).catch(function(){msg.style.color='#b00';msg.textContent='Could not load. Has the activity SQL been run?';});
+    };
+    document.getElementById('actGo').onclick=go;document.getElementById('actPw').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  }
+  function render(d,days){
+    var S=d.summary||[],byD={},users=[1,2,3,4,0];
+    S.forEach(function(r){(byD[r.d]=byD[r.d]||{})[r.uid]=r;});
+    var dates=[];for(var i=0;i<days;i++){var x=new Date(Date.now()-i*864e5);dates.push(x.toLocaleDateString('en-CA',{timeZone:'Asia/Kuala_Lumpur'}));}
+    var h='<div style="overflow:auto"><table style="border-collapse:collapse;width:100%;font-size:.78rem"><thead><tr><th style="text-align:left;padding:6px;border-bottom:2px solid #1a5c18">Date</th>'+users.map(function(u){return '<th style="text-align:left;padding:6px;border-bottom:2px solid #1a5c18">User '+u+'</th>';}).join('')+'</tr></thead><tbody>';
+    dates.forEach(function(dt){
+      var wd=new Date(dt+'T12:00:00').getDay();var wk=(wd===0||wd===6);
+      h+='<tr style="'+(wk?'background:#f6f6f6;color:#888':'')+'"><td style="padding:6px;border-bottom:1px solid #eee;white-space:nowrap"><b>'+dt+'</b> '+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][wd]+'</td>';
+      users.forEach(function(u){var r=(byD[dt]||{})[u];
+        if(!r){h+='<td style="padding:6px;border-bottom:1px solid #eee;color:'+(wk?'#bbb':'#c0392b')+'">'+(wk?'—':'no activity')+'</td>';return;}
+        var low=r.active_min<15&&!wk;
+        h+='<td style="padding:6px;border-bottom:1px solid #eee;'+(low?'background:#fff4e0':'')+'">'+tf(r.first_ts)+'–'+tf(r.last_ts)+'<br><b>'+r.active_min+' min</b> active · '+r.docs+' docs · '+r.actions+' actions · '+r.logins+' login'+(r.logins==1?'':'s')+'</td>';});
+      h+='</tr>';});
+    h+='</tbody></table></div>';
+    var R=d.recent||[];
+    h+='<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">Recent events ('+R.length+')</summary><div style="max-height:320px;overflow:auto;margin-top:6px;font-size:.74rem">'+R.map(function(e){return '<div style="padding:3px 0;border-bottom:1px solid #f0f0f0">'+dfmt(e.ts)+' · <b>User '+e.uid+'</b> · '+esc(e.event)+' '+esc(e.detail?JSON.stringify(e.detail):'')+'</div>';}).join('')+'</div></details>';
+    document.getElementById('actBody').innerHTML=h;
+  }
+})();
+</script>
+
 </body>
 </html>

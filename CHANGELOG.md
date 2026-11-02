@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026D — Activity monitor
+- Every login, real-activity minute (clicks/typing with the tab open), tab view, quote add, PDF and WhatsApp copy is logged to Supabase (opms_activity, write-only for the page). User 0 gets an Activity button: per-user, per-day table (first/last activity, active minutes, docs, actions, logins), flags days with no/low activity, and a recent-events list. Needs opms_activity_setup.sql run once; logging fails silently until then.
+
 ## V02NOV2026C — User 3 and User 4
 - Two new logins with exactly the same access as User 2 (internal costs hidden, margin min 2.5%, view-only fields). Their ids show as User 3 / User 4 in the badge and activity logs. Passwords are set in Supabase (public.opms_access levels 3 and 4).
 
