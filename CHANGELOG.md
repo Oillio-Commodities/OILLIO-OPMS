@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026G — Activity moved to the division page
+- One central "TEAM ACTIVITY" button under the Oil & Fats / Dairies cards (User 0 only). Removed the small Activity buttons from the oil supplier bar and the Dairies header. The activity page opens above the division page and returns to it.
+
 ## V02NOV2026F — Activity tab loads last 90 days straight away
 - Opening the Activity tab right after logging in as User 0 loads the last 90 days with no extra password step (password kept in memory only, never stored). If the page was restored without a fresh login, it asks for the User 0 password once. 7/14/30/90-day selector kept.
 
