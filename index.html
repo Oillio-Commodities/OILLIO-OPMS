@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V02NOV2026B';
+  var _v='V02NOV2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -564,7 +564,7 @@ window.backToDivisions=function(){try{sessionStorage.removeItem('oillio_div');}c
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('dv-card')){e.preventDefault();document.activeElement.click();}});
 
   var stored=sessionStorage.getItem(SK);
-  if(stored==='0'||stored==='1'||stored==='2'){
+  if(/^[0-4]$/.test(stored||'')){
     applyLevel(+stored);
     return;
   }
@@ -595,7 +595,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(lvl){
         _lgBusy=false;if(btn)btn.disabled=false;
-        if(lvl===0||lvl===1||lvl===2){
+        if(lvl===0||lvl===1||lvl===2||lvl===3||lvl===4){
           sessionStorage.setItem(SK,String(lvl));
           applyLevel(lvl);
         } else {
@@ -609,7 +609,9 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
   }
 
 
-  function applyLevel(lvl){
+  function applyLevel(rawLvl){
+    // User 3 and User 4 have exactly the same access as User 2; the raw id is kept only for labels and activity logs
+    var lvl=Math.min(rawLvl,2);window.USER_ID=rawLvl;
     window.USER_LEVEL=lvl;
     window._mgFloor=function(){
       if(window.USER_LEVEL!==2)return;
@@ -630,8 +632,8 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 
     var badge=document.getElementById('roleBadge');
     if(badge){
-      badge.textContent=['User 0','User 1','User 2'][lvl];
-      badge.style.background=['#c0392b','#e67e22','#2980b9'][lvl];
+      badge.textContent='User '+rawLvl;
+      badge.style.background=['#c0392b','#e67e22','#2980b9','#2980b9','#2980b9'][rawLvl];
       badge.style.display='';
     }
     document.body.classList.add('level-'+lvl);
@@ -2165,7 +2167,7 @@ function el(id){return document.getElementById(id);}
   var _GAS_URL='';// legacy GAS logging disabled — replaced by Supabase
   function _logActivity(payload){
     if(!_GAS_URL||_GAS_URL.indexOf('PASTE')>=0)return;
-    var userLabel=['User 0','User 1','User 2'][window.USER_LEVEL]||'Unknown';
+    var userLabel=window.USER_ID!=null?('User '+window.USER_ID):(['User 0','User 1','User 2'][window.USER_LEVEL]||'Unknown');
     payload.user=userLabel;
     payload.device=navigator.userAgent.slice(0,120);
     try{
@@ -8675,7 +8677,7 @@ function logPdfGeneration(customer,items){
     ts:new Date().toISOString(),
     date:new Date().toISOString().slice(0,10),
     time:new Date().toTimeString().slice(0,8),
-    user:'User '+(window.USER_LEVEL!=null?window.USER_LEVEL:2),
+    user:'User '+(window.USER_ID!=null?window.USER_ID:(window.USER_LEVEL!=null?window.USER_LEVEL:2)),
     customer:customer,
     items:(items||[]).map(function(x){
       var nw=(x.sku||{}).net_wt||20, fob=x.oilPrice||0, m=(x.mgn||2.5)/100;
