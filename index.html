@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V02NOV2026A';
+  var _v='V02NOV2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -542,7 +542,8 @@ body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 
 <script>
 (function(){
-  var P0='143Kluang', P1='143Ipoh', P2='143Melaka';
+  // Passwords are no longer stored in this page. They are checked server-side by the Supabase function opms_login(p).
+  var _LG_URL='https://oqljeueohqyzhslceakj.supabase.co/rest/v1/rpc/opms_login',_LG_KEY='sb_publishable_pzlKbPZl6jjMU2f9ta7mYQ_FRXW2ama';
   var SK='oillio_level';
 
   // Always define doLogout globally FIRST
@@ -577,18 +578,34 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
   });
   document.getElementById('loginBtn').addEventListener('click', doLogin);
 
+  var _lgBusy=false;
   function doLogin(){
+    if(_lgBusy)return;
     var pw=(document.getElementById('pwInput')||{}).value||'';
     var err=document.getElementById('pwErr');
-    var lvl=pw===P0?0:pw===P1?1:pw===P2?2:-1;
-    if(lvl>=0){
-      sessionStorage.setItem(SK,String(lvl));
-      applyLevel(lvl);
-    } else {
-      if(err){ err.textContent='Incorrect password. Please try again.'; err.style.display='block'; }
-      document.getElementById('pwInput').value='';
-      document.getElementById('pwInput').focus();
+    function fail(msg){
+      if(err){ err.textContent=msg; err.style.display='block'; }
+      var f=document.getElementById('pwInput');
+      if(f){ f.value=''; f.focus(); }
     }
+    if(!pw){ fail('Please enter your password.'); return; }
+    _lgBusy=true;
+    var btn=document.getElementById('loginBtn');if(btn)btn.disabled=true;
+    fetch(_LG_URL,{method:'POST',headers:{'apikey':_LG_KEY,'Authorization':'Bearer '+_LG_KEY,'Content-Type':'application/json'},body:JSON.stringify({p:pw})})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(lvl){
+        _lgBusy=false;if(btn)btn.disabled=false;
+        if(lvl===0||lvl===1||lvl===2){
+          sessionStorage.setItem(SK,String(lvl));
+          applyLevel(lvl);
+        } else {
+          fail('Incorrect password. Please try again.');
+        }
+      })
+      .catch(function(){
+        _lgBusy=false;if(btn)btn.disabled=false;
+        fail('Could not reach the login service. Check your connection and try again.');
+      });
   }
 
 
