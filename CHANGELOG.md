@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026H — Apical list 2 Nov 2026
+- 22 lines loaded. Changes vs 30 Oct: shortening 43/47 +5, 48/52 +5; spread fat -5; RCNO -20; HCNO -20; HPS flakes 20ft/40ft +5 each; CP10/CP8 jerry can -5 each; HPKS -30; HPKO 38/40 and 40/42 -20 each; HPL -15; CBR -10; Low GE 36/39 +2, 38/42 +5, 48/52 +5; rest unchanged.
+
 ## V02NOV2026G — Activity moved to the division page
 - One central "TEAM ACTIVITY" button under the Oil & Fats / Dairies cards (User 0 only). Removed the small Activity buttons from the oil supplier bar and the Dairies header. The activity page opens above the division page and returns to it.
 
