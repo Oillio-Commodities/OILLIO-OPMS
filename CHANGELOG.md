@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026B — Passwords moved to Supabase
+- Login passwords are no longer in the page code; checked server-side by Supabase function opms_login (bcrypt hashes in a locked table). Change a password with an UPDATE on public.opms_access in the Supabase SQL Editor. User 2 password changed.
+
 ## V02NOV2026A — User 2 can set the Oillio margin on the calculator
 - The Margin (%) field on the calculator (Step 3) is now visible to User 2 (additive stays hidden). Minimum 2.5%, same as the supplier pages and Dairies; below that it snaps back to 2.5%. Starts at 2.5% for User 2.
 
