@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V02NOV2026F — Activity tab loads last 90 days straight away
+- Opening the Activity tab right after logging in as User 0 loads the last 90 days with no extra password step (password kept in memory only, never stored). If the page was restored without a fresh login, it asks for the User 0 password once. 7/14/30/90-day selector kept.
+
 ## V02NOV2026E — Activity is now its own tab
 - Activity moved from a pop-up near the role badge to a full-page "Activity" tab: in the supplier bar (oil) and the Dairies header, visible to User 0 only. Opens a separate page with a Back to OPMS button.
 

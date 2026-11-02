@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V02NOV2026E';
+  var _v='V02NOV2026F';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -598,6 +598,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
         _lgBusy=false;if(btn)btn.disabled=false;
         if(lvl===0||lvl===1||lvl===2||lvl===3||lvl===4){
           sessionStorage.setItem(SK,String(lvl));
+          window._p0=(lvl===0)?pw:null; // kept in memory only (never stored) so the Activity tab can load without asking again
           applyLevel(lvl);
         } else {
           fail('Incorrect password. Please try again.');
@@ -9387,16 +9388,19 @@ window._dairyTest={get HIST(){return HIST;},changeLog:changeLog,allLists:allList
     m.style.cssText='position:fixed;inset:0;background:#f4f6f4;z-index:9000;overflow:auto';
     m.innerHTML='<div style="background:#0b3d2e;color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;top:0"><b style="font-size:1.05rem">\u{1F4C8} User Activity <span style="font-weight:400;font-size:.8rem;opacity:.8">(Malaysia time)</span></b><button onclick="document.getElementById(\'actModal\').remove()" style="border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;border-radius:16px;padding:5px 14px;cursor:pointer;font-weight:700">\u2190 Back to OPMS</button></div>'+
       '<div style="max-width:1000px;margin:16px auto;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 6px rgba(0,0,0,.08)">'+
-      '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="actPw" type="password" placeholder="Confirm User 0 password" style="width:230px;padding:7px 9px;border:1.5px solid #bbb;border-radius:6px"><select id="actDays" style="width:140px;padding:7px;border:1.5px solid #bbb;border-radius:6px"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option></select><button id="actGo" style="background:#1a5c18;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;cursor:pointer">Load</button><span id="actMsg" style="font-size:.78rem;color:#b00"></span></div><div id="actBody" style="font-size:.8rem;color:#555">Enter your User 0 password and press Load. Active min = minutes with real clicks/typing while the tab was open. Docs = PDFs and WhatsApp copies generated.</div></div>';
+      '<div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="actPw" type="password" placeholder="Confirm User 0 password" style="width:230px;padding:7px 9px;border:1.5px solid #bbb;border-radius:6px"><select id="actDays" style="width:140px;padding:7px;border:1.5px solid #bbb;border-radius:6px"><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="90" selected>Last 90 days</option></select><button id="actGo" style="background:#1a5c18;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-weight:800;cursor:pointer">Load</button><span id="actMsg" style="font-size:.78rem;color:#b00"></span></div><div id="actBody" style="font-size:.8rem;color:#555">Active min = minutes with real clicks/typing while the tab was open. Docs = PDFs and WhatsApp copies generated.</div></div>';
     document.body.appendChild(m);
     var go=function(){
-      var pw=document.getElementById('actPw').value,days=+document.getElementById('actDays').value,msg=document.getElementById('actMsg');
+      var pw=document.getElementById('actPw').value||window._p0||'',days=+document.getElementById('actDays').value,msg=document.getElementById('actMsg');
       if(!pw){msg.textContent='Enter the User 0 password.';return;}msg.style.color='#555';msg.textContent='Loading...';
       fetch(URL_+'opms_activity_report',{method:'POST',headers:H(),body:JSON.stringify({p:pw,p_days:days})}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
         if(!d){msg.style.color='#b00';msg.textContent='Wrong password.';return;}msg.textContent='';render(d,days);
       }).catch(function(){msg.style.color='#b00';msg.textContent='Could not load. Has the activity SQL been run?';});
     };
-    document.getElementById('actGo').onclick=go;document.getElementById('actPw').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+    window._actRun=go;document.getElementById('actGo').onclick=go;document.getElementById('actPw').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+    document.getElementById('actDays').onchange=go;
+    if(window._p0){document.getElementById('actPw').style.display='none';document.getElementById('actBody').textContent='Loading last 90 days...';go();}
+    else document.getElementById('actBody').textContent='Enter your User 0 password once and press Load (you opened this page without logging in just now).';
   }
   function render(d,days){
     var S=d.summary||[],byD={},users=[1,2,3,4,0];
