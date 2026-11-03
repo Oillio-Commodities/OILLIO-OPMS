@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V03NOV2026A — Apical list 3 Nov 2026
+- 22 lines loaded. Changes vs 2 Nov: shortening 43/47 -5, 48/52 -5; HPS flakes 20ft/40ft -5 each; CBR -5; Low GE 38/42 -5, 48/52 -5; rest unchanged. Terms: ETD Jan 2027, validity EOD 3 Nov, docs: Commercial Invoice, Packing List, Manufacturer COA, COO; payment 20% TT down payment on contract confirmation, 80% TT against docs; any additional docs may cost extra.
+
 ## V02NOV2026H — Apical list 2 Nov 2026
 - 22 lines loaded. Changes vs 30 Oct: shortening 43/47 +5, 48/52 +5; spread fat -5; RCNO -20; HCNO -20; HPS flakes 20ft/40ft +5 each; CP10/CP8 jerry can -5 each; HPKS -30; HPKO 38/40 and 40/42 -20 each; HPL -15; CBR -10; Low GE 36/39 +2, 38/42 +5, 48/52 +5; rest unchanged.
 
