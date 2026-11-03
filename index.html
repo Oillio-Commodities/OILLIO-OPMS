@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V03NOV2026A';
+  var _v='V03NOV2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8920,7 +8920,7 @@ window._ETG_LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyYAAADmCAMAAAAX
 var MK=['ASEAN','USA','ME','OTH'];
 var MK_LBL={ASEAN:'ASEAN',USA:'USA',ME:'Middle East',OTH:'Other markets'};
 var MK_NOTE={ASEAN:'',USA:'',ME:'Middle East prices are SCM WITHOUT TiO2.',OTH:''};
-var DAIRY_INFO={id:'15OCT26',date:'15 Oct 2026',validTill:'30 Oct 2026',shipFor:"Nov'26 shipment only (Dec'26 TBA)",origin:'FOB Port Klang, Malaysia',supplier:'F&B Nutrition',
+var DAIRY_INFO={id:'03NOV26',date:'3 Nov 2026',validTill:'15 Nov 2026',shipMonth:'December 2026',shipFor:"Dec'26 shipment only",origin:'FOB Port Klang, Malaysia',supplier:'F&B Nutrition',
   eo:{24:0.60,48:1.20},supMargin:5,minMarginLvl2:2.5};
 // type: can | pouch | bib | bottle | tin | sachet | gusset | bag.  P = FOB USD/ctn by market (null = no price from supplier yet).
 // prev = same prices on the previous list (29 Sep 2026) - used for the "change vs previous list" column.
@@ -8966,7 +8966,7 @@ var ROWS=[
 // ---- PRICE HISTORY: one entry per supplier list that is no longer current (oldest first). ----
 // DRILL for a new supplier list: (1) copy the CURRENT list's prices into HIST as a new entry (literal values), (2) update DAIRY_INFO and the P prices in ROWS.
 // The change log below is computed from consecutive lists, so every change is recorded with date, old price, new price.
-var HIST=[{id:'29SEP26',date:'29 Sep 2026',valid:"Nov'26 shipment",P:{"s15z|USA":12.2,"s15z|ME":12.2,"s15z|OTH":12,"s15a|ASEAN":22.5,"s15a|ME":22.7,"s15a|OTH":22.5,"s15b|ASEAN":26.5,"s15b|ME":26.2,"s15b|OTH":26.2,"s15c|ASEAN":21.8,"s15c|OTH":21,"s15d|OTH":24.5,"s18z|USA":12.5,"s18z|ME":12.5,"s18z|OTH":12.6,"s18a|ASEAN":23,"s18a|ME":23.2,"s18a|OTH":23,"s18b|ASEAN":27.3,"s18b|ME":27.2,"s18b|OTH":27.2,"s18c|ASEAN":22.3,"s18c|OTH":22,"s18d|OTH":25,"s23z|USA":13,"s23z|ME":13,"s23a|ME":24.2,"s23b|ME":28.2,"e10a|ASEAN":22.8,"e10a|OTH":22.6,"e3a|OTH":12.4,"e3b|OTH":12.5,"e3c|OTH":22.5,"e56a|OTH":15,"e56b|OTH":15,"e56c|OTH":28.2,"e56d|OTH":19}}];
+var HIST=[{id:'29SEP26',date:'29 Sep 2026',valid:"Nov'26 shipment",P:{"s15z|USA":12.2,"s15z|ME":12.2,"s15z|OTH":12,"s15a|ASEAN":22.5,"s15a|ME":22.7,"s15a|OTH":22.5,"s15b|ASEAN":26.5,"s15b|ME":26.2,"s15b|OTH":26.2,"s15c|ASEAN":21.8,"s15c|OTH":21,"s15d|OTH":24.5,"s18z|USA":12.5,"s18z|ME":12.5,"s18z|OTH":12.6,"s18a|ASEAN":23,"s18a|ME":23.2,"s18a|OTH":23,"s18b|ASEAN":27.3,"s18b|ME":27.2,"s18b|OTH":27.2,"s18c|ASEAN":22.3,"s18c|OTH":22,"s18d|OTH":25,"s23z|USA":13,"s23z|ME":13,"s23a|ME":24.2,"s23b|ME":28.2,"e10a|ASEAN":22.8,"e10a|OTH":22.6,"e3a|OTH":12.4,"e3b|OTH":12.5,"e3c|OTH":22.5,"e56a|OTH":15,"e56b|OTH":15,"e56c|OTH":28.2,"e56d|OTH":19}},{id:'15OCT26',date:'15 Oct 2026',valid:"30 Oct 2026 (Nov'26 shipment)",P:{"s15z|USA":12.2,"s15z|ME":12.2,"s15z|OTH":12,"s15a|ASEAN":22.5,"s15a|ME":22.7,"s15a|OTH":22.5,"s15b|ASEAN":26.5,"s15b|ME":26.2,"s15b|OTH":26.2,"s15c|ASEAN":21.8,"s15c|OTH":21,"s15d|OTH":24.5,"s18z|USA":12.5,"s18z|ME":12.5,"s18z|OTH":12.6,"s18a|ASEAN":23,"s18a|ME":23.2,"s18a|OTH":23,"s18b|ASEAN":27.3,"s18b|ME":27.2,"s18b|OTH":27.2,"s18c|ASEAN":22.3,"s18c|OTH":22,"s18d|OTH":25,"s23z|USA":13,"s23z|ME":13,"s23a|ME":24.2,"s23b|ME":28.2,"e10a|ASEAN":22.8,"e10a|OTH":22.6,"e3a|OTH":12.4,"e3b|OTH":12.5,"e3c|OTH":22.5,"e56a|OTH":15,"e56b|OTH":15,"e56c|OTH":28.2,"e56d|OTH":19}}];
 function curSnap(){var o={};ROWS.forEach(function(r){MK.forEach(function(k){if(r.P[k]!=null)o[r.id+'|'+k]=r.P[k];});});return o;}
 function allLists(){return HIST.concat([{id:DAIRY_INFO.id,date:DAIRY_INFO.date,valid:DAIRY_INFO.validTill,P:curSnap()}]);}
 function prevCovers(r){var L=allLists();return L.length>=2&&covers(L[L.length-2],r.f)&&covers(L[L.length-1],r.f);}
@@ -9003,7 +9003,7 @@ function tcFnb(sd,hasFr,frName,fr){
   t.push(['Shipment',sd||'To be advised']);
   t.push(['Delivery','Minimum 6 weeks after deposit received and label / carton artwork finalised (subject to production schedule)']);
   t.push(['Min. order','3 FCL per pack size per shipment']);
-  t.push(['Validity','Prices valid until '+DAIRY_INFO.validTill+' for November 2026 shipment. Other shipment periods are subject to reconfirmation.']);
+  t.push(['Validity','Prices valid until '+DAIRY_INFO.validTill+' for '+DAIRY_INFO.shipMonth+' shipment only. Other shipment periods are subject to reconfirmation.']);
   t.push(['Easy-open','Priced as stated per line. Standard can unless easy-open is shown. No easy-open for 1kg.']);
   t.push(['Storage','2 weeks storage from cargo readiness date included. Thereafter USD 2.50 per pallet per day for buyer\'s account until cargo leaves the warehouse.']);
   t.push(['Documents','Standard documents included: Invoice, Packing List, Original / Telex Release BL, Veterinary Health Certificate, Certificate of Origin, Certificate of Analysis. Any other documents at buyer\'s cost.']);

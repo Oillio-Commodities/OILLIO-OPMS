@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V03NOV2026B — F&B Nutrition list 3 Nov 2026 (Dec'26 shipment)
+- Supplier list "Updated Dec'26 Price" (email 3 Nov 2026): valid till 15 Nov 2026, Dec'26 shipment only. All 37 priced SKU/market combinations are identical to the 15 Oct list (checked line by line), so the change log shows 0 changes. Easy-open add-on unchanged (+0.60 x24 / +1.20 x48, none for 1kg). MOQ 3 FCL, 30/70 TT or 100% LC, terms unchanged.
+- 15 Oct 2026 list stored in the price history; the T&C validity clause now reads the shipment month from the list (December 2026).
+
 ## V03NOV2026A — Apical list 3 Nov 2026
 - 22 lines loaded. Changes vs 2 Nov: shortening 43/47 -5, 48/52 -5; HPS flakes 20ft/40ft -5 each; CBR -5; Low GE 38/42 -5, 48/52 -5; rest unchanged. Terms: ETD Jan 2027, validity EOD 3 Nov, docs: Commercial Invoice, Packing List, Manufacturer COA, COO; payment 20% TT down payment on contract confirmation, 80% TT against docs; any additional docs may cost extra.
 
