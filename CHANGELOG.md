@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026C — Apical list 4 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
+- Apical supplier list of 4 Nov 2026 loaded (price validity: EOD 4 Nov; shipment ETD Jan 2027; 20% TT down payment, 80% TT against docs; RSPO MB Shortening).
+- Changes vs 3 Nov (USD/MT): Shortening 36/39 -5, 38/40 & 40/42 -5, 43/47 -5, 46/48 -10 (now separate from 43/47), 48/52 -10; Spread Fat -5; RCNO and HCNO unchanged; HPS Flakes 20ft -10, 40ft -10; Jerry Can CP10 -5, CP8 -5.
+- Port Klang: HPKS -25, HPKO 38/40 -25, HPKO 40/42 -25, HPL 41/43 -25, CBR -15; Low GE & 3MCPD Shortening 36/39 -5, 38/42 -5, 43/48 -10 (also used for 46/48), 48/52 -10.
+- Tested: list applied at the saved base oil — all rows match the supplier list (0 differences).
+
+---
+
 ## V04NOV2026B — User 2/3/4: supplier prices hidden + "check with management" caution screens
 - Oil & Fats: for User 2/3/4 the Supplier panel (supplier FOB/MT and per-SKU), the "Supplier / Unit" card and the Compare tab are hidden. They see only the Oillio price (per SKU / per MT). User 0/1 unchanged.
 - Oil & Fats: the confirmation screen before Copy / Save PDF now carries a red caution for User 2/3/4 — margin must be at least 2.5%, check with management for any lower margin or special price. When freight is included, an extra freight caution is shown (confirm freight and total with management).
