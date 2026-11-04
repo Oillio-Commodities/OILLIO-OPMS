@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V03NOV2026B';
+  var _v='V04NOV2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -567,7 +567,9 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 
   var stored=sessionStorage.getItem(SK);
   if(/^[0-4]$/.test(stored||'')){
-    applyLevel(+stored);
+    // the page below this script is not parsed yet: wait for it, otherwise hidden panels would not be hidden for User 2/3/4
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ applyLevel(+stored); });
+    else applyLevel(+stored);
     return;
   }
 
@@ -719,10 +721,10 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 <span id="svOilNote" style="font-size:.71rem;color:var(--mut)">Changes show live in all supplier tabs. Press Save &amp; Log to keep them for everyone.</span>
 </div></div></div>
 <div id="supplierView" style="display:none;padding:0 14px 20px">
+<!-- Margin + JKT/KL: visible to ALL users (outside the admin-only pricing panel) -->
+<div id="svMarginRow" style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px"><div style="background:#fffde7;border:2px solid #f9a825;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px"><label style="font-size:.71rem;font-weight:700;color:#b45309;margin:0">OILLIO MARGIN %</label><input type="number" id="suppMargin" value="5" min="0" max="99" step="0.1" oninput="onMarginChange()" class="margin-input" style="width:62px;font-weight:700;color:#b45309;border:1.5px solid #f9a825;background:#fffde7;text-align:center;padding:4px 5px;border-radius:5px;font-size:.92rem"></div><div id="svOriginWrap" style="display:none"><div style="display:flex;border-radius:8px;overflow:hidden;border:2px solid var(--olv)"><button id="svBtnJKT" onclick="svSetOrigin('JKT')" style="padding:6px 14px;border:none;background:var(--olv);color:#fff;font-size:.79rem;font-weight:700;cursor:pointer">JKT</button><button id="svBtnKL" onclick="svSetOrigin('KL')" style="padding:6px 14px;border:none;background:#fff;color:var(--olv);font-size:.79rem;font-weight:700;cursor:pointer">KL</button></div></div></div></div>
 <div id="svRefPanel" class="admin-only u2-hide" style="background:#fffde7;border:2px solid #f9a825;border-radius:var(--rad);padding:13px 16px;margin-bottom:12px">
 <div style="font-size:.82rem;font-weight:700;color:#b45309;margin-bottom:10px">&#x1F7E1; Supplier Pricing &mdash; margin factor, packaging costs &amp; premiums/discounts <span style="font-weight:400;font-size:.68rem;color:#8a6d1a">(base oil prices are in the DAILY OIL BASE PRICE tab)</span></div>
-<!-- Margin + JKT/KL: visible to all users -->
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px"><div style="background:#fffde7;border:2px solid #f9a825;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px"><label style="font-size:.71rem;font-weight:700;color:#b45309;margin:0">OILLIO MARGIN %</label><input type="number" id="suppMargin" value="5" min="0" max="99" step="0.1" oninput="onMarginChange()" class="margin-input" style="width:62px;font-weight:700;color:#b45309;border:1.5px solid #f9a825;background:#fffde7;text-align:center;padding:4px 5px;border-radius:5px;font-size:.92rem"></div><div id="svOriginWrap" style="display:none"><div style="display:flex;border-radius:8px;overflow:hidden;border:2px solid var(--olv)"><button id="svBtnJKT" onclick="svSetOrigin('JKT')" style="padding:6px 14px;border:none;background:var(--olv);color:#fff;font-size:.79rem;font-weight:700;cursor:pointer">JKT</button><button id="svBtnKL" onclick="svSetOrigin('KL')" style="padding:6px 14px;border:none;background:#fff;color:var(--olv);font-size:.79rem;font-weight:700;cursor:pointer">KL</button></div></div></div>
 
 <div id="svRefFields" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"></div>
 <div class="u0-only" style="margin-top:10px">

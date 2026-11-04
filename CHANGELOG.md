@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026A — User 2/3/4 can set the Oillio margin and JKT/KL on the supplier pages
+- The OILLIO MARGIN % box and the JKT/KL switch sat inside the admin-only pricing panel, so User 2/3/4 could not see them on Apical / KLK / Wing Agro. They are now outside that panel and visible to every user (internal packaging/premium fields stay hidden). Minimum margin 2.5% for User 2/3/4.
+- Fix: when a page was reloaded with a saved login, the User 2/3/4 restrictions were applied before the page had loaded and so did not hide the admin panels. The level is now applied after the page has loaded.
+
 ## V03NOV2026B — F&B Nutrition list 3 Nov 2026 (Dec'26 shipment)
 - Supplier list "Updated Dec'26 Price" (email 3 Nov 2026): valid till 15 Nov 2026, Dec'26 shipment only. All 37 priced SKU/market combinations are identical to the 15 Oct list (checked line by line), so the change log shows 0 changes. Easy-open add-on unchanged (+0.60 x24 / +1.20 x48, none for 1kg). MOQ 3 FCL, 30/70 TT or 100% LC, terms unchanged.
 - 15 Oct 2026 list stored in the price history; the T&C validity clause now reads the shipment month from the list (December 2026).
