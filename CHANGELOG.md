@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026B — User 2/3/4: supplier prices hidden + "check with management" caution screens
+- Oil & Fats: for User 2/3/4 the Supplier panel (supplier FOB/MT and per-SKU), the "Supplier / Unit" card and the Compare tab are hidden. They see only the Oillio price (per SKU / per MT). User 0/1 unchanged.
+- Oil & Fats: the confirmation screen before Copy / Save PDF now carries a red caution for User 2/3/4 — margin must be at least 2.5%, check with management for any lower margin or special price. When freight is included, an extra freight caution is shown (confirm freight and total with management).
+- Dairies: new confirmation screen before Copy for WhatsApp / Save PDF for User 2/3/4 (customer, shipment, margin, freight) with the same caution, plus the freight caution when freight is entered.
+- Report content unchanged (final prices only; freight itemised only when freight is quoted).
+
+---
+
 ## V04NOV2026A — User 2/3/4 can set the Oillio margin and JKT/KL on the supplier pages
 - The OILLIO MARGIN % box and the JKT/KL switch sat inside the admin-only pricing panel, so User 2/3/4 could not see them on Apical / KLK / Wing Agro. They are now outside that panel and visible to every user (internal packaging/premium fields stay hidden). Minimum margin 2.5% for User 2/3/4.
 - Fix: when a page was reloaded with a saved login, the User 2/3/4 restrictions were applied before the page had loaded and so did not hide the admin panels. The level is now applied after the page has loaded.
