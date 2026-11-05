@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026D — Wing Agro: 20L and 25L Yellow Jerry Can CP10 separated, price 4 Nov 2026
+- The single Wing Agro line "20L/ 25l Yellow Jerry Can – CP10" is now two SKUs: **20L Yellow Jerry Can – CP10** (1,350 ctns/FCL, 18.0 kg net/unit = 24.3 MT) and **25L Yellow Jerry Can – CP10** (1,110 ctns/FCL, 22.5 kg net/unit = 24.975 MT).
+- Wing Agro list 4 Nov 2026: USD 1,255/MT FOB for both (previous 30 Oct: 1,275 for the combined line, so -20).
+- 25L starts with the same premium/packaging basis as 20L (packaging cost per MT to be confirmed); the list sets the FOB to 1,255 regardless. Compare tab now shows 20L and 25L for Wing Agro separately.
+- Tested: list applied at base 1,160 gives FOB 1,255.00 on both (rounding 0.004), loading x net weight = 24.3 / 24.975 MT.
+
+---
+
 ## V04NOV2026C — Apical list 4 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
 - Apical supplier list of 4 Nov 2026 loaded (price validity: EOD 4 Nov; shipment ETD Jan 2027; 20% TT down payment, 80% TT against docs; RSPO MB Shortening).
 - Changes vs 3 Nov (USD/MT): Shortening 36/39 -5, 38/40 & 40/42 -5, 43/47 -5, 46/48 -10 (now separate from 43/47), 48/52 -10; Spread Fat -5; RCNO and HCNO unchanged; HPS Flakes 20ft -10, 40ft -10; Jerry Can CP10 -5, CP8 -5.
