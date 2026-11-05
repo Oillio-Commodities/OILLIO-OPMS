@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026F — KLK loading / net weight aligned to the 5 Nov 2026 KLK sheet
+- Per Joel ("follow his latest sheet"): loading (ctns per 20ft) and net weight per carton updated for 10 SKUs to match the KLK sheet of 5 Nov — CP6 1.5L x 6 (1,600 -> 1,628 ctns, 9.72 -> 8.10 kg); CP10 16L tin small / big lid (1,650 -> 1,500); CP10 16L BIB (1,242 -> 1,343); Ghee 6L x 2 (2,000 -> 2,016), 8L x 2 (1,488 -> 1,374), 12L (1,920 -> 2,000, 16.0 -> 10.8 kg), 14L (1,650 -> 1,750), 15KG (1,650 -> 1,500).
+- Ghee 8KG x 2: the sheet is inconsistent (2,000 ctns but 21.98 MT; unit price 22.81 at 1,425.53/MT = 16 kg per ctn). Set to 16.0 kg x 1,374 ctns = 21.98 MT (matches the sheet's MT and unit price).
+- Prices unchanged (V05NOV2026E list). Checked: every KLK SKU now matches the sheet's loading and net MT (8KG x 2 loading excepted as above), list applies with 0 differences.
+
+---
+
 ## V05NOV2026E — KLK list 5 Nov 2026
 - KLK supplier list of 5 Nov 2026 loaded (FOB Port Klang, 20ft, Nov 2026 shipment, valid till 6pm 5 Nov; supplier's own terms ignored — Oillio terms apply). Previous list: 28 Oct 2026.
 - All 85 SKUs that were on the 28 Oct list are DOWN (USD/MT, new vs 28 Oct; range per product group):
