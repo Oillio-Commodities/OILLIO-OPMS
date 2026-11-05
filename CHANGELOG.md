@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026F — Wing Agro 20L Yellow Jerry Can CP8 at USD 1,265/MT
+- Wing Agro list 4 Nov 2026 now also carries 20L Yellow Jerry Can – CP8 = USD 1,265/MT FOB (previously unlisted at USD 1,352.40, i.e. -87.40; CP10 20L/25L stay 1,255).
+- Tested: list applied at base 1,160 gives 1,265.00; WhatsApp text / quote shows 1,328.25/MT at 5% margin.
+
+---
+
 ## V04NOV2026E — Wing Agro 25L Yellow Jerry Can packaging cost
 - Wing Agro 25L CP10 packaging cost set to USD 97.98/MT (Wing Agro 20L 102.69 scaled by the KLK 25L/20L packaging ratio 98.82/103.57); premium 93.02 so the estimated cost total stays the same as 20L. Estimate only - overwrite with the real figure in the User 0 packaging panel. The FOB price is unaffected (set by the supplier list: 1,255).
 - Checked end to end: WhatsApp text, confirmation screen and PDF show 20L (1,350 ctns, 24.300 MT per FCL) and 25L (1,110 ctns, 24.975 MT per FCL) correctly with their own names and packaging.
