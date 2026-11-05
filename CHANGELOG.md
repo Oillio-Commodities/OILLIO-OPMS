@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026I — Wing Agro 20L CP8 loading (5 Nov 2026)
+- Wing Agro 20L Yellow Jerry Can CP8: loading changed 1,336 -> 1,350 ctns (same as 20L CP10 and Low MCPD & GE). No price change.
+
+---
+
 ## V05NOV2026H — Outdated-price prompt at quote time (5 Nov 2026)
 - When a quote includes an item that is NOT on the supplier's latest list (the 7 KLK SKUs not on the 5 Nov 2026 sheet) or one flagged to confirm (KLK Veg Ghee 8KG x 2 REC-TIN), the confirm screen (WhatsApp copy / PDF) now shows a red "PLEASE TAKE NOTE - OUTDATED / UNCONFIRMED PRICE" box listing each item, and tells the user to confirm with management before quoting.
 - The button becomes the orange "Proceed anyway" so the user must consciously continue. No price changes.
