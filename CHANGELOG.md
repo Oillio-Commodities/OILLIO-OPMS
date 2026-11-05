@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026C — User 2/3/4 see the Est cost per MT again (no FOB, no breakdown)
+- On each product row (Apical / KLK / Wing Agro) User 2/3/4 now see the "Est: USD x/MT" line in the Supplier box so they can judge negotiation room. Supplier FOB/MT and per-SKU supplier price, the "Supplier / Unit" card and the FCPO / premium / packaging breakdown stay hidden for them; Compare tab stays hidden. User 0/1 unchanged.
+
+---
+
 ## V05NOV2026B — Apical list 5 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
 - Apical supplier list of 5 Nov 2026 loaded (supplier's own terms ignored — Oillio terms apply).
 - Changes vs 4 Nov (USD/MT): Shortening 36/39 -35, 38/40 & 40/42 -35, 43/47 -35, 46/48 -35, 48/52 -40; Spread Fat -25; RCNO and HCNO unchanged; HPS Flakes 20ft -40, 40ft -40; Jerry Can CP10 -25, CP8 -25.
