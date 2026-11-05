@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026D — User 2/3/4 see supplier FOB / cost again
+- Per Joel: User 2/3/4 see the supplier box on every oil product row again — Est cost/MT, supplier FOB/MT and supplier price per SKU — plus the "Supplier / Unit" card in the detail panel and the Compare tab. FCPO / premium / packaging breakdown, profit figures and the other admin panels stay hidden for them. The management caution screens (min 2.5% margin, freight) stay.
+
+---
+
 ## V05NOV2026C — User 2/3/4 see the Est cost per MT again (no FOB, no breakdown)
 - On each product row (Apical / KLK / Wing Agro) User 2/3/4 now see the "Est: USD x/MT" line in the Supplier box so they can judge negotiation room. Supplier FOB/MT and per-SKU supplier price, the "Supplier / Unit" card and the FCPO / premium / packaging breakdown stay hidden for them; Compare tab stays hidden. User 0/1 unchanged.
 

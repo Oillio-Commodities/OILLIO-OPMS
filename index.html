@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V05NOV2026C';
+  var _v='V05NOV2026D';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -388,7 +388,7 @@ body.user-mode #userPdfBar { display:flex !important; }
 
 /* ===== Dairies view ===== */
 body.not-u0 .u0-only{display:none!important}
-body.lv-staff .sup-fob,body.lv-staff .sc-sup,body.lv-staff #supCompare{display:none!important}
+/* V05NOV2026D: supplier FOB / cost visible to User 2/3/4 again (per Joel) */
 #dairyView .dy-sel{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
 #dairyView .dy-sel button{border:1px solid #1a5c18;background:#fff;color:#1a5c18;border-radius:6px;padding:5px 11px;font-weight:700;font-size:.74rem;cursor:pointer}
 #dairyView .dy-sel span{font-size:.74rem;color:#667}
