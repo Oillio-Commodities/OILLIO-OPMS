@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026G — KLK follow-up items highlighted (dated 5 Nov 2026)
+- The KLK page (admin view) now shows a red box at the top, dated "5 Nov 2026 sheet": the 7 SKUs NOT on the KLK list (price unchanged, last price kept) — CP6 1.5L x 12, CP6 4.5L x 6, CP10 4.5L x 4 jerry can, CP10 8L x 2 jerry can, Shortening 48-52 16KG, Shortening 36-39 25KG, Veg Ghee 14KG — and Veg Ghee 8KG x 2 REC-TIN (loading to confirm with KLK: sheet 2,000 ctns vs 21.98 MT; system uses 1,374 ctns x 16 kg). The Ghee 8KG x 2 row also carries a red "TO CONFIRM WITH KLK · 5 NOV 2026" tag.
+- All other KLK 5 Nov updates (prices, loading, net weight) as per V05NOV2026E / F. Nothing else changed.
+
+---
+
 ## V05NOV2026F — KLK loading / net weight aligned to the 5 Nov 2026 KLK sheet
 - Per Joel ("follow his latest sheet"): loading (ctns per 20ft) and net weight per carton updated for 10 SKUs to match the KLK sheet of 5 Nov — CP6 1.5L x 6 (1,600 -> 1,628 ctns, 9.72 -> 8.10 kg); CP10 16L tin small / big lid (1,650 -> 1,500); CP10 16L BIB (1,242 -> 1,343); Ghee 6L x 2 (2,000 -> 2,016), 8L x 2 (1,488 -> 1,374), 12L (1,920 -> 2,000, 16.0 -> 10.8 kg), 14L (1,650 -> 1,750), 15KG (1,650 -> 1,500).
 - Ghee 8KG x 2: the sheet is inconsistent (2,000 ctns but 21.98 MT; unit price 22.81 at 1,425.53/MT = 16 kg per ctn). Set to 16.0 kg x 1,374 ctns = 21.98 MT (matches the sheet's MT and unit price).

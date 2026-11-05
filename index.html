@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V05NOV2026F';
+  var _v='V05NOV2026G';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7154,8 +7154,19 @@ function _svListTarget(sup,name,packing){
 }
 function _svListNoteTxt(L){return L.uplift?('only received the +USD '+L.uplift+'/MT market uplift, no supplier quote'):'has no supplier quote on this list, so its price is unchanged';}
 // orange tag on every SKU that the latest supplier list did NOT cover
+var SUP_CONFIRM={klk:{date:'5 Nov 2026',rows:[['VEGETABLE GHEE','8KG X 2 REC-TIN W/LID','Loading to confirm with KLK: the 5 Nov sheet shows 2,000 ctns but 21.98 MT (= 1,374 ctns at 16 kg). System uses 1,374 ctns x 16 kg.']]}};
+function _svConfirmFor(sup,name,packing){var C=SUP_CONFIRM[sup];if(!C)return null;for(var i=0;i<C.rows.length;i++){if(C.rows[i][0]===name&&C.rows[i][1]===packing)return C.rows[i][2];}return null;}
+function _svConfirmBanner(sup){
+  var C=SUP_CONFIRM[sup],L=SUP_LISTS[sup];if(!C||!L)return '';
+  var nl=getPkgArr(sup).filter(function(r){return !_svListOn(sup,r.name,r.packing);});
+  var h='<div style="margin-bottom:8px;padding:8px 11px;border-radius:7px;font-size:.72rem;background:#fdecea;color:#7a1f14;border:2px solid #c0392b"><b>&#9888; TO FOLLOW UP WITH '+L.name.toUpperCase()+' &mdash; '+C.date+' sheet</b>';
+  if(nl.length)h+='<div style="margin-top:4px"><b>'+nl.length+' SKUs not on the list</b> (price unchanged, last price kept): '+nl.map(function(r){return dispN(r.name,r.packing,sup)+' ('+r.packing+')';}).join(' &middot; ')+'</div>';
+  C.rows.forEach(function(x){h+='<div style="margin-top:4px"><b>'+x[0]+' '+x[1]+':</b> '+x[2]+'</div>';});
+  return h+'</div>';
+}
 function _svListTag(sup,name,packing){
-  var L=SUP_LISTS[sup];if(!L||_svListOn(sup,name,packing))return '';
+  var L=SUP_LISTS[sup];var _cf=_svConfirmFor(sup,name,packing);var _cfTag=_cf?' <span title="'+_cf.replace(/"/g,'')+'" style="background:#c0392b;color:#fff;font-size:.56rem;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap">&#9888; TO CONFIRM WITH '+L.name.toUpperCase()+' &middot; '+SUP_CONFIRM[sup].date.toUpperCase()+'</span>':'';
+  if(!L)return '';if(_svListOn(sup,name,packing))return _cfTag;
   return ' <span title="Not on the '+L.name+' supplier list of '+L.label+' — '+_svListNoteTxt(L)+'" style="background:#f39c12;color:#fff;font-size:.56rem;font-weight:800;padding:1px 6px;border-radius:9px;white-space:nowrap">&#9888; NOT ON '+L.label.toUpperCase()+' LIST &middot; '+(L.uplift?'+'+L.uplift+' ONLY':'UNCHANGED')+'</span>';
 }
 function _svApplyListAuto(sup,rebase,listedOnly){
@@ -7190,7 +7201,7 @@ function _svListMonitor(sup){
     if(Math.abs(g)>=0.01){diffs.push(g);if(Math.abs(g)>max)max=Math.abs(g);}
   });
   var ok=!diffs.length,nol=getPkgArr(sup).filter(function(r){return !_svListOn(sup,r.name,r.packing);}).length;
-  return (nol?'<div style="margin-bottom:6px;padding:6px 10px;border-radius:7px;font-size:.7rem;font-weight:700;background:#fff4e0;color:#b45309;border:1.5px solid #f6c77a">&#9888; '+nol+' SKU(s) were NOT on the '+L.name+' '+L.label+' supplier list &mdash; marked orange below; '+(L.uplift?'no supplier quote, so they only got the +USD '+L.uplift+'/MT uplift.':'no supplier quote, so their price is unchanged.')+'</div>':'')
+  return _svConfirmBanner(sup)+(nol?'<div style="margin-bottom:6px;padding:6px 10px;border-radius:7px;font-size:.7rem;font-weight:700;background:#fff4e0;color:#b45309;border:1.5px solid #f6c77a">&#9888; '+nol+' SKU(s) were NOT on the '+L.name+' '+L.label+' supplier list &mdash; marked orange below; '+(L.uplift?'no supplier quote, so they only got the +USD '+L.uplift+'/MT uplift.':'no supplier quote, so their price is unchanged.')+'</div>':'')
     +'<div style="margin-bottom:8px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:700;background:'+(ok?'#e8f6ee':'#fdecea')+';color:'+(ok?'#1a7a4a':'#c0392b')+';border:1.5px solid '+(ok?'#b5dcc0':'#f1b0a8')+'">'
     +'&#x1F50D; Supplier list monitor ('+L.label+', '+n+' SKUs): '+(ok?'&#10003; system FOB matches the supplier list on every SKU':diffs.length+' SKU(s) differ from the supplier list (largest '+_l90Num(max)+') &mdash; base oil or premium moved since the list was applied')
     +(ok?'':' <button onclick="svLoadList()" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 9px;font-size:.66rem;font-weight:800;cursor:pointer;margin-left:6px">Review &amp; re-balance</button>')+'</div>';
