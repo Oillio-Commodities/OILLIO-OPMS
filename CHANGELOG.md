@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V04NOV2026G — Wing Agro CP8 1,265 now actually applies on devices that had already saved the 4 Nov list
+- Problem: after V04NOV2026D the Wing Agro list id 04NOV26 had already been saved, so when CP8 (USD 1,265) was added to the same list the system treated the list as "already applied" and left CP8 at its old saved price (1,312.40 at base 1,120).
+- Fix: Wing Agro list id is now 04NOV26B (same 4 Nov 2026 list: 20L CP10 1,255, 25L CP10 1,255, 20L CP8 1,265), so it re-applies once and shows "New prices loaded - press Save & Log Reference".
+- Tested with base 1,120 and the old id saved: 20L CP10 1,255 / 25L CP10 1,255 / CP8 1,265, one change (CP8) flagged for logging.
+
+---
+
 ## V04NOV2026F — Wing Agro 20L Yellow Jerry Can CP8 at USD 1,265/MT
 - Wing Agro list 4 Nov 2026 now also carries 20L Yellow Jerry Can – CP8 = USD 1,265/MT FOB (previously unlisted at USD 1,352.40, i.e. -87.40; CP10 20L/25L stay 1,255).
 - Tested: list applied at base 1,160 gives 1,265.00; WhatsApp text / quote shows 1,328.25/MT at 5% margin.
