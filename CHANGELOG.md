@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026A — Wing Agro: 25L CP8 and Low MCPD & GE jerry cans (20L / 25L) added
+- New Wing Agro SKUs (Jerry Cans): **25L Yellow Jerry Can – CP8** USD 1,265/MT; **20L Yellow Jerry Can – Low MCPD & GE** USD 1,295/MT; **25L Yellow Jerry Can – Low MCPD & GE** USD 1,295/MT. These did not exist in the system before.
+- Loading / net weight: 25L = 1,110 ctns x 22.5 kg (24.975 MT); 20L Low MCPD & GE = 1,350 ctns x 18.0 kg (24.3 MT).
+- Packaging cost / premium are estimates (25L CP8 126.91 / 112.89; Low MCPD & GE 20L 102.69 / 60.31, 25L 97.98 / 64.80) - the list sets the FOB; overwrite in the User 0 packaging panel when the real figures are known.
+- Wing Agro list id is now 04NOV26C (4 Nov 2026 list: 20L CP10 1,255; 25L CP10 1,255; 20L CP8 1,265; 25L CP8 1,265; Low MCPD & GE 20L/25L 1,295) so it re-applies once on devices that already saved the earlier list. Compare tab (CP8 group) now includes Wing Agro 25L CP8.
+- Tested at base 1,120: all six listed Wing Agro SKUs match the list (4 changes flagged for logging).
+
+---
+
 ## V04NOV2026G — Wing Agro CP8 1,265 now actually applies on devices that had already saved the 4 Nov list
 - Problem: after V04NOV2026D the Wing Agro list id 04NOV26 had already been saved, so when CP8 (USD 1,265) was added to the same list the system treated the list as "already applied" and left CP8 at its old saved price (1,312.40 at base 1,120).
 - Fix: Wing Agro list id is now 04NOV26B (same 4 Nov 2026 list: 20L CP10 1,255, 25L CP10 1,255, 20L CP8 1,265), so it re-applies once and shows "New prices loaded - press Save & Log Reference".
