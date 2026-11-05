@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026J — Wing Agro price update (5 Nov 2026)
+- Wing Agro, 20L and 25L Yellow Jerry Can (FOB, USD/MT): CP10 1,255 -> 1,220 (DOWN 35); CP8 1,265 -> 1,235 (DOWN 30; CP8 is USD 15 over CP10). Low MCPD & GE unchanged at 1,295.
+- List id 05NOV26 (new, so Save & Log Reference is needed).
+
+---
+
 ## V05NOV2026I — Wing Agro 20L CP8 loading (5 Nov 2026)
 - Wing Agro 20L Yellow Jerry Can CP8: loading changed 1,336 -> 1,350 ctns (same as 20L CP10 and Low MCPD & GE). No price change.
 
