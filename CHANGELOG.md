@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026H — Outdated-price prompt at quote time (5 Nov 2026)
+- When a quote includes an item that is NOT on the supplier's latest list (the 7 KLK SKUs not on the 5 Nov 2026 sheet) or one flagged to confirm (KLK Veg Ghee 8KG x 2 REC-TIN), the confirm screen (WhatsApp copy / PDF) now shows a red "PLEASE TAKE NOTE - OUTDATED / UNCONFIRMED PRICE" box listing each item, and tells the user to confirm with management before quoting.
+- The button becomes the orange "Proceed anyway" so the user must consciously continue. No price changes.
+
 ## V05NOV2026G — KLK follow-up items highlighted (dated 5 Nov 2026)
 - The KLK page (admin view) now shows a red box at the top, dated "5 Nov 2026 sheet": the 7 SKUs NOT on the KLK list (price unchanged, last price kept) — CP6 1.5L x 12, CP6 4.5L x 6, CP10 4.5L x 4 jerry can, CP10 8L x 2 jerry can, Shortening 48-52 16KG, Shortening 36-39 25KG, Veg Ghee 14KG — and Veg Ghee 8KG x 2 REC-TIN (loading to confirm with KLK: sheet 2,000 ctns vs 21.98 MT; system uses 1,374 ctns x 16 kg). The Ghee 8KG x 2 row also carries a red "TO CONFIRM WITH KLK · 5 NOV 2026" tag.
 - All other KLK 5 Nov updates (prices, loading, net weight) as per V05NOV2026E / F. Nothing else changed.
