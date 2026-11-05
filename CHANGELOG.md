@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026B — Apical list 5 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
+- Apical supplier list of 5 Nov 2026 loaded (supplier's own terms ignored — Oillio terms apply).
+- Changes vs 4 Nov (USD/MT): Shortening 36/39 -35, 38/40 & 40/42 -35, 43/47 -35, 46/48 -35, 48/52 -40; Spread Fat -25; RCNO and HCNO unchanged; HPS Flakes 20ft -40, 40ft -40; Jerry Can CP10 -25, CP8 -25.
+- Port Klang: HPKS -70, HPKO 38/40 -45, HPKO 40/42 -45, HPL 41/43 -40, CBR -45; Low GE & 3MCPD Shortening 36/39 -35, 38/42 -35, 43/48 -35 (also used for 46/48), 48/52 -40.
+- Tested: list applied at the saved base oil — all rows match the supplier list (0 differences).
+
+---
+
 ## V05NOV2026A — Wing Agro: 25L CP8 and Low MCPD & GE jerry cans (20L / 25L) added
 - New Wing Agro SKUs (Jerry Cans): **25L Yellow Jerry Can – CP8** USD 1,265/MT; **20L Yellow Jerry Can – Low MCPD & GE** USD 1,295/MT; **25L Yellow Jerry Can – Low MCPD & GE** USD 1,295/MT. These did not exist in the system before.
 - Loading / net weight: 25L = 1,110 ctns x 22.5 kg (24.975 MT); 20L Low MCPD & GE = 1,350 ctns x 18.0 kg (24.3 MT).
