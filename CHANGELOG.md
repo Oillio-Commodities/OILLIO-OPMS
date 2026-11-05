@@ -5,6 +5,34 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V05NOV2026E — KLK list 5 Nov 2026
+- KLK supplier list of 5 Nov 2026 loaded (FOB Port Klang, 20ft, Nov 2026 shipment, valid till 6pm 5 Nov; supplier's own terms ignored — Oillio terms apply). Previous list: 28 Oct 2026.
+- All 85 SKUs that were on the 28 Oct list are DOWN (USD/MT, new vs 28 Oct; range per product group):
+  - RBD PALM OLEIN CP6: 8 SKUs, -39.69 to -40.90
+  - RBD PALM OLEIN CP10: 33 SKUs, -40.35 to -41.72
+  - RBD PALM OIL 36-39: 5 SKUs, -41.48 to -41.72
+  - RBD PALM STEARIN: 9 SKUs, -0.35 to -1.72
+  - PFAD: 8 SKUs, -2.85 to -4.21
+  - SHORTENING 52-56: 1 SKUs, -1.14 to -1.14
+  - SHORTENING 48-52: 1 SKUs, -33.14 to -33.14
+  - SHORTENING 46-48: 1 SKUs, -17.14 to -17.14
+  - SHORTENING 42-46: 1 SKUs, -25.14 to -25.14
+  - SHORTENING 40-42: 1 SKUs, -33.14 to -33.14
+  - SHORTENING 36-39: 1 SKUs, -39.14 to -39.14
+  - SHORTENING 33-36: 1 SKUs, -41.14 to -41.14
+  - MARGARINE ALL PURPOSE: 1 SKUs, -24.95 to -24.95
+  - MARGARINE PASTRY: 1 SKUs, -171.74 to -171.74
+  - BUTTER OIL SUBSTITUTE: 1 SKUs, -41.04 to -41.04
+  - VEGETABLE GHEE: 12 SKUs, -36.93 to -40.79
+- Largest single moves: Margarine Pastry 1,316.55 -> 1,144.81 (-171.74, as printed on the KLK sheet — please confirm with KLK), Flexibag / heating-pad / heating-rail / double heating pad lines about -41.7 to -41.5 (CP10 and Palm Oil 36-39).
+- Newly covered by the list (no 28 Oct price, now priced): Veg Ghee 4L x 4 REC-TIN 1,564.29; 6L x 2 REC-TIN 1,469.59; 8L x 2 REC-TIN 1,456.51; 8KG x 2 REC-TIN 1,425.53.
+- New SKUs added to the system (not previously in KLK data): Veg Ghee 4L x 4 PLASTIC PAIL 1,522.14 (725 ctns, 14.4 kg); 8L x 2 PLASTIC PAIL 1,485.02 (1,272 ctns, 14.4 kg); 10L x 2 PLASTIC PAIL 1,417.35 (1,272 ctns, 18.0 kg). Packaging cost / premium are estimates.
+- Loading / net weight on the KLK sheet differs from the system for 10 existing SKUs — NOT changed, only prices were updated (flagged to Joel): CP6 1.5L x 6 (sheet 1,628 ctns / 8.10 kg per ctn vs system 1,600 / 9.72 kg); CP10 16L tin small & big lid (1,500 vs 1,650 ctns); CP10 16L BIB (1,343 vs 1,242); Ghee 6L x 2 (2,016 vs 2,000), 8L x 2 (1,374 vs 1,488), 8KG x 2 (2,000 vs 1,920; sheet internally inconsistent), 12L (2,000 vs 1,920, sheet 10.8 kg per ctn vs system 16), 14L (1,750 vs 1,650), 15KG (1,500 vs 1,650).
+- Not on the 5 Nov sheet (kept at last price, orange tag): CP6 1.5L x 12 and 4.5L x 6, CP10 4.5L x 4 and 8L x 2 jerry cans, Shortening 16KG and 25KG, Ghee 14KG.
+- Tested: list applied at base — all 92 rows match the sheet (0 differences).
+
+---
+
 ## V05NOV2026D — User 2/3/4 see supplier FOB / cost again
 - Per Joel: User 2/3/4 see the supplier box on every oil product row again — Est cost/MT, supplier FOB/MT and supplier price per SKU — plus the "Supplier / Unit" card in the detail panel and the Compare tab. FCPO / premium / packaging breakdown, profit figures and the other admin panels stay hidden for them. The management caution screens (min 2.5% margin, freight) stay.
 
