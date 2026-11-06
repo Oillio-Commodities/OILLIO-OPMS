@@ -5,6 +5,18 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026F — NEW SUPPLIER: IOI, price list 6 Nov 2026 (FOB Malaysia)
+- IOI added as a 4th supplier (button next to Wing Agro), built the same way as KLK: supplier page, quote / PDF / WhatsApp copy with the management caution screens, Save & Log Reference, price log, "Supplier Price Up / Down" log tab, Compare tab and customer product rows.
+- 27 SKUs: RBD Palm Olein CP10 / CP8 / CP6 x Flexibag (w/o and with heating pad), 20L White, 5L x 4 White jerry can, 25L Yellow, 20L Yellow, 20L Green, 18L Yellow jerry cans, 5L x 4 PET bottle, 20KG BIB. (20L Green, 18L Yellow and 20KG BIB have no CP6 price on the sheet.)
+- Prices, USD/MT FOB, as read from the 6 Nov sheet: Flexibag w/o heating pad CP10 1,100 / CP8 1,110 / CP6 1,190; with heating pad CP10 1,105 / CP8 1,115 / CP6 1,195. Packed SKUs = Flexibag (w/o heating pad) price + the packing adder on the sheet: 20L White +21.50 / +21.70 / +23.10; 5L x 4 White JC +22.45 / +22.65 / +24.10; 25L Yellow +26.25 / +26.50 / +28.30; 20L Yellow +21.05 / +21.25 / +22.70; 20L Green +21.30 / +21.45; 18L Yellow +19.15 / +19.30; 5L x 4 PET +21.80 / +21.95 / +23.40; 20KG BIB +22.55 / +22.75.
+- ASSUMPTIONS (to confirm with IOI): (1) packed prices = Flexibag price + adder; (2) CP6 Flexibag base 1,190 and heating pad CP6 1,195 (cut off on the screenshot); (3) CP6 adders as read (last digit cut off, e.g. 23.10, 24.10, 28.30, 22.70, 23.40).
+- Loadability and net weight as per the sheet (units per 20ft: 20L White 1,337; 5L x 4 1,076; 25L Yellow 1,098; 20L Yellow 1,342; 20L Green 1,337; 18L Yellow 1,440; PET 1,055; BIB 1,100; Flexibag 21.5 MT).
+- ESTIMATES (no IOI data): packaging cost taken from the matching KLK SKUs (20L Yellow 103.57, 25L 98.82, 18L 112.85, 20L White/Green 106.31, 5L x 4 jerry 165.30, 5L x 4 PET 133.54, 20KG BIB 62.81) and Flexibag from the Able Perfect calculator (52.37 / 60.74 per MT). CP8 follows CP10 +10, CP6 follows the CP6 base oil. Premium/discount is set so system FOB = IOI list price at the base oil entered.
+- First IOI list: list id 06NOV26; prices load as "New prices loaded" - press Save & Log Reference. Needs two new columns in the database (ioi, ioi_pkg); until they are added the save still works for the other suppliers and shows a warning.
+- Tested: all 27 SKUs match the list, quote copy and PDF show "FOB Malaysia", Compare shows IOI against Apical / KLK / Wing Agro.
+
+---
+
 ## V06NOV2026E — Fix: Oil Base Table "Failed to load"
 - View Log > Oil Base Table crashed with "Failed to load" (the "changes shown vs ... not saved" note used variables from the Product table). Fixed; the note now shows on the oil table too when a weekday was not saved. No price changes.
 

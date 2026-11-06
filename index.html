@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V06NOV2026E';
+  var _v='V06NOV2026F';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -704,6 +704,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
   <button class="sup-btn" id="supApical" onclick="setSupplier('apical')">&#x1F30F; Apical</button>
   <button class="sup-btn" id="supKlk" onclick="setSupplier('klk')">&#x1F3E2; KLK</button>
   <button class="sup-btn" id="supWing" onclick="setSupplier('wingagro')">&#x1F33F; Wing Agro</button>
+  <button class="sup-btn" id="supIoi" onclick="setSupplier('ioi')">&#x1F3ED; IOI</button>
   <button class="sup-btn" id="supCompare" onclick="setSupplier('compare')">&#x1F4CA; Compare</button>
   <button class="sup-btn" id="supCustomers" onclick="setSupplier('customers')">&#x1F465; Customers</button>
   <span class="sup-hint">Select supplier to load pricing data &amp; SKUs</span>
@@ -803,7 +804,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 
 <div id="compareView" style="display:none;padding:0 24px 24px;max-width:1400px;margin:0 auto">
 <div style="background:var(--card);border-radius:var(--rad);box-shadow:var(--shd);padding:13px 16px;margin-bottom:12px">
-<div style="font-size:.84rem;font-weight:700;color:var(--brand);margin-bottom:9px">&#x1F4CA; Price Comparison &mdash; Apical vs KLK vs Wing Agro</div>
+<div style="font-size:.84rem;font-weight:700;color:var(--brand);margin-bottom:9px">&#x1F4CA; Price Comparison &mdash; Apical vs KLK vs Wing Agro vs IOI</div>
 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
 <div class="sw" style="flex:1;max-width:280px">
 <select id="cmpSel" onchange="svRenderCmp()" style="width:100%"><option value="">-- Select packaging type --</option></select>
@@ -1734,7 +1735,7 @@ var S={cat:null,types:[],skuSearch:'',oilCat:'Palm Olein',oilName:'P.Olein-CP10 
   mode:'FOB',portObj:null,portSearch:'',region:'ALL',country:'ALL',sel:null};
 var QITEMS=[],QID=0,PRICE_MODE='fob',SHOW_MT_PRICE=true;
 // Per-supplier cart items — each supplier has its own independent quote cart
-var _SUP_ITEMS={apical:[],klk:[],wingagro:[],ableperfect:[],compare:[]};
+var _SUP_ITEMS={apical:[],klk:[],wingagro:[],ioi:[],ableperfect:[],compare:[]};
 function _saveSupItems(s){
   if(s&&_SUP_ITEMS[s]!==undefined)
     _SUP_ITEMS[s]=QITEMS.slice();
@@ -1782,7 +1783,7 @@ function el(id){return document.getElementById(id);}
     // just reading/reviewing values, even with no typing involved. Data
     // stays correct either way — this only pauses the LIVE visual refresh,
     // which resumes normally the moment they switch away or reload.
-    var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro' || SV_SUP === 'oilbase');
+    var _refPanelVisible = (typeof SV_SUP !== 'undefined') && (SV_SUP === 'apical' || SV_SUP === 'klk' || SV_SUP === 'wingagro' || SV_SUP === 'ioi' || SV_SUP === 'oilbase');
     // the FIRST successful load must always apply (otherwise a tab opened before the data arrived would stay on old figures)
     if (_refPanelVisible && !window._forceApply && window._syncLoadedOnce) return;
     if (d.apical) Object.keys(APC_REF_DEF).forEach(function(k) {
@@ -1791,13 +1792,16 @@ function el(id){return document.getElementById(id);}
     if (d.klk) Object.keys(KLK_REF_DEF).forEach(function(k) {
       if (k in d.klk) KLK_REF[k] = parseFloat(d.klk[k]) || KLK_REF[k];
     });
+    if (d.ioi) Object.keys(IOI_REF_DEF).forEach(function(k) {
+      if (k in d.ioi) IOI_REF[k] = parseFloat(d.ioi[k]) || IOI_REF[k];
+    });
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
     if (d.wingagro && d.wingagro.list_id === SUP_LISTS.wingagro.id && parseFloat(d.wingagro.wa_cp10_fob) > 0) waSetCp10(parseFloat(d.wingagro.wa_cp10_fob));
     // Keep the refs exactly as saved (needed to convert old-model premiums), THEN recalculate the auto fields
     var _oldRefs = {apc:Object.assign({},APC_REF), wa:Object.assign({},WA_REF), klk:Object.assign({},KLK_REF)};
-    [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
+    [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(_deriveAuto);
     window._syncLoadedOnce = true; window._syncFailMsg = '';
     window._refLastSaved = d.last_saved || '';
     window._refSavedBy = d.saved_by || 'User 0';
@@ -1815,10 +1819,11 @@ function el(id){return document.getElementById(id);}
     _applyPkg(d.apical_pkg, APC_PKG, APC_PKG_DEF);
     _applyPkg(d.klk_pkg, KLK_PKG, KLK_PKG_DEF);
     _applyPkg(d.wingagro_pkg, WA_PKG, WA_PKG_DEF);
+    _applyPkg(d.ioi_pkg, IOI_PKG, IOI_PKG_DEF);
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
     var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
     if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
-    ['klk','apical','wingagro'].forEach(function(sup){
+    ['klk','apical','wingagro','ioi'].forEach(function(sup){
       var sv = (d[sup] && d[sup].list_id) || '';
       if (sv !== SUP_LISTS[sup].id) { _svApplyListAuto(sup, true); window._listPending[sup] = true; } else { window._listPending[sup] = false; }
     });
@@ -1828,7 +1833,7 @@ function el(id){return document.getElementById(id);}
     if (flds) flds.querySelectorAll('[data-ref]').forEach(function(inp) {
       var k = inp.getAttribute('data-ref');
       var s = typeof SV_SUP !== 'undefined' ? SV_SUP : 'apical';
-      var obj = s==='klk' ? KLK_REF : s==='wingagro' ? WA_REF : APC_REF;
+      var obj = s==='klk' ? KLK_REF : s==='wingagro' ? WA_REF : s==='ioi' ? IOI_REF :  APC_REF;
       if (k in obj) inp.value = obj[k];
     });
     _preserveScrollAcross(function(){
@@ -1865,20 +1870,25 @@ function el(id){return document.getElementById(id);}
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
+      ioi: Object.assign({}, IOI_REF, {model_v: MODEL_V, list_id: SUP_LISTS.ioi.id}),
+      ioi_pkg: IOI_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       last_saved: savedTs,
       saved_by: 'User 0'
     };
     // Update the single ref_prices row
-    fetch(_SB_URL + '/rest/v1/ref_prices?id=eq.1', {
-      method: 'PATCH',
-      headers: _SB_HEADERS,
-      body: JSON.stringify(payload)
+    function _patchRef(p) { return fetch(_SB_URL + '/rest/v1/ref_prices?id=eq.1', { method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(p) }); }
+    _patchRef(payload)
+    .then(function(r) {
+      if (r.ok || !('ioi' in payload)) return r;
+      // the database has no IOI columns yet: save everything else, and tell the user once
+      var base = Object.assign({}, payload); delete base.ioi; delete base.ioi_pkg;
+      return _patchRef(base).then(function(r2) { if (r2.ok) { window._ioiColsMissing = true; } return r2; });
     })
     .then(function(r) {
       if (r.ok) {
         window._refDirty = false; // save complete — safe to resume live sync
         window._modelPending = false; window._listPending = {}; try { _svModelBanner(); } catch(e) {}
-        showToast('✓ Saved ' + myTime + ' (MY) — live for all users now');
+        showToast('✓ Saved ' + myTime + ' (MY) — live for all users now' + (window._ioiColsMissing ? ' · IOI prices NOT stored in the database yet (SQL needed)' : ''), window._ioiColsMissing ? 9000 : undefined);
         var note = document.getElementById('svRefNote');
         if (note) { note.textContent = 'Last saved: ' + myTime + ' by User 0'; note.style.color = '#1a7a4a'; }
         var note2 = document.getElementById('svOilNote');
@@ -1898,7 +1908,8 @@ function el(id){return document.getElementById(id);}
           var rows = []
             .concat(_buildPriceLogRows('apical', APICAL_DATA, APC_PKG, savedTs))
             .concat(_buildPriceLogRows('klk', KLK_DATA, KLK_PKG, savedTs))
-            .concat(_buildPriceLogRows('wingagro', WA_DATA, WA_PKG, savedTs));
+            .concat(_buildPriceLogRows('wingagro', WA_DATA, WA_PKG, savedTs))
+            .concat(_buildPriceLogRows('ioi', IOI_DATA, IOI_PKG, savedTs));
           if (rows.length) {
             fetch(_SB_URL + '/rest/v1/price_log', {
               method: 'POST', headers: _SB_HEADERS, body: JSON.stringify(rows)
@@ -2061,7 +2072,7 @@ function el(id){return document.getElementById(id);}
   function _renderCustProductRows() {
     if (!_custEditProducts.length) return '<div style="color:var(--mut);font-size:.75rem;padding:6px 0">No products added yet.</div>';
     return _custEditProducts.map(function(p, i) {
-      var arr = p.supplier === 'apical' ? APC_PKG : p.supplier === 'klk' ? KLK_PKG : p.supplier === 'wingagro' ? WA_PKG : [];
+      var arr = p.supplier === 'apical' ? APC_PKG : p.supplier === 'klk' ? KLK_PKG : p.supplier === 'wingagro' ? WA_PKG : supplier==='ioi' ? IOI_PKG :  [];
       var opts = '<option value="">-- Select --</option>' + arr.map(function(x) {
         var label = (x.name||'') + (x.packing ? ' — ' + x.packing : '');
         var sel = label === p.product ? ' selected' : '';
@@ -2072,6 +2083,7 @@ function el(id){return document.getElementById(id);}
           '<option value="">Supplier</option>' +
           '<option value="apical"' + (p.supplier==='apical'?' selected':'') + '>Apical</option>' +
           '<option value="klk"' + (p.supplier==='klk'?' selected':'') + '>KLK</option>' +
+          '<option value="ioi"' + (p.supplier==='ioi'?' selected':'') + '>IOI</option>' +
           '<option value="wingagro"' + (p.supplier==='wingagro'?' selected':'') + '>Wing Agro</option>' +
         '</select>' +
         '<select onchange="svCustRowProduct(' + i + ',this.value)" style="flex:1;padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">' + opts + '</select>' +
@@ -2132,14 +2144,14 @@ function el(id){return document.getElementById(id);}
     c.products.forEach(function(pr) {
       var parts = (pr.product || '').split(' — ');
       var pname = parts[0], ppacking = parts.slice(1).join(' — ');
-      var dataArr = pr.supplier === 'apical' ? APICAL_DATA : pr.supplier === 'klk' ? KLK_DATA : pr.supplier === 'wingagro' ? WA_DATA : [];
+      var dataArr = pr.supplier === 'apical' ? APICAL_DATA : pr.supplier === 'klk' ? KLK_DATA : pr.supplier === 'wingagro' ? WA_DATA : supplier==='ioi' ? IOI_DATA :  [];
       var row = dataArr.find(function(x) { return x.name === pname && x.packing === ppacking; });
       if (!row) { skipped++; return; }
       var fob = getLiveFob(row, pr.supplier);
       if (!fob) { skipped++; return; }
       if (QITEMS.length >= 50) return;
       var nw = row.net_wt || 20, lc = row.load_ctn || 1;
-      var skuName = (pr.supplier === 'klk' && row.packing) ? row.packing + ' – ' + row.name : row.name;
+      var skuName = ((pr.supplier === 'klk' || pr.supplier === 'ioi') && row.packing) ? row.packing + ' – ' + row.name : row.name;
       QITEMS.push({
         id: ++QID, supplier: pr.supplier, oilName: row.name, oilPrice: fob, cp10: fob,
         sku: { name: skuName, type: row.packing || '', net_wt: nw, sku_fcl: lc, pkg: 0, units: 1 },
@@ -3308,7 +3320,7 @@ function generatePdfHtml(){
     var sku=item.sku||{};
     var nw=sku.net_wt||20, lc=sku.sku_fcl||1;
     var s_=item.supplier||'apical';
-    var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
+    var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).concat(IOI_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
     var fob=p_.name?getLiveFob(p_,s_):(item.oilPrice||0);
     var _m=parseFloat(item.mgn!=null?item.mgn:SV_CFG.margin); var m=(isNaN(_m)?5:_m)/100;
     var lc_=lc*item.fcl;
@@ -3323,6 +3335,7 @@ function generatePdfHtml(){
     var fobl='FOB '+(p_.fob_jkt!=null?'Tj Priok':p_.fob_kl!=null?'Port Klang':'Origin');
     if(s_==='wingagro')fobl='FOB Surabaya';
     if(s_==='klk')fobl='FOB Port Klang';
+    if(s_==='ioi')fobl='FOB Malaysia';
     var rowSep=idx2>0?'border-top:2.5px solid #4a7fa5;':'';
     s+='<tr style="'+rowSep+'">';
     s+='<td class="c" style="'+rowSep+'">'+(idx2+1)+'</td>';
@@ -3497,10 +3510,11 @@ function doPrint(){if(_svBlockSim('the PDF report'))return;
         var fob_sku=round4(p.fs),fob_tot=round4(fob_sku*lc_);
         var frU=hasFr?round4(_fr/lc):0,total_sku=round4(fob_sku+frU),total_tot=round4(total_sku*lc_);
         gFob+=fob_tot;gFr+=round4(frU*lc_);gTotal+=total_tot;
-        var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
+        var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).concat(IOI_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
         var fobl=p_.fob_jkt!=null?'FOB Tj Priok':p_.fob_kl!=null?'FOB Port Klang':'FOB Origin';
         if(item.supplier==='wingagro')fobl='FOB Surabaya';
         if(item.supplier==='klk')fobl='FOB Port Klang';
+        if(item.supplier==='ioi')fobl='FOB Malaysia';
         var productName=itemDisplayName(item);
         var descLine=fobl+' | Net '+nwFmt(nw,(item.sku&&item.sku.type)||'',1);
         if(hasFr){
@@ -6289,6 +6303,35 @@ var KLK_PKG_DEF=[
 {id:98,cat:"TIN",name:"VEGETABLE GHEE",packing:"8L X 2 PLASTIC PAIL",pkg_cost:274.9575,premium:15.0625},
 {id:99,cat:"TIN",name:"VEGETABLE GHEE",packing:"10L X 2 PLASTIC PAIL",pkg_cost:219.7,premium:2.65}
 ];
+var IOI_PKG_DEF=[
+{id:0,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-159.87},
+{id:1,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-159.87},
+{id:2,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-129.87},
+{id:3,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-163.24},
+{id:4,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-163.24},
+{id:5,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-133.24},
+{id:6,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-192.305},
+{id:7,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-192.105},
+{id:8,cat:"JERRY CAN",name:"RBD PALM OLEIN CP6",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-160.705},
+{id:9,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"5L X 4 WHITE JERRY CANS PER CARTON",pkg_cost:165.295,premium:-250.345},
+{id:10,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"5L X 4 WHITE JERRY CANS PER CARTON",pkg_cost:165.295,premium:-250.145},
+{id:11,cat:"JERRY CAN",name:"RBD PALM OLEIN CP6",packing:"5L X 4 WHITE JERRY CANS PER CARTON",pkg_cost:165.295,premium:-218.695},
+{id:12,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"25L YELLOW JERRY CAN",pkg_cost:98.82,premium:-180.07},
+{id:13,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"25L YELLOW JERRY CAN",pkg_cost:98.82,premium:-179.82},
+{id:14,cat:"JERRY CAN",name:"RBD PALM OLEIN CP6",packing:"25L YELLOW JERRY CAN",pkg_cost:98.82,premium:-148.02},
+{id:15,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L YELLOW JERRY CAN",pkg_cost:103.566,premium:-190.016},
+{id:16,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"20L YELLOW JERRY CAN",pkg_cost:103.566,premium:-189.816},
+{id:17,cat:"JERRY CAN",name:"RBD PALM OLEIN CP6",packing:"20L YELLOW JERRY CAN",pkg_cost:103.566,premium:-158.366},
+{id:18,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L GREEN JERRY CAN",pkg_cost:106.305,premium:-192.505},
+{id:19,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"20L GREEN JERRY CAN",pkg_cost:106.305,premium:-192.355},
+{id:20,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"18L YELLOW JERRY CAN",pkg_cost:112.845,premium:-201.195},
+{id:21,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"18L YELLOW JERRY CAN",pkg_cost:112.845,premium:-201.045},
+{id:22,cat:"BOTTLE",name:"RBD PALM OLEIN CP10",packing:"5L X 4 PET BOTTLES PER CARTON",pkg_cost:133.5393,premium:-219.2393},
+{id:23,cat:"BOTTLE",name:"RBD PALM OLEIN CP8",packing:"5L X 4 PET BOTTLES PER CARTON",pkg_cost:133.5393,premium:-219.0893},
+{id:24,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"5L X 4 PET BOTTLES PER CARTON",pkg_cost:133.5393,premium:-187.6393},
+{id:25,cat:"BIB",name:"RBD PALM OLEIN CP10",packing:"20KG BIB",pkg_cost:62.81,premium:-147.76},
+{id:26,cat:"BIB",name:"RBD PALM OLEIN CP8",packing:"20KG BIB",pkg_cost:62.81,premium:-147.56}
+];
 
 function loadPkgArr(key,def){
   try{var saved=JSON.parse(localStorage.getItem(key)||'[]');
@@ -6304,11 +6347,13 @@ function loadPkgArr(key,def){
 var APC_PKG=loadPkgArr(APC_PKG_KEY,APC_PKG_DEF.map(function(d){return Object.assign({},d);}));
 var WA_PKG=loadPkgArr(WA_PKG_KEY,WA_PKG_DEF.map(function(d){return Object.assign({},d);}));
 var KLK_PKG=loadPkgArr(KLK_PKG_KEY,KLK_PKG_DEF.map(function(d){return Object.assign({},d);}));
+var IOI_PKG=loadPkgArr(IOI_PKG_KEY,IOI_PKG_DEF.map(function(d){return Object.assign({},d);}));
 
 function getPkgArr(s){
   if(s==='apical')return APC_PKG;
   if(s==='wingagro')return WA_PKG;
   if(s==='klk')return KLK_PKG;
+  if(s==='ioi')return IOI_PKG;
   return [];
 }
 
@@ -6317,11 +6362,16 @@ function getPkgArr(supplier){
   if(supplier==='apical')return APC_PKG;
   if(supplier==='wingagro')return WA_PKG;
   if(supplier==='klk')return KLK_PKG;
+  if(supplier==='ioi')return IOI_PKG;
   return [];
 }
 
 ;
 var KLK_REF=loadRef(KLK_REF_KEY,KLK_REF_DEF);
+var IOI_REF_KEY='oillio_ioi_ref';
+var IOI_PKG_KEY='oillio_ioi_pkg';
+var IOI_REF_DEF=Object.assign({},KLK_REF_DEF);
+var IOI_REF=loadRef(IOI_REF_KEY,IOI_REF_DEF);
 
 // ===== AUTO BASE FIELDS: always worked out from Malaysia CP10 (never typed, never stale) =====
 // Indonesia CP10 = CP10 - 120 | CP6 = CP10 + 60 | RBD Palm Oil (Malaysia) = CP10 - 10 | RBD Palm Oil (Indonesia) = Indonesia CP10 - 10
@@ -6337,7 +6387,7 @@ function _deriveAuto(r){
   r.rbd_id=c-130;
   return r;
 }
-[APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
+[APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(_deriveAuto);
 
 // ===== PRICING MODEL V2 (17 Oct 2026): every product = base oil + premium/discount + packaging =====
 // Saved prices from the old model are converted ONCE, in memory, so that no FOB changes: the premium/discount absorbs the
@@ -6392,14 +6442,14 @@ function _svRollWeekend(day){var d=new Date(day+'T00:00:00Z'),w=d.getUTCDay();if
 // "Current" pricing = the LAST SAVED pricing day (weekends/holidays keep Friday's prices live — never locked)
 function _svSyncStatus(){ // always tell the user which saved figures are on screen
   var n=document.getElementById('svOilNote');if(!n||window._refDirty)return;
-  if(window._listPending&&(window._listPending.klk||window._listPending.apical||window._listPending.wingagro))return; // the 'new prices loaded' note has priority
+  if(window._listPending&&(window._listPending.klk||window._listPending.apical||window._listPending.wingagro||window._listPending.ioi))return; // the 'new prices loaded' note has priority
   if(window._syncLoadedOnce&&window._refLastSaved){n.textContent='Showing saved prices from '+new Date(window._refLastSaved).toLocaleString('en-GB',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' (MY) \u00b7 loaded from the database';n.style.color='#1a7a4a';}
   else if(!window._syncLoadedOnce){n.textContent='\u26a0 Saved prices NOT loaded from the database yet \u2014 figures shown may be OLD. Press "Reset to Last Saved" or refresh.';n.style.color='#c0392b';}
 }
 function _svLatestDay(){var ts=window._refLastSaved;return _svRollWeekend(ts?_myDay(ts):_myDay(new Date().toISOString()));}
 var SV_CFG=(function(){var d={};try{var _s=JSON.parse(localStorage.getItem('oillio_supp'));if(_s)d=_s;}catch(e){}
   var base=(d.margin!=null&&!isNaN(parseFloat(d.margin)))?parseFloat(d.margin):5.0;var m=d.m||{};
-  ['apical','klk','wingagro'].forEach(function(k){if(m[k]==null||isNaN(parseFloat(m[k])))m[k]=base;}); // each supplier keeps its OWN Oillio margin
+  ['apical','klk','wingagro','ioi'].forEach(function(k){if(m[k]==null||isNaN(parseFloat(m[k])))m[k]=base;}); // each supplier keeps its OWN Oillio margin
   var o={m:m};
   Object.defineProperty(o,'margin',{enumerable:false,get:function(){var k=(typeof SV_SUP!=='undefined'&&SV_SUP&&(SV_SUP in m))?SV_SUP:'apical';return m[k];},set:function(v){var k=(typeof SV_SUP!=='undefined'&&SV_SUP&&(SV_SUP in m))?SV_SUP:'apical';m[k]=v;}});
   return o;}());var SV_APC_KEY="oillio_apc_fob";var SV_WA_KEY="oillio_wa_fob";var SV_KLK_KEY="oillio_klk_fob";
@@ -6549,6 +6599,36 @@ var KLK_DATA=[
 {cat:'DRUM',name:'PFAD',packing:'200L RECON STEEL DRUM WITH RINGCLIP',load_ctn:98.0,net_wt:180.0,fob_mt:1220.86,fcpo_default:1110.0,premium:-14.14,pkg_cost:125.0,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'DRUM',name:'PFAD',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1328.04,fcpo_default:1110.0,premium:-16.96,pkg_cost:235.0,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'}
 ];
+// IOI (new supplier 6 Nov 2026) - modelled on KLK: same loadability, packaging cost estimated from the matching KLK SKUs (Flexibag from the Able Perfect calculator)
+var IOI_DATA=[
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1100,fcpo_default:1207.5,premium:-159.87,pkg_cost:52.37,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1110,fcpo_default:1217.5,premium:-159.87,pkg_cost:52.37,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1190,fcpo_default:1267.5,premium:-129.87,pkg_cost:52.37,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1105,fcpo_default:1207.5,premium:-163.24,pkg_cost:60.74,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1115,fcpo_default:1217.5,premium:-163.24,pkg_cost:60.74,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1195,fcpo_default:1267.5,premium:-133.24,pkg_cost:60.74,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1121.5,fcpo_default:1207.5,premium:-192.305,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1131.7,fcpo_default:1217.5,premium:-192.105,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP6',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1213.1,fcpo_default:1267.5,premium:-160.705,pkg_cost:106.305,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'5L X 4 WHITE JERRY CANS PER CARTON',load_ctn:1076.0,net_wt:18.0,fob_mt:1122.45,fcpo_default:1207.5,premium:-250.345,pkg_cost:165.295,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'5L X 4 WHITE JERRY CANS PER CARTON',load_ctn:1076.0,net_wt:18.0,fob_mt:1132.65,fcpo_default:1217.5,premium:-250.145,pkg_cost:165.295,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP6',packing:'5L X 4 WHITE JERRY CANS PER CARTON',load_ctn:1076.0,net_wt:18.0,fob_mt:1214.1,fcpo_default:1267.5,premium:-218.695,pkg_cost:165.295,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'25L YELLOW JERRY CAN',load_ctn:1098.0,net_wt:22.5,fob_mt:1126.25,fcpo_default:1207.5,premium:-180.07,pkg_cost:98.82,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'25L YELLOW JERRY CAN',load_ctn:1098.0,net_wt:22.5,fob_mt:1136.5,fcpo_default:1217.5,premium:-179.82,pkg_cost:98.82,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP6',packing:'25L YELLOW JERRY CAN',load_ctn:1098.0,net_wt:22.5,fob_mt:1218.3,fcpo_default:1267.5,premium:-148.02,pkg_cost:98.82,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L YELLOW JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1121.05,fcpo_default:1207.5,premium:-190.016,pkg_cost:103.566,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'20L YELLOW JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1131.25,fcpo_default:1217.5,premium:-189.816,pkg_cost:103.566,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP6',packing:'20L YELLOW JERRY CAN',load_ctn:1342.0,net_wt:18.0,fob_mt:1212.7,fcpo_default:1267.5,premium:-158.366,pkg_cost:103.566,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L GREEN JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1121.3,fcpo_default:1207.5,premium:-192.505,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'20L GREEN JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1131.45,fcpo_default:1217.5,premium:-192.355,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'18L YELLOW JERRY CAN',load_ctn:1440.0,net_wt:16.2,fob_mt:1119.15,fcpo_default:1207.5,premium:-201.195,pkg_cost:112.845,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'18L YELLOW JERRY CAN',load_ctn:1440.0,net_wt:16.2,fob_mt:1129.3,fcpo_default:1217.5,premium:-201.045,pkg_cost:112.845,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP10',packing:'5L X 4 PET BOTTLES PER CARTON',load_ctn:1055.0,net_wt:18.0,fob_mt:1121.8,fcpo_default:1207.5,premium:-219.2393,pkg_cost:133.5393,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP8',packing:'5L X 4 PET BOTTLES PER CARTON',load_ctn:1055.0,net_wt:18.0,fob_mt:1131.95,fcpo_default:1217.5,premium:-219.0893,pkg_cost:133.5393,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'BOTTLE',name:'RBD PALM OLEIN CP6',packing:'5L X 4 PET BOTTLES PER CARTON',load_ctn:1055.0,net_wt:18.0,fob_mt:1213.4,fcpo_default:1267.5,premium:-187.6393,pkg_cost:133.5393,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'BIB',name:'RBD PALM OLEIN CP10',packing:'20KG BIB',load_ctn:1100.0,net_wt:20.0,fob_mt:1122.55,fcpo_default:1207.5,premium:-147.76,pkg_cost:62.81,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'BIB',name:'RBD PALM OLEIN CP8',packing:'20KG BIB',load_ctn:1100.0,net_wt:20.0,fob_mt:1132.75,fcpo_default:1217.5,premium:-147.56,pkg_cost:62.81,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'}
+];
 
 (function(){try{var af=JSON.parse(localStorage.getItem(SV_APC_KEY)||"{}");APICAL_DATA.forEach(function(p){if(af[p.name]!=null)p.fob_jkt=af[p.name];if(af[p.name+"_kl"]!=null)p.fob_kl=af[p.name+"_kl"];});var wf=JSON.parse(localStorage.getItem(SV_WA_KEY)||"{}");WA_DATA.forEach(function(p){if(wf[p.name]!=null)p.fob_sua=wf[p.name];});var kf=JSON.parse(localStorage.getItem(SV_KLK_KEY)||"{}");KLK_DATA.forEach(function(p){if(kf[p.name]!=null)p.fob_mt=kf[p.name];});}catch(e){}var mg=document.getElementById("suppMargin");if(mg)mg.value=SV_CFG.margin!=null?SV_CFG.margin:2.5;})();
 var SV_FR={mode:"fob",usd:0,port:null,portName:""};
@@ -6556,11 +6636,13 @@ var SV_FR={mode:"fob",usd:0,port:null,portName:""};
 var APC_FR={mode:'fob',usd:0,port:null,portName:''};
 var WA_FR={mode:'fob',usd:0,port:null,portName:''};
 var KLK_FR={mode:'fob',usd:0,port:null,portName:''};
+var IOI_FR={mode:'fob',usd:0,port:null,portName:''};
 // Per-supplier quote fields (customer name + delivery)
 var APC_QUOTE={cust:'',del:''};
 var WA_QUOTE={cust:'',del:''};
 var KLK_QUOTE={cust:'',del:''};
-function getSupQuote(s){return s==='klk'?KLK_QUOTE:s==='wingagro'?WA_QUOTE:APC_QUOTE;}
+var IOI_QUOTE={cust:'',del:''};
+function getSupQuote(s){return s==='klk'?KLK_QUOTE:s==='wingagro'?WA_QUOTE:s==='ioi'?IOI_QUOTE:APC_QUOTE;}
 function saveSupQuote(s){
   var q=getSupQuote(s);
   var c=document.getElementById('qCust'),d=document.getElementById('qDel');
@@ -6573,7 +6655,7 @@ function loadSupQuote(s){
   if(d)d.value=q.del||'';
   rReport();
 }
-function getSupFR(s){return s==='klk'?KLK_FR:s==='wingagro'?WA_FR:APC_FR;}
+function getSupFR(s){return s==='klk'?KLK_FR:s==='wingagro'?WA_FR:s==='ioi'?IOI_FR:APC_FR;}
 function saveSupFR(s){
   var store=getSupFR(s);
   store.mode=SV_FR.mode;store.usd=SV_FR.usd;
@@ -6638,9 +6720,9 @@ function setSupplier(s){if(s==='ableperfect')s=null; /* For Reference Only tab r
   }
   SV_SUP=s;
   if(!window._syncLoadedOnce){try{_syncLoad(function(d){if(d){window._forceApply=true;try{_syncApply(d);}finally{window._forceApply=false;}try{svRenderRefPanel();}catch(e){}}});}catch(e){}}
-  try{var _mgI=document.getElementById('suppMargin');if(_mgI&&(s==='apical'||s==='klk'||s==='wingagro'))_mgI.value=SV_CFG.margin;}catch(e){}
+  try{var _mgI=document.getElementById('suppMargin');if(_mgI&&(s==='apical'||s==='klk'||s==='wingagro'||s==='ioi'))_mgI.value=SV_CFG.margin;}catch(e){}
   // Load new supplier's freight settings
-  if(s==='apical'||s==='klk'||s==='wingagro'){
+  if(s==='apical'||s==='klk'||s==='wingagro'||s==='ioi'){
     _loadSupItems(s);loadSupFR(s);loadSupQuote(s);
     // Update freight UI buttons and fields
     setTimeout(function(){
@@ -6652,14 +6734,14 @@ function setSupplier(s){if(s==='ableperfect')s=null; /* For Reference Only tab r
       rQuote();rReport();
     },50);
   }
-  ["supOilBase","supApical","supKlk","supWing","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+(id==="supOilBase"&&e.classList.contains("u2-hide")?" u2-hide":"")+((id==="supOilBase"&&s==="oilbase")||(id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","oilBaseView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="oilbase"){window._svSel=null;window._svSelIdx=null;var obv=document.getElementById("oilBaseView");if(obv)obv.style.display="";_svSimInitDate();svRenderRefPanel();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}try{_svSyncStatus();}catch(e){}var labels={"oilbase":"🛢 Daily Oil Base Price • applies to all suppliers","apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
+  ["supOilBase","supApical","supKlk","supWing","supIoi","supAble","supCompare","supCustomers"].forEach(function(id){var e=document.getElementById(id);if(e)e.className="sup-btn"+(id==="supOilBase"&&e.classList.contains("u2-hide")?" u2-hide":"")+((id==="supOilBase"&&s==="oilbase")||(id==="supApical"&&s==="apical")||(id==="supKlk"&&s==="klk")||(id==="supWing"&&s==="wingagro")||(id==="supIoi"&&s==="ioi")||(id==="supAble"&&s==="ableperfect")||(id==="supCompare"&&s==="compare")||(id==="supCustomers"&&s==="customers")?" active":"");});["supplierView","oilBaseView","compareView","ablePanels","ableRight","noSupplier","customersView"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="none";});var _w=document.querySelector(".wrap");if(_w)_w.style.display="none";if(s==="ableperfect"){var _w=document.querySelector(".wrap");if(_w)_w.style.display="";["ablePanels","ableRight"].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display="";});renderAll();}else if(s==="compare"){var cv=document.getElementById("compareView");if(cv)cv.style.display="";svPopulateCmp();svRenderCmp();}else if(s==="oilbase"){window._svSel=null;window._svSelIdx=null;var obv=document.getElementById("oilBaseView");if(obv)obv.style.display="";_svSimInitDate();svRenderRefPanel();}else if(s==="customers"){var cuv=document.getElementById("customersView");if(cuv)cuv.style.display="";svRenderCustList();}else if(s==="apical"||s==="klk"||s==="wingagro"||s==="ioi"){var sv=document.getElementById("supplierView");if(sv){sv.style.display="";var supColors={apical:"#1a7a4a",klk:"#1a5276",wingagro:"#7b4f00",ioi:"#5b2c83"};sv.style.borderTop="4px solid "+(supColors[s]||"var(--brand)");}var ot=document.getElementById("svOriginWrap");if(ot)ot.style.display=s==="apical"?"":"none";svRenderRefPanel();window._svCat=null;window._svSel=null;window._svSelIdx=null;window._svName=null;var _chips=document.getElementById('svCatChips');if(_chips)_chips.innerHTML='';var _det=document.getElementById('svDetailCard'),_es=document.getElementById('svEmptyState');if(_det)_det.style.display='none';if(_es)_es.style.display='';svRenderRefPanel();svRenderTable();}else{var ns=document.getElementById("noSupplier");if(ns)ns.style.display="";}try{_svSyncStatus();}catch(e){}var labels={"oilbase":"🛢 Daily Oil Base Price • applies to all suppliers","apical":"🌿 Apical Oil Products • FOB Tj Priok / Port Klang","klk":"🏢 KLK Products • FOB Port Klang • 80 SKUs","wingagro":"🌱 Wing Agro Products • FOB Surabaya","ioi":"🏭 IOI Products • FOB Malaysia","ableperfect":"For Reference Only • 636 ports","compare":"Compare Suppliers • Apical vs KLK vs Wing Agro vs IOI"};var hdr=document.getElementById("hdrSub");if(hdr)hdr.textContent=labels[s]||"";}
 function svSetOrigin(o){SV_ORIGIN=o;var j=document.getElementById('svBtnJKT'),k=document.getElementById('svBtnKL');if(j){j.style.background=o==='JKT'?'var(--olv)':'#fff';j.style.color=o==='JKT'?'#fff':'var(--olv)';}if(k){k.style.background=o==='KL'?'var(--olv)':'#fff';k.style.color=o==='KL'?'#fff':'var(--olv)';}window._svCat=null;window._svSel=null;window._svSelIdx=null;var chips=document.getElementById('svCatChips');if(chips)chips.innerHTML='';var det=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(det)det.style.display='none';if(es)es.style.display='';svRenderTable();try{svRenderPkgFields();}catch(e){}}function onMarginChange(){var _v=parseFloat((document.getElementById('suppMargin')||{}).value);var rawVal=isNaN(_v)?5:_v;if((window.USER_LEVEL!=null?window.USER_LEVEL:2)===2&&rawVal<2.5){rawVal=2.5;var _mg=document.getElementById('suppMargin');if(_mg)_mg.value='2.5';}SV_CFG.margin=rawVal;try{localStorage.setItem('oillio_supp',JSON.stringify(SV_CFG));}catch(e){}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,SV_SUP);svRenderDetail(fob);}}
 function svOnFrChange(){SV_FR.portName=(document.getElementById("svFrPortName")||{value:""}).value||"";SV_FR.usd=parseFloat((document.getElementById("svFrAmt")||{}).value)||0;svRenderTable();}function svSetFreight(m){SV_FR.mode=m;["fob","manual","port"].forEach(function(k){var b=document.getElementById("frBtn"+k.charAt(0).toUpperCase()+k.slice(1));if(!b)return;b.style.background=k===m?"var(--brand)":"#fff";b.style.color=k===m?"#fff":"var(--mut)";b.style.borderColor=k===m?"var(--brand)":"var(--bdr)";});var mw=document.getElementById("svFrManual"),pw=document.getElementById("svFrPort");if(mw)mw.style.display=m==="manual"?"":"none";if(pw)pw.style.display=m==="port"?"":"none";if(m==="port"){var rs=document.getElementById("svPortRegion");if(rs&&!rs.options.length)svInitPorts();}svRenderTable();}function svInitPorts(){var rs=document.getElementById('svPortRegion');if(!rs)return;var regions=['ALL'].concat([...new Set(ALL_PORTS.map(function(p){return p.region;}))].sort());rs.innerHTML=regions.map(function(r){return'<option>'+r+'</option>';}).join('');svFilterPorts();}function svFilterPorts(){var q=((document.getElementById('svPortSearch')||{}).value||'').toLowerCase();var reg=(document.getElementById('svPortRegion')||{}).value||'ALL';var el_=document.getElementById('svPortList');if(!el_)return;var ports=ALL_PORTS.filter(function(p){if(reg!=='ALL'&&p.region!==reg)return false;if(q&&(p.port+p.country+p.region).toLowerCase().indexOf(q)<0)return false;return true;});window._svPC=ports;var _lat=0;ALL_PORTS.forEach(function(p){var t=Date.parse(p.updated);if(t>_lat)_lat=t;});var _latL=_lat?new Date(_lat).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'';el_.innerHTML='<div style="position:sticky;top:0;background:#fffde7;border-bottom:1px solid #f0dca0;padding:4px 8px;font-size:.64rem;font-weight:700;color:#b45309">Freight table loaded: '+ALL_PORTS.length+' ports &middot; latest rate update '+_latL+' &middot; each port shows its own date</div>'+ports.slice(0,200).map(function(p,i){var age=p.updated?Math.round((Date.now()-new Date(p.updated))/(1000*86400)):999;var cls=age<90?'fresh':age<180?'warn':'stale';var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';return'<div class="pitem" data-fi="'+i+'">'+'<div class="pdot '+cls+'" title="Last updated: '+dLabel+'"></div>'+'<div class="pport">'+p.port+'</div>'+'<div class="pcty">'+p.country+'</div>'+'<div class="pfr">$'+fmt(p.freight,0)+'<div style="font-size:.6rem;color:#999;font-weight:400">'+dLabel+'</div></div></div>';}).join('');el_.querySelectorAll('[data-fi]').forEach(function(d){d.onclick=function(){var p=window._svPC[+this.getAttribute('data-fi')];if(p)svSelectPort(p.country,p);};});}function svSelectPort(country,p){SV_FR.port={country:p.country,port:p.port,freight:p.freight,updated:p.updated};var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="";if(pl)pl.style.display="none";var nm=document.getElementById("svPortSelName"),rt=document.getElementById("svPortSelRate");var dLabel=p.updated?new Date(p.updated).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'no date';if(nm)nm.textContent=p.port+", "+country;if(rt)rt.textContent="USD "+fmt(p.freight,0)+"/FCL (updated "+dLabel+")";svRenderTable();}function svClearPort(){SV_FR.port=null;var sel=document.getElementById("svPortSel"),pl=document.getElementById("svPortList");if(sel)sel.style.display="none";if(pl)pl.style.display="";svRenderTable();}
-function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var _avail=function(p){var f=getFob(p);return !!f&&f>0;};var cats={};data.forEach(function(p){if(p.cat&&_avail(p))cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c&&_avail(p);}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
+function svRenderTable(){var s=SV_SUP;var q=((document.getElementById('svSearch')||{}).value||'').toLowerCase();var data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else if(s==='ioi'){data=IOI_DATA;getFob=function(p){return getLiveFob(p,'ioi');}; }else return;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:s==='ioi'?IOI_REF:KLK_REF;var _avail=function(p){var f=getFob(p);return !!f&&f>0;};var cats={};data.forEach(function(p){if(p.cat&&_avail(p))cats[p.cat]=1;});var chipsEl=document.getElementById('svCatChips');if(chipsEl){var catOrder=['JERRY CAN','CARTON BOX','BIB','FLEXIBAG','POLYWOVEN BAG','BOTTLE','TIN','DRUM'];var orderedCats=catOrder.filter(function(c){return cats[c];});Object.keys(cats).forEach(function(c){if(orderedCats.indexOf(c)<0)orderedCats.push(c);});var cb='<button class="chip'+(window._svCat==null?' on':'')+'" onclick="svSetCat(null)">All</button>';orderedCats.forEach(function(c){var n=data.filter(function(p){return p.cat===c&&_avail(p);}).length;cb+='<button class="chip'+(window._svCat===c?' on':'')+'" onclick="svSetCat(\''+c.replace(/\'/g,'&apos;')+'\')">'+c+' <span style="opacity:.7">('+n+')</span></button>';});chipsEl.innerHTML=cb;}
 // ── KLK name sub-filter ──
 var nameChipsEl=document.getElementById('svNameChips');
 if(nameChipsEl){
-  if(s==='klk'&&window._svCat){
+  if((s==='klk'||s==='ioi')&&window._svCat){
     var nameSet={};
     data.forEach(function(p){if(p.cat===window._svCat)nameSet[p.name]=1;});
     var names=Object.keys(nameSet);
@@ -6680,7 +6762,7 @@ if(nameChipsEl){
 }
 var listEl=document.getElementById('svProdList');if(!listEl)return;var filtered=data.filter(function(p,i){var fob=getFob(p);if(!fob||fob<=0)return false;if(window._svCat&&p.cat!==window._svCat)return false;if(window._svName&&p.name!==window._svName)return false;var name=(p.name||'').toLowerCase(),pack=(p.packing||'').toLowerCase();if(q&&name.indexOf(q)<0&&pack.indexOf(q)<0)return false;p._idx=i; return true;});var cnt=document.getElementById('svProdCount');if(cnt)cnt.textContent='('+filtered.length+' products)';var isAdmin=IS_ADMIN;var _allSameName=filtered.length>0&&filtered.every(function(p){return p.name===filtered[0].name;});
   var _singleNameHdr=_allSameName&&filtered.length>1?'<div style="padding:6px 12px 4px;font-size:.71rem;font-weight:700;color:var(--brand);background:#f0f4ff;border-bottom:1px solid var(--bdr);letter-spacing:.04em">'+filtered[0].name+'</div>':'';
-  listEl.innerHTML=_singleNameHdr+filtered.map(function(p){var fob=getFob(p);var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var est=fcpo+(p.pkg_cost||0);/* Est=FCPO+Pkg per Excel */var nw=p.net_wt||20;var lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var isFlexibag=(p.packing||'').toUpperCase().indexOf('FLEXIBAG')>=0;var c=svCalc(safeFob,nw,lc,isFlexibag);var sel=window._svSel&&window._svSel.packing===p.packing&&window._svSel.name===p.name;var portLabel=SV_SUP==='apical'?(SV_ORIGIN==='JKT'?'FOB Tj Priok':'FOB Port Klang'):SV_SUP==='wingagro'?'FOB Surabaya':'FOB Port Klang';var hasFr=(SV_FR.mode!=='fob'&&(SV_FR.usd>0||(SV_FR.port&&SV_FR.port.freight>0)));var li='<div class="apc-item'+(sel?' sel':'')+'" onclick="svSelectProduct('+p._idx+')">'; li+='<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">';li+='<div style="display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:3px">';li+='<b style="color:var(--brand);font-size:.8rem">'+dispN(p.name,p.packing,SV_SUP)+'</b>';li+='<span style="background:#0a3d62;color:#fff;font-size:.6rem;padding:2px 7px;border-radius:10px;flex-shrink:0">'+portLabel+'</span>';if(SUP_LISTS[SV_SUP]){var _L=SUP_LISTS[SV_SUP],_lb=_L.label.replace(/ 20/,'').replace(/ /g,'');if(_svListOn(SV_SUP,p.name,p.packing))li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+_lb+'</span>';else li+='<span style="background:#f39c12;color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#9888; not on '+_lb+' list &middot; '+(_L.uplift?'+'+_L.uplift+' only':'unchanged')+'</span>';}else if(p.upd)li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+p.upd+'</span>';li+='</div>';li+='<div style="font-size:.66rem;color:#555;margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap">';li+='<span>'+p.packing+'</span><span style="color:#ccc">|</span>';li+='<span>'+fmt(lc,0)+' ctns/FCL</span><span style="color:#ccc">|</span>';li+='<span>'+nwFmt(nw,p.packing,2)+'/unit</span>';li+='</div>';li+='<div class="sup-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:start">';li+='<div class="sup-pnl" style="background:#eaf0fb;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a3c6b;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #c5d8f0;padding-bottom:3px">SUPPLIER</div>';li+='<div style="color:#1a3c6b;font-size:.67rem;font-weight:700">Est: USD '+fmt(safeFob*(_ref.supplier_margin||1),2)+'/MT</div>';li+='<div class="sup-fob" style="color:#1a3c6b;font-size:.67rem">FOB: USD '+fmt(fob,2)+'/MT</div>';li+='<div class="sup-fob" style="color:#1a3c6b;font-size:.78rem;font-weight:800">USD '+fmt(c.su,2)+'/SKU</div>';li+='</div>';li+='<div style="background:#e8f5ec;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a5c2a;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #b5dcc0;padding-bottom:3px">OILLIO</div>';li+='<div style="color:#1a5c2a;font-size:.67rem">Oillio/MT: USD '+fmt(c.om,2)+'</div>';li+='<div style="color:#1a5c2a;font-size:.78rem;font-weight:800">USD '+fmt(c.os,2)+'/SKU</div>';if((window.USER_LEVEL!=null?window.USER_LEVEL:2)<=1){li+='<div style="color:#7b2d8b;font-size:.7rem;font-weight:700">Profit: +USD '+fmt(c.ps,2)+'/SKU</div>';}li+='</div>';li+='</div>';if(hasFr&&c.fr>0){li+='<div style="margin-top:4px;background:#fff3cd;border:1px solid #ffc107;border-radius:5px;padding:6px 8px;font-size:.67rem">';li+='<div style="color:#856404;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #ffd54f;padding-bottom:3px">WITH FREIGHT</div>';li+='<div style="display:flex;justify-content:space-between;color:#856404">';li+='<span>+USD '+fmt(c.fr,2)+'/SKU freight</span>';li+='<b>= USD '+fmt(c.of,2)+'/SKU (USD '+fmt(c.ofm,2)+'/MT)</b>';li+='</div></div>';}li+='</div>';li+='</div>';return li;}).join('')||'<div style="padding:14px;color:var(--mut);text-align:center">No products — check origin or search</div>';if(!window._svSel){var ed=document.getElementById('svDetailCard'),ee=document.getElementById('svEmptyState');if(ed)ed.style.display='none';if(ee)ee.style.display='';}}function svSetCat(cat){
+  listEl.innerHTML=_singleNameHdr+filtered.map(function(p){var fob=getFob(p);var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var est=fcpo+(p.pkg_cost||0);/* Est=FCPO+Pkg per Excel */var nw=p.net_wt||20;var lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var isFlexibag=(p.packing||'').toUpperCase().indexOf('FLEXIBAG')>=0;var c=svCalc(safeFob,nw,lc,isFlexibag);var sel=window._svSel&&window._svSel.packing===p.packing&&window._svSel.name===p.name;var portLabel=SV_SUP==='apical'?(SV_ORIGIN==='JKT'?'FOB Tj Priok':'FOB Port Klang'):SV_SUP==='wingagro'?'FOB Surabaya':SV_SUP==='ioi'?'FOB Malaysia':'FOB Port Klang';var hasFr=(SV_FR.mode!=='fob'&&(SV_FR.usd>0||(SV_FR.port&&SV_FR.port.freight>0)));var li='<div class="apc-item'+(sel?' sel':'')+'" onclick="svSelectProduct('+p._idx+')">'; li+='<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">';li+='<div style="display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:3px">';li+='<b style="color:var(--brand);font-size:.8rem">'+dispN(p.name,p.packing,SV_SUP)+'</b>';li+='<span style="background:#0a3d62;color:#fff;font-size:.6rem;padding:2px 7px;border-radius:10px;flex-shrink:0">'+portLabel+'</span>';if(SUP_LISTS[SV_SUP]){var _L=SUP_LISTS[SV_SUP],_lb=_L.label.replace(/ 20/,'').replace(/ /g,'');if(_svListOn(SV_SUP,p.name,p.packing))li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+_lb+'</span>';else li+='<span style="background:#f39c12;color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#9888; not on '+_lb+' list &middot; '+(_L.uplift?'+'+_L.uplift+' only':'unchanged')+'</span>';}else if(p.upd)li+='<span style="background:#1a7a4a;color:#fff;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-left:4px">&#x2713; '+p.upd+'</span>';li+='</div>';li+='<div style="font-size:.66rem;color:#555;margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap">';li+='<span>'+p.packing+'</span><span style="color:#ccc">|</span>';li+='<span>'+fmt(lc,0)+' ctns/FCL</span><span style="color:#ccc">|</span>';li+='<span>'+nwFmt(nw,p.packing,2)+'/unit</span>';li+='</div>';li+='<div class="sup-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:start">';li+='<div class="sup-pnl" style="background:#eaf0fb;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a3c6b;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #c5d8f0;padding-bottom:3px">SUPPLIER</div>';li+='<div style="color:#1a3c6b;font-size:.67rem;font-weight:700">Est: USD '+fmt(safeFob*(_ref.supplier_margin||1),2)+'/MT</div>';li+='<div class="sup-fob" style="color:#1a3c6b;font-size:.67rem">FOB: USD '+fmt(fob,2)+'/MT</div>';li+='<div class="sup-fob" style="color:#1a3c6b;font-size:.78rem;font-weight:800">USD '+fmt(c.su,2)+'/SKU</div>';li+='</div>';li+='<div style="background:#e8f5ec;border-radius:5px;padding:6px 8px;min-height:72px">';li+='<div style="color:#1a5c2a;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #b5dcc0;padding-bottom:3px">OILLIO</div>';li+='<div style="color:#1a5c2a;font-size:.67rem">Oillio/MT: USD '+fmt(c.om,2)+'</div>';li+='<div style="color:#1a5c2a;font-size:.78rem;font-weight:800">USD '+fmt(c.os,2)+'/SKU</div>';if((window.USER_LEVEL!=null?window.USER_LEVEL:2)<=1){li+='<div style="color:#7b2d8b;font-size:.7rem;font-weight:700">Profit: +USD '+fmt(c.ps,2)+'/SKU</div>';}li+='</div>';li+='</div>';if(hasFr&&c.fr>0){li+='<div style="margin-top:4px;background:#fff3cd;border:1px solid #ffc107;border-radius:5px;padding:6px 8px;font-size:.67rem">';li+='<div style="color:#856404;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;border-bottom:1px solid #ffd54f;padding-bottom:3px">WITH FREIGHT</div>';li+='<div style="display:flex;justify-content:space-between;color:#856404">';li+='<span>+USD '+fmt(c.fr,2)+'/SKU freight</span>';li+='<b>= USD '+fmt(c.of,2)+'/SKU (USD '+fmt(c.ofm,2)+'/MT)</b>';li+='</div></div>';}li+='</div>';li+='</div>';return li;}).join('')||'<div style="padding:14px;color:var(--mut);text-align:center">No products — check origin or search</div>';if(!window._svSel){var ed=document.getElementById('svDetailCard'),ee=document.getElementById('svEmptyState');if(ed)ed.style.display='none';if(ee)ee.style.display='';}}function svSetCat(cat){
   window._svCat=cat;window._svSel=null;
   // Auto-switch JKT/KL origin if this category is exclusively one or the other,
   // so users never land on an empty list due to origin mismatch (Apical only)
@@ -6693,16 +6775,16 @@ var listEl=document.getElementById('svProdList');if(!listEl)return;var filtered=
   }
   var chipsEl=document.getElementById('svCatChips');if(chipsEl)chipsEl.innerHTML='';svRenderTable();
 }function svSetName(name){window._svName=name;window._svSel=null;var nc=document.getElementById('svNameChips');if(nc)nc.innerHTML='';svRenderTable();}
-function svSelectProduct(idx){var s=SV_SUP,data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else return;var p=data[idx];if(!p)return;window._svSel=p;window._svSelIdx=idx;var fob=getLiveFob(p,SV_SUP)||0;  svRenderDetail(fob);svRenderTable();}function svOnDetailFobChange(){return;var val=0;var s=SV_SUP,idx=window._svSelIdx||0;if(s==='apical'){if(SV_ORIGIN==='JKT')APICAL_DATA[idx].fob_jkt=val;else APICAL_DATA[idx].fob_kl=val;}else if(s==='wingagro')WA_DATA[idx].fob_sua=val;else if(s==='klk')KLK_DATA[idx].fob_mt=val;if(window._svSel){var k=s==='apical'?(SV_ORIGIN==='JKT'?'fob_jkt':'fob_kl'):s==='wingagro'?'fob_sua':'fob_mt';window._svSel[k]=val;}svRenderDetail(val);svRenderTable();}function svRenderDetail(fob){var p=window._svSel;if(!p)return;var s=SV_SUP;var liveFob=getLiveFob(p,s);if(!fob||isNaN(fob))fob=liveFob;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var prem=p.premium||0,pkg=p.pkg_cost||0,est=fcpo+prem+pkg;var nw=p.net_wt||20,lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var c=svCalc(safeFob,nw,lc,isFlex(p.packing));var isAdmin=IS_ADMIN;var modeStr=SV_FR&&SV_FR.mode!=='fob'?'CIF':'FOB';var title=document.getElementById('svDetailTitle');if(title)title.textContent=dispN(p.name,p.packing,s)+' — '+p.packing;var rowsEl=document.getElementById('svDetailRows');if(rowsEl&&isAdmin){rowsEl.innerHTML='<div class="u2-hide" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.78rem;margin-bottom:4px">'+'<div class="bkr"><span class="bl">FCPO/MT</span><span class="bv">USD '+fmt(fcpo,2)+'</span></div>'+'<div class="bkr"><span class="bl">Premium</span><span class="bv">'+(prem>=0?'+':'')+fmt(prem,2)+'</span></div>'+'<div class="bkr"><span class="bl">Packaging/MT</span><span class="bv">USD '+fmt(pkg,2)+'</span></div>'+'<div class="bkr" style="background:#fffde7"><span class="bl">Est.Cost/MT</span><span class="bv">USD '+fmt(est,2)+'</span></div>'+'<div class="bkr"><span class="bl">Loading</span><span class="bv">'+fmt(lc,0)+' ctns</span></div>'+'<div class="bkr"><span class="bl">Net Weight</span><span class="bv">'+nwFmt(nw,p.packing,1)+'</span></div>'+'</div>';}var resEl=document.getElementById('svResultRows');if(resEl){var html='';html+='<div class="scards">';html+='<div class="sc sc-sup"><div class="sc-l">Supplier / Unit</div><div class="sc-v">USD '+fmt(c.su,4)+'</div><div class="sc-s">'+fmt(nw,1)+' kg × FOB/1000</div></div>';html+='<div class="sc g"><div class="sc-l">Oillio / MT</div><div class="sc-v">USD '+fmt(c.om,2)+'</div><div class="sc-s">FOB × (1+'+fmt(SV_CFG.margin||2.5,2)+'%)</div></div>';html+='<div class="sc a"><div class="sc-l">Oillio Price / Unit</div><div class="sc-v">USD '+fmt(c.os,4)+'</div><div class="sc-s">'+modeStr+'</div></div>';if(isAdmin){var profColor=c.ps>=0?'#1a7a4a':'#c0392b';html+='<div class="sc" style="border-color:#8e44ad"><div class="sc-l">Profit / Unit</div>';html+='<div class="sc-v" style="color:'+profColor+'">'+(c.ps>=0?'+':'')+fmt(c.ps,4)+'</div>';html+='<div class="sc-s">Oillio − Supplier</div></div>';html+='<div class="sc" style="border-color:#8e44ad"><div class="sc-l">Total Profit/FCL</div>';html+='<div class="sc-v" style="color:#8e44ad">USD '+fmt(c.tp,2)+'</div>';html+='<div class="sc-s">'+fmt(lc,0)+' cartons</div></div>';}if(SV_FR&&SV_FR.mode!=='fob'&&c.fr>0){html+='<div class="sc" style="border-color:#2980b9"><div class="sc-l">Freight / Unit</div>';html+='<div class="sc-v" style="color:#2980b9">+USD '+fmt(c.fr,4)+'</div>';html+='<div class="sc-s">USD/FCL ÷ '+fmt(lc,0)+' ctns</div></div>';}html+='</div>';resEl.innerHTML=html;}var cd=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(cd)cd.style.display='';if(es)es.style.display='none';}function svAddToQuote(){var p=window._svSel;if(!p){showToast('Select a product first');return;}if(QITEMS.length>=50){alert('Max 50 items.');return;}var s=SV_SUP,fob=getLiveFob(p,s);if(!fob){showToast('No FOB price for this product');return;}var nw=p.net_wt||20,lc=p.load_ctn||1;var c=svCalc(fob,nw,lc,isFlex(p.packing));var fcl=parseInt((document.getElementById('svFclInput')||{}).value||1)||1;var _skuDisplayName=(s==='klk'&&p.packing)?p.packing+' – '+p.name:dispN(p.name,p.packing,s);QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:_skuDisplayName,type:p.packing||'',net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:fcl,add:0,additiveType:'',mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==='fob'?'FOB':'CIF',port:SV_FR.port||null});rQuote();var info=document.getElementById('svAtqInfo');if(info){info.textContent='Added! ('+QITEMS.length+'/50)';info.style.color='var(--grn)';setTimeout(function(){if(info)info.textContent=(50-QITEMS.length)+' slots';info.style.color='';},2000);}showToast(p.name+' added to quote ✓');}
-function svFobInput(inp,i){var val=parseFloat(inp.value)||0,s=SV_SUP;if(s==='apical'){if(SV_ORIGIN==='JKT')APICAL_DATA[i].fob_jkt=val;else APICAL_DATA[i].fob_kl=val;}else if(s==='wingagro')WA_DATA[i].fob_sua=val;else if(s==='klk')KLK_DATA[i].fob_mt=val;var p=s==='apical'?APICAL_DATA[i]:s==='wingagro'?WA_DATA[i]:KLK_DATA[i];var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(val,nw,lc,isFlex(inp.getAttribute('data-packing')));var row=inp.closest('tr');if(!row)return;var tds=row.querySelectorAll('td');var off=9;if(tds[9])tds[9].innerHTML='USD '+fmt(c.su,4)+'<br><small style="color:var(--mut);font-size:.67rem">'+fmt(val,2)+'/MT</small>';if(tds[10])tds[10].innerHTML='USD '+fmt(c.om,2);if(tds[11])tds[11].innerHTML='USD '+fmt(c.os,4);if(IS_ADMIN){if(tds[12]){tds[12].innerHTML=(c.ps>=0?'+':'')+fmt(c.ps,4);tds[12].style.color=c.ps>=0?'#1a7a4a':'#c0392b';}if(tds[13])tds[13].innerHTML='USD '+fmt(c.tp,2)+'<br><small style="color:var(--mut);font-size:.67rem">'+fmt(lc,0)+' ctns</small>';}}
-function svSavePrices(){var _sv=parseFloat((document.getElementById('suppMargin')||{}).value);SV_CFG.margin=isNaN(_sv)?5:_sv;localStorage.setItem('oillio_supp',JSON.stringify(SV_CFG));var saved={},s=SV_SUP,today=new Date().toISOString().slice(0,10);if(s==='apical'){APICAL_DATA.forEach(function(p){if(p.fob_jkt!=null)saved[p.name]=p.fob_jkt;if(p.fob_kl!=null)saved[p.name+'_kl']=p.fob_kl;});localStorage.setItem(SV_APC_KEY,JSON.stringify(saved));}else if(s==='wingagro'){WA_DATA.forEach(function(p){if(p.fob_sua!=null)saved[p.name]=p.fob_sua;});localStorage.setItem(SV_WA_KEY,JSON.stringify(saved));}else if(s==='klk'){KLK_DATA.forEach(function(p){if(p.fob_mt!=null)saved[p.name]=p.fob_mt;});localStorage.setItem(SV_KLK_KEY,JSON.stringify(saved));}var log=[];try{log=JSON.parse(localStorage.getItem('oillio_fob_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,margin:SV_CFG.margin,fob:JSON.parse(JSON.stringify(saved))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_fob_log',JSON.stringify(log));showToast('FOB prices saved to this device (' + today + ') ✓');}function svAddRow(i,s){if(QITEMS.length>=50){alert("Max 50 items.");return;}var p=s==="apical"?APICAL_DATA[i]:s==="wingagro"?WA_DATA[i]:KLK_DATA[i];var fob=getLiveFob(p,s);if(!fob)return;var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(fob,nw,lc,isFlex(p.packing));QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:dispN(p.name,p.packing,s),type:p.packing||"",net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:1,add:0,additiveType:"",mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==="fob"?"FOB":"CIF",port:SV_FR.port||null});rQuote();showToast(p.name+" added!");}
-var CMP_GROUPS=[{"id": "jc10", "title": "20L / 25L Yellow Jerry Can \u2013 CP10", "note": "Wing Agro, KLK: 20L and 25L priced separately. Shown together. KLK \"20L BM\" is a label variant.", "items": [["apical", "20L Yellow Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["wingagro", "20L Yellow Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["wingagro", "25L Yellow Jerry Can \u2013 CP10", "25L Jerry Can", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L YELLOW JERRY CAN", "cmp"], ["klk", "RBD PALM OLEIN CP10", "25L YELLOW JERRY CAN", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L BM YELLOW JERRY CAN", "var"]]}, {"id": "jcw", "title": "20L White Jerry Can \u2013 CP10", "note": "", "items": [["apical", "20L White Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L WHITE JERRY CAN", "cmp"]]}, {"id": "jc8", "title": "20L Yellow Jerry Can \u2013 CP8", "note": "KLK does not sell CP8. Wing Agro CP8 uses a -47.4 delta, Apical +10, so check these are really comparable.", "items": [["apical", "20L Yellow Jerry Can \u2013 CP8", "20L Jerry Can", "cmp"], ["wingagro", "20L Yellow Jerry Can \u2013 CP8", "20L Jerry Can", "cmp"], ["wingagro", "25L Yellow Jerry Can \u2013 CP8", "25L Jerry Can", "cmp"]]}, {"id": "sh3639", "title": "Shortening 36/39 (KLK 36-39)", "note": "RBD Palm Oil 36-39 is a different product from Shortening 36-39 (different price). Shown for reference, not counted as Best. Low GE & MCPDE is a special grade, also not counted.", "items": [["apical", "20kg Shortening 36/39", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 36/39", "20kg carton", "var"], ["klk", "SHORTENING 36-39", "20KG PE LINERS IN CARTON", "cmp"], ["klk", "SHORTENING 36-39", "25KG PE LINERS IN CARTON", "cmp"], ["klk", "RBD PALM OIL 36-39", "20KG PE LINERS IN CARTON", "ref"]]}, {"id": "sh4042", "title": "Shortening 38/40 & 40/42 (KLK 40-42)", "note": "Treated as comparable. Apical quotes one price for both grades.", "items": [["apical", "20kg Shortening 38/40 & 40/42", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 38/40 & 40/42", "20kg carton", "var"], ["klk", "SHORTENING 40-42", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4347", "title": "Shortening 43/47 (KLK 42-46)", "note": "Treated as the same product. Apical Low GE grade is 43/48.", "items": [["apical", "20kg Shortening 43/47", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 43/48", "20kg carton", "var"], ["klk", "SHORTENING 42-46", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4648", "title": "Shortening 46/48", "note": "", "items": [["apical", "20kg Shortening 46/48", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 46/48", "20kg carton", "var"], ["klk", "SHORTENING 46-48", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4852", "title": "Shortening 48/52", "note": "KLK also has a 16kg carton.", "items": [["apical", "20kg Shortening 48/52", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 48/52", "20kg carton", "var"], ["klk", "SHORTENING 48-52", "20KG PE LINERS IN CARTON", "cmp"], ["klk", "SHORTENING 48-52", "16KG PE LINERS IN CARTON", "cmp"]]}, {"id": "hpks", "title": "20kg Hpks 33.5/35.5", "note": "", "items": [["apical", "20kg Hpks 33.5/35.5", "20kg carton", "cmp"], ["wingagro", "20kg Hpks 33.5/35.5", "20kg carton", "cmp"]]}, {"id": "hpko", "title": "20kg Hpko 38/40", "note": "", "items": [["apical", "20kg Hpko 38/40", "20kg carton", "cmp"], ["wingagro", "20kg Hpko 38/40", "20kg carton", "cmp"]]}];
-function _cmpData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:KLK_DATA;}
+function svSelectProduct(idx){var s=SV_SUP,data,getFob;if(s==='apical'){data=APICAL_DATA;getFob=function(p){if(SV_ORIGIN==='JKT'&&p.fob_jkt==null)return null;if(SV_ORIGIN==='KL'&&p.fob_kl==null)return null;return getLiveFob(p,'apical');}; }else if(s==='wingagro'){data=WA_DATA;getFob=function(p){return getLiveFob(p,'wingagro');}; }else if(s==='klk'){data=KLK_DATA;getFob=function(p){return getLiveFob(p,'klk');}; }else if(s==='ioi'){data=IOI_DATA;getFob=function(p){return getLiveFob(p,'ioi');}; }else return;var p=data[idx];if(!p)return;window._svSel=p;window._svSelIdx=idx;var fob=getLiveFob(p,SV_SUP)||0;  svRenderDetail(fob);svRenderTable();}function svOnDetailFobChange(){return;var val=0;var s=SV_SUP,idx=window._svSelIdx||0;if(s==='apical'){if(SV_ORIGIN==='JKT')APICAL_DATA[idx].fob_jkt=val;else APICAL_DATA[idx].fob_kl=val;}else if(s==='wingagro')WA_DATA[idx].fob_sua=val;else if(s==='klk')KLK_DATA[idx].fob_mt=val;else if(s==='ioi')IOI_DATA[idx].fob_mt=val;if(window._svSel){var k=s==='apical'?(SV_ORIGIN==='JKT'?'fob_jkt':'fob_kl'):s==='wingagro'?'fob_sua':'fob_mt';window._svSel[k]=val;}svRenderDetail(val);svRenderTable();}function svRenderDetail(fob){var p=window._svSel;if(!p)return;var s=SV_SUP;var liveFob=getLiveFob(p,s);if(!fob||isNaN(fob))fob=liveFob;var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:s==='ioi'?IOI_REF:KLK_REF;var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);var prem=p.premium||0,pkg=p.pkg_cost||0,est=fcpo+prem+pkg;var nw=p.net_wt||20,lc=p.load_ctn||1;var safeFob=(!fob||isNaN(fob))?0:fob;var c=svCalc(safeFob,nw,lc,isFlex(p.packing));var isAdmin=IS_ADMIN;var modeStr=SV_FR&&SV_FR.mode!=='fob'?'CIF':'FOB';var title=document.getElementById('svDetailTitle');if(title)title.textContent=dispN(p.name,p.packing,s)+' — '+p.packing;var rowsEl=document.getElementById('svDetailRows');if(rowsEl&&isAdmin){rowsEl.innerHTML='<div class="u2-hide" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.78rem;margin-bottom:4px">'+'<div class="bkr"><span class="bl">FCPO/MT</span><span class="bv">USD '+fmt(fcpo,2)+'</span></div>'+'<div class="bkr"><span class="bl">Premium</span><span class="bv">'+(prem>=0?'+':'')+fmt(prem,2)+'</span></div>'+'<div class="bkr"><span class="bl">Packaging/MT</span><span class="bv">USD '+fmt(pkg,2)+'</span></div>'+'<div class="bkr" style="background:#fffde7"><span class="bl">Est.Cost/MT</span><span class="bv">USD '+fmt(est,2)+'</span></div>'+'<div class="bkr"><span class="bl">Loading</span><span class="bv">'+fmt(lc,0)+' ctns</span></div>'+'<div class="bkr"><span class="bl">Net Weight</span><span class="bv">'+nwFmt(nw,p.packing,1)+'</span></div>'+'</div>';}var resEl=document.getElementById('svResultRows');if(resEl){var html='';html+='<div class="scards">';html+='<div class="sc sc-sup"><div class="sc-l">Supplier / Unit</div><div class="sc-v">USD '+fmt(c.su,4)+'</div><div class="sc-s">'+fmt(nw,1)+' kg × FOB/1000</div></div>';html+='<div class="sc g"><div class="sc-l">Oillio / MT</div><div class="sc-v">USD '+fmt(c.om,2)+'</div><div class="sc-s">FOB × (1+'+fmt(SV_CFG.margin||2.5,2)+'%)</div></div>';html+='<div class="sc a"><div class="sc-l">Oillio Price / Unit</div><div class="sc-v">USD '+fmt(c.os,4)+'</div><div class="sc-s">'+modeStr+'</div></div>';if(isAdmin){var profColor=c.ps>=0?'#1a7a4a':'#c0392b';html+='<div class="sc" style="border-color:#8e44ad"><div class="sc-l">Profit / Unit</div>';html+='<div class="sc-v" style="color:'+profColor+'">'+(c.ps>=0?'+':'')+fmt(c.ps,4)+'</div>';html+='<div class="sc-s">Oillio − Supplier</div></div>';html+='<div class="sc" style="border-color:#8e44ad"><div class="sc-l">Total Profit/FCL</div>';html+='<div class="sc-v" style="color:#8e44ad">USD '+fmt(c.tp,2)+'</div>';html+='<div class="sc-s">'+fmt(lc,0)+' cartons</div></div>';}if(SV_FR&&SV_FR.mode!=='fob'&&c.fr>0){html+='<div class="sc" style="border-color:#2980b9"><div class="sc-l">Freight / Unit</div>';html+='<div class="sc-v" style="color:#2980b9">+USD '+fmt(c.fr,4)+'</div>';html+='<div class="sc-s">USD/FCL ÷ '+fmt(lc,0)+' ctns</div></div>';}html+='</div>';resEl.innerHTML=html;}var cd=document.getElementById('svDetailCard'),es=document.getElementById('svEmptyState');if(cd)cd.style.display='';if(es)es.style.display='none';}function svAddToQuote(){var p=window._svSel;if(!p){showToast('Select a product first');return;}if(QITEMS.length>=50){alert('Max 50 items.');return;}var s=SV_SUP,fob=getLiveFob(p,s);if(!fob){showToast('No FOB price for this product');return;}var nw=p.net_wt||20,lc=p.load_ctn||1;var c=svCalc(fob,nw,lc,isFlex(p.packing));var fcl=parseInt((document.getElementById('svFclInput')||{}).value||1)||1;var _skuDisplayName=((s==='klk'||s==='ioi')&&p.packing)?p.packing+' – '+p.name:dispN(p.name,p.packing,s);QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:_skuDisplayName,type:p.packing||'',net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:fcl,add:0,additiveType:'',mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==='fob'?'FOB':'CIF',port:SV_FR.port||null});rQuote();var info=document.getElementById('svAtqInfo');if(info){info.textContent='Added! ('+QITEMS.length+'/50)';info.style.color='var(--grn)';setTimeout(function(){if(info)info.textContent=(50-QITEMS.length)+' slots';info.style.color='';},2000);}showToast(p.name+' added to quote ✓');}
+function svFobInput(inp,i){var val=parseFloat(inp.value)||0,s=SV_SUP;if(s==='apical'){if(SV_ORIGIN==='JKT')APICAL_DATA[i].fob_jkt=val;else APICAL_DATA[i].fob_kl=val;}else if(s==='wingagro')WA_DATA[i].fob_sua=val;else if(s==='klk')KLK_DATA[i].fob_mt=val;else if(s==='ioi')IOI_DATA[i].fob_mt=val;var p=s==='apical'?APICAL_DATA[i]:s==='wingagro'?WA_DATA[i]:KLK_DATA[i];var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(val,nw,lc,isFlex(inp.getAttribute('data-packing')));var row=inp.closest('tr');if(!row)return;var tds=row.querySelectorAll('td');var off=9;if(tds[9])tds[9].innerHTML='USD '+fmt(c.su,4)+'<br><small style="color:var(--mut);font-size:.67rem">'+fmt(val,2)+'/MT</small>';if(tds[10])tds[10].innerHTML='USD '+fmt(c.om,2);if(tds[11])tds[11].innerHTML='USD '+fmt(c.os,4);if(IS_ADMIN){if(tds[12]){tds[12].innerHTML=(c.ps>=0?'+':'')+fmt(c.ps,4);tds[12].style.color=c.ps>=0?'#1a7a4a':'#c0392b';}if(tds[13])tds[13].innerHTML='USD '+fmt(c.tp,2)+'<br><small style="color:var(--mut);font-size:.67rem">'+fmt(lc,0)+' ctns</small>';}}
+function svSavePrices(){var _sv=parseFloat((document.getElementById('suppMargin')||{}).value);SV_CFG.margin=isNaN(_sv)?5:_sv;localStorage.setItem('oillio_supp',JSON.stringify(SV_CFG));var saved={},s=SV_SUP,today=new Date().toISOString().slice(0,10);if(s==='apical'){APICAL_DATA.forEach(function(p){if(p.fob_jkt!=null)saved[p.name]=p.fob_jkt;if(p.fob_kl!=null)saved[p.name+'_kl']=p.fob_kl;});localStorage.setItem(SV_APC_KEY,JSON.stringify(saved));}else if(s==='wingagro'){WA_DATA.forEach(function(p){if(p.fob_sua!=null)saved[p.name]=p.fob_sua;});localStorage.setItem(SV_WA_KEY,JSON.stringify(saved));}else if(s==='klk'){KLK_DATA.forEach(function(p){if(p.fob_mt!=null)saved[p.name]=p.fob_mt;});localStorage.setItem(SV_KLK_KEY,JSON.stringify(saved));}else if(s==='ioi'){IOI_DATA.forEach(function(p){if(p.fob_mt!=null)saved[p.name+'|'+p.packing]=p.fob_mt;});localStorage.setItem('oillio_sv_ioi',JSON.stringify(saved));}var log=[];try{log=JSON.parse(localStorage.getItem('oillio_fob_log')||'[]');}catch(e){}log.push({date:today,ts:new Date().toISOString(),supplier:s,margin:SV_CFG.margin,fob:JSON.parse(JSON.stringify(saved))});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_fob_log',JSON.stringify(log));showToast('FOB prices saved to this device (' + today + ') ✓');}function svAddRow(i,s){if(QITEMS.length>=50){alert("Max 50 items.");return;}var p=s==="apical"?APICAL_DATA[i]:s==="wingagro"?WA_DATA[i]:KLK_DATA[i];var fob=getLiveFob(p,s);if(!fob)return;var nw=p.net_wt||20,lc=p.load_ctn||1,c=svCalc(fob,nw,lc,isFlex(p.packing));QITEMS.push({id:++QID,supplier:s,oilName:p.name,oilPrice:fob,cp10:fob,sku:{name:dispN(p.name,p.packing,s),type:p.packing||"",net_wt:nw,sku_fcl:lc,pkg:0,units:1},fcl:1,add:0,additiveType:"",mgn:SV_CFG.margin||2.5,mode:SV_FR.mode==="fob"?"FOB":"CIF",port:SV_FR.port||null});rQuote();showToast(p.name+" added!");}
+var CMP_GROUPS=[{"id": "jc10", "title": "20L / 25L Yellow Jerry Can \u2013 CP10", "note": "Wing Agro, KLK: 20L and 25L priced separately. Shown together. KLK \"20L BM\" is a label variant.", "items": [["apical", "20L Yellow Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["wingagro", "20L Yellow Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["wingagro", "25L Yellow Jerry Can \u2013 CP10", "25L Jerry Can", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L YELLOW JERRY CAN", "cmp"], ["klk", "RBD PALM OLEIN CP10", "25L YELLOW JERRY CAN", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L BM YELLOW JERRY CAN", "var"], ["ioi", "RBD PALM OLEIN CP10", "20L YELLOW JERRY CAN", "cmp"], ["ioi", "RBD PALM OLEIN CP10", "25L YELLOW JERRY CAN", "cmp"]]}, {"id": "jcw", "title": "20L White Jerry Can \u2013 CP10", "note": "", "items": [["apical", "20L White Jerry Can \u2013 CP10", "20L Jerry Can", "cmp"], ["klk", "RBD PALM OLEIN CP10", "20L WHITE JERRY CAN", "cmp"], ["ioi", "RBD PALM OLEIN CP10", "20L WHITE JERRY CAN", "cmp"]]}, {"id": "jc8", "title": "20L Yellow Jerry Can \u2013 CP8", "note": "KLK does not sell CP8. Wing Agro CP8 uses a -47.4 delta, Apical +10, so check these are really comparable.", "items": [["apical", "20L Yellow Jerry Can \u2013 CP8", "20L Jerry Can", "cmp"], ["wingagro", "20L Yellow Jerry Can \u2013 CP8", "20L Jerry Can", "cmp"], ["wingagro", "25L Yellow Jerry Can \u2013 CP8", "25L Jerry Can", "cmp"]]}, {"id": "sh3639", "title": "Shortening 36/39 (KLK 36-39)", "note": "RBD Palm Oil 36-39 is a different product from Shortening 36-39 (different price). Shown for reference, not counted as Best. Low GE & MCPDE is a special grade, also not counted.", "items": [["apical", "20kg Shortening 36/39", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 36/39", "20kg carton", "var"], ["klk", "SHORTENING 36-39", "20KG PE LINERS IN CARTON", "cmp"], ["klk", "SHORTENING 36-39", "25KG PE LINERS IN CARTON", "cmp"], ["klk", "RBD PALM OIL 36-39", "20KG PE LINERS IN CARTON", "ref"]]}, {"id": "sh4042", "title": "Shortening 38/40 & 40/42 (KLK 40-42)", "note": "Treated as comparable. Apical quotes one price for both grades.", "items": [["apical", "20kg Shortening 38/40 & 40/42", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 38/40 & 40/42", "20kg carton", "var"], ["klk", "SHORTENING 40-42", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4347", "title": "Shortening 43/47 (KLK 42-46)", "note": "Treated as the same product. Apical Low GE grade is 43/48.", "items": [["apical", "20kg Shortening 43/47", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 43/48", "20kg carton", "var"], ["klk", "SHORTENING 42-46", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4648", "title": "Shortening 46/48", "note": "", "items": [["apical", "20kg Shortening 46/48", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 46/48", "20kg carton", "var"], ["klk", "SHORTENING 46-48", "20KG PE LINERS IN CARTON", "cmp"]]}, {"id": "sh4852", "title": "Shortening 48/52", "note": "KLK also has a 16kg carton.", "items": [["apical", "20kg Shortening 48/52", "20kg carton", "cmp"], ["apical", "LOW GE & MCPDE 20kg Shortening 48/52", "20kg carton", "var"], ["klk", "SHORTENING 48-52", "20KG PE LINERS IN CARTON", "cmp"], ["klk", "SHORTENING 48-52", "16KG PE LINERS IN CARTON", "cmp"]]}, {"id": "hpks", "title": "20kg Hpks 33.5/35.5", "note": "", "items": [["apical", "20kg Hpks 33.5/35.5", "20kg carton", "cmp"], ["wingagro", "20kg Hpks 33.5/35.5", "20kg carton", "cmp"]]}, {"id": "hpko", "title": "20kg Hpko 38/40", "note": "", "items": [["apical", "20kg Hpko 38/40", "20kg carton", "cmp"], ["wingagro", "20kg Hpko 38/40", "20kg carton", "cmp"]]}];
+function _cmpData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:sup==='ioi'?IOI_DATA:KLK_DATA;}
 function _cmpFind(sup,name,packing){var D=_cmpData(sup);for(var i=0;i<D.length;i++){if(D[i].name===name&&D[i].packing===packing)return D[i];}return null;}
 function svPopulateCmp(){var sel=document.getElementById("cmpSel");if(!sel)return;var cur=sel.value;sel.innerHTML='<option value="">-- Select product group --</option><option value="__all">ALL comparable products</option>'+CMP_GROUPS.map(function(g){return '<option value="'+g.id+'">'+g.title+'</option>';}).join("");sel.value=cur;}
 function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||"";var q=((document.getElementById("cmpQ")||{}).value||"").toLowerCase();var out=document.getElementById("cmpOut");if(!out)return;
  if(!gid&&!q){out.innerHTML='<div style="text-align:center;padding:36px;color:var(--mut)">Select a product group above (or search a name) to compare prices side by side</div>';return;}
- var SC={apical:"#e8f4ff",klk:"#fff8e1",wingagro:"#e8f5ec"},TC={apical:"#0a3d8a",klk:"#6a3800",wingagro:"#0a5c2a"},SN={apical:"Apical",klk:"KLK",wingagro:"Wing Agro"};
+ var SC={apical:"#e8f4ff",klk:"#fff8e1",wingagro:"#e8f5ec",ioi:"#f3e8ff"},TC={apical:"#0a3d8a",klk:"#6a3800",wingagro:"#0a5c2a",ioi:"#5b2c83"},SN={apical:"Apical",klk:"KLK",wingagro:"Wing Agro",ioi:"IOI"};
  var html="",shown=0;
  CMP_GROUPS.forEach(function(g){if(gid&&gid!=="__all"&&g.id!==gid)return;
   var rows=[];g.items.forEach(function(x){var p=_cmpFind(x[0],x[1],x[2]);if(!p)return;
@@ -6744,6 +6826,7 @@ function svRenderRefPanel(){
   if(s==='apical'){ref=APC_REF;def=APC_REF_DEF;}
   else if(s==='wingagro'){ref=WA_REF;def=WA_REF_DEF;}
   else if(s==='klk'){ref=KLK_REF;def=KLK_REF_DEF;}
+  else if(s==='ioi'){ref=IOI_REF;def=IOI_REF_DEF;}
   else return;
   var fld=document.getElementById(_oilTab?'svOilFields':'svRefFields');
   if(!fld)return;
@@ -6825,7 +6908,7 @@ function svRenderPkgFields(){
   if(!pd)return;
   var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);
   if(lvl!==0){ pd.innerHTML=''; return; } // User 1/2 never see this
-  if(s!=='apical'&&s!=='klk'&&s!=='wingagro'){ pd.innerHTML=''; return; }
+  if(s!=='apical'&&s!=='klk'&&s!=='wingagro'&&s!=='ioi'){ pd.innerHTML=''; return; }
   var arr=getPkgArr(s);
   if(!arr||!arr.length){ pd.innerHTML=''; return; }
 
@@ -6901,13 +6984,13 @@ function _svSimInitDate(){
   if(!el.value)el.value=window._simDate||_svLatestDay();
 }
 function _svSnapshot(){
-  var b={apc:JSON.parse(JSON.stringify(APC_REF)),wa:JSON.parse(JSON.stringify(WA_REF)),klk:JSON.parse(JSON.stringify(KLK_REF)),pkg:{}};
-  ['apical','klk','wingagro'].forEach(function(sup){b.pkg[sup]=getPkgArr(sup).map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};});});
+  var b={apc:JSON.parse(JSON.stringify(APC_REF)),wa:JSON.parse(JSON.stringify(WA_REF)),klk:JSON.parse(JSON.stringify(KLK_REF)),ioi:JSON.parse(JSON.stringify(IOI_REF)),pkg:{}};
+  ['apical','klk','wingagro','ioi'].forEach(function(sup){b.pkg[sup]=getPkgArr(sup).map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};});});
   return b;
 }
 function _svRestore(b){
-  [[APC_REF,b.apc],[WA_REF,b.wa],[KLK_REF,b.klk]].forEach(function(x){Object.keys(x[0]).forEach(function(k){delete x[0][k];});Object.assign(x[0],x[1]);});
-  ['apical','klk','wingagro'].forEach(function(sup){
+  [[APC_REF,b.apc],[WA_REF,b.wa],[KLK_REF,b.klk],[IOI_REF,b.ioi||{}]].forEach(function(x){Object.keys(x[0]).forEach(function(k){delete x[0][k];});Object.assign(x[0],x[1]);});
+  ['apical','klk','wingagro','ioi'].forEach(function(sup){
     var arr=getPkgArr(sup);
     b.pkg[sup].forEach(function(o){var r=arr.filter(function(x){return x.id===o.id;})[0];if(r){r.premium=o.premium;r.pkg_cost=o.pkg_cost;}});
   });
@@ -6926,7 +7009,7 @@ function _svSimBanner(){
 function _svSimRefresh(){
   svRenderRefPanel();
   try{rReport();}catch(e){}
-  if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
+  if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'||SV_SUP==='ioi'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
   _svSimBanner();
 }
 function svSimExit(){
@@ -6961,12 +7044,12 @@ function svSimLoad(){
     tsList.forEach(function(ts){OIL_TABLE_COLS.forEach(function(c){if(oilVals[c.key]==null&&saves[ts][c.key]!=null)oilVals[c.key]=saves[ts][c.key];});});
     OIL_TABLE_COLS.forEach(function(c){
       var v=oilVals[c.key];if(v==null)return;
-      [APC_REF,WA_REF,KLK_REF].forEach(function(r){if(c.key in r)r[c.key]=v;if(c.key==='malaysia_cp10'&&'cp10' in r)r.cp10=v;});
+      [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(function(r){if(c.key in r)r[c.key]=v;if(c.key==='malaysia_cp10'&&'cp10' in r)r.cp10=v;});
     });
-    [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto); // CP6 / Indonesia CP10 / RBD Palm Oil follow that day's Malaysia CP10
+    [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(_deriveAuto); // CP6 / Indonesia CP10 / RBD Palm Oil follow that day's Malaysia CP10
     // --- premium / packaging: per SKU, latest saved value on/before the day ---
-    var seenP={},seenK={},seenF={},fobMap={},applied={apical:0,klk:0,wingagro:0};
-    var maps={};['apical','klk','wingagro'].forEach(function(sup){var m={};getPkgArr(sup).forEach(function(r){m[r.name+'|'+r.packing]=r;});maps[sup]=m;});
+    var seenP={},seenK={},seenF={},fobMap={},applied={apical:0,klk:0,wingagro:0,ioi:0};
+    var maps={};['apical','klk','wingagro','ioi'].forEach(function(sup){var m={};getPkgArr(sup).forEach(function(r){m[r.name+'|'+r.packing]=r;});maps[sup]=m;});
     priceRows.forEach(function(r){
       var m=maps[r.supplier];if(!m)return;
       var key=r.product_name+'|'+r.packing,row=m[key];if(!row)return;
@@ -6978,8 +7061,8 @@ function svSimLoad(){
     });
     // The prices of that day are what was LOGGED. Saves made before the 17 Oct 2026 model upgrade used different bases,
     // so for every SKU keep the logged FOB exactly and show the premium/discount against today's base links.
-    ['apical','klk','wingagro'].forEach(function(sup){
-      var refObj=sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:KLK_REF,dat=sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:KLK_DATA,pm={};
+    ['apical','klk','wingagro','ioi'].forEach(function(sup){
+      var refObj=sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:sup==='ioi'?IOI_REF:KLK_REF,dat=sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:sup==='ioi'?IOI_DATA:KLK_DATA,pm={};
       dat.forEach(function(p){pm[p.name+'|'+p.packing]=p;});
       getPkgArr(sup).forEach(function(row){
         var k=row.name+'|'+row.packing,f=fobMap[sup+'|'+k],p=pm[k];
@@ -6987,7 +7070,7 @@ function svSimLoad(){
         row.premium=Math.round((f-_modelBase(refObj,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
       });
     });
-    var missing=0;['apical','klk','wingagro'].forEach(function(sup){missing+=Math.max(0,getPkgArr(sup).length-applied[sup]);});
+    var missing=0;['apical','klk','wingagro','ioi'].forEach(function(sup){missing+=Math.max(0,getPkgArr(sup).length-applied[sup]);});
     var oilSrc=tsList.length?_l90Date(_myDay(tsList[0])):'none',prSrc=priceRows.length?_l90Date(_myDay(priceRows[0].saved_at)):'none';
     window._simMode=true;window._simDate=day;
     window._simInfo='base oil from the '+oilSrc+' save; premium &amp; packaging from the '+prSrc+' save'+(missing?'; '+missing+' SKU(s) had no record by then and show current values':'');
@@ -7168,16 +7251,29 @@ function waRows(){
   return out;
 }
 function waSetCp10(v){WA_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.wingagro)SUP_LISTS.wingagro.rows=waRows();}
+// IOI (6 Nov 2026): bulk Flexibag (w/o heating pad) price per oil + packing adders per MT. Heating pad Flexibag = +5. Re-key IOI_BASE on each update.
+var IOI_BASE={CP10:1100,CP8:1110,CP6:1190},IOI_HEAT_ADD=5;
+var IOI_ADD={'20L WHITE JERRY CAN':[21.50,21.70,23.10],'5L X 4 WHITE JERRY CANS PER CARTON':[22.45,22.65,24.10],'25L YELLOW JERRY CAN':[26.25,26.50,28.30],'20L YELLOW JERRY CAN':[21.05,21.25,22.70],'20L GREEN JERRY CAN':[21.30,21.45,null],'18L YELLOW JERRY CAN':[19.15,19.30,null],'5L X 4 PET BOTTLES PER CARTON':[21.80,21.95,23.40],'20KG BIB':[22.55,22.75,null]};
+function ioiRows(){
+  var out=[],oils=['CP10','CP8','CP6'];
+  oils.forEach(function(o,k){
+    var nm='RBD PALM OLEIN '+o;
+    out.push([nm,'FLEXIBAG (W/O HEATING PAD)',IOI_BASE[o]],[nm,'FLEXIBAG (WITH HEATING PAD)',IOI_BASE[o]+IOI_HEAT_ADD]);
+    Object.keys(IOI_ADD).forEach(function(pk){var a=IOI_ADD[pk][k];if(a!=null)out.push([nm,pk,Math.round((IOI_BASE[o]+a)*100)/100]);});
+  });
+  return out;
+}
 var SUP_LISTS={
   klk:{id:'05NOV26',day:'2026-11-05',label:'5 Nov 2026',uplift:0,rows:KLK_LIST_05NOV26,name:'KLK'},
   apical:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:APC_LIST_06NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
+  ioi:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
   wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
-function _svListData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:KLK_DATA;}
-function _svListRef(sup){return sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:KLK_REF;}
+function _svListData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:sup==='ioi'?IOI_DATA:KLK_DATA;}
+function _svListRef(sup){return sup==='apical'?APC_REF:sup==='wingagro'?WA_REF:sup==='ioi'?IOI_REF:KLK_REF;}
 function _svListOn(sup,name,packing){
   var L=SUP_LISTS[sup];if(!L||L.partial)return true;
   if(!_listOnSets[sup]){_listOnSets[sup]={};L.rows.forEach(function(x){_listOnSets[sup][x[0]+'|'+x[1]]=1;});}
@@ -7305,7 +7401,7 @@ function svApplyListAll(){
 // Packaging is never touched. Result rounded to 2 decimals.
 window._tgtFob=window._tgtFob||{};
 function _svFindProduct(s,row){
-  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:KLK_DATA;
+  var data=s==='apical'?APICAL_DATA:s==='wingagro'?WA_DATA:s==='ioi'?IOI_DATA:KLK_DATA;
   for(var i=0;i<data.length;i++){if(data[i].name===row.name&&data[i].packing===row.packing)return data[i];}
   return null;
 }
@@ -7417,8 +7513,8 @@ function svOnRefChange(inp){
   if(k==='supplier_margin'){val=SUP_MARGIN_CAP;inp.value=SUP_MARGIN_CAP;}
   var isMalaysiaCp10=(k==='malaysia_cp10'||k==='cp10');
   // Capture old values before update
-  var _oldVals={};[APC_REF,WA_REF,KLK_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
-  [APC_REF,WA_REF,KLK_REF].forEach(function(r){
+  var _oldVals={};[APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(function(r){if(k in r)_oldVals[k]=r[k];});
+  [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(function(r){
     if(k in r)r[k]=val;
     if(k==='malaysia_cp10'&&'cp10' in r)r.cp10=val;
     if(k==='cp10'&&'malaysia_cp10' in r)r.malaysia_cp10=val;
@@ -7467,7 +7563,7 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK or Wing Agro first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK, Wing Agro or IOI first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}else if(s==='ioi'){ref=IOI_REF;key=IOI_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
   // Propagate Apical oil price fields to WA_REF and KLK_REF
   if(s==='apical'){
     var _sf=['malaysia_cp10','indonesia_cp10','rbd_my','rbd_id','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
@@ -7476,16 +7572,19 @@ function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!
         if(fld in WA_REF)WA_REF[fld]=APC_REF[fld];
         if(fld==='malaysia_cp10'&&'cp10' in KLK_REF)KLK_REF.cp10=APC_REF[fld];
         if(fld in KLK_REF)KLK_REF[fld]=APC_REF[fld]; // covers cp6, pfad, stearin now that KLK carries these directly too
+        if(fld==='malaysia_cp10'&&'cp10' in IOI_REF)IOI_REF.cp10=APC_REF[fld];
+        if(fld in IOI_REF)IOI_REF[fld]=APC_REF[fld];
       }
     });
     localStorage.setItem(WA_REF_KEY,JSON.stringify(Object.assign({},WA_REF,{_savedByUser:true})));
     localStorage.setItem(KLK_REF_KEY,JSON.stringify(Object.assign({},KLK_REF,{_savedByUser:true})));
+    localStorage.setItem(IOI_REF_KEY,JSON.stringify(Object.assign({},IOI_REF,{_savedByUser:true})));
   }
-  [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
+  [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(_deriveAuto);
   var today=new Date().toISOString().slice(0,10);var _saveObj=Object.assign({},ref,{_savedByUser:true});localStorage.setItem(key,JSON.stringify(_saveObj));
   // Also save packaging costs/premiums
   var pkgArr=getPkgArr(s);
-  var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:KLK_PKG_KEY;
+  var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:s==='ioi'?IOI_PKG_KEY:KLK_PKG_KEY;
   localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
   log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
@@ -7498,14 +7597,14 @@ function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!
   showToast('Loading last saved prices...');
   _syncLoad(function(d){
     if(!d){showToast('Could not reach the database \u2014 nothing was changed',4000);return;}
-    Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);
-    [[APC_PKG,APC_PKG_DEF],[WA_PKG,WA_PKG_DEF],[KLK_PKG,KLK_PKG_DEF]].forEach(function(x){
+    Object.assign(APC_REF,APC_REF_DEF);Object.assign(WA_REF,WA_REF_DEF);Object.assign(KLK_REF,KLK_REF_DEF);Object.assign(IOI_REF,IOI_REF_DEF);
+    [[APC_PKG,APC_PKG_DEF],[WA_PKG,WA_PKG_DEF],[KLK_PKG,KLK_PKG_DEF],[IOI_PKG,IOI_PKG_DEF]].forEach(function(x){
       x[0].forEach(function(r){var def=x[1].filter(function(o){return o.id===r.id;})[0];if(def){r.premium=def.premium;r.pkg_cost=def.pkg_cost;}});
     });
     window._tgtFob={};window._refDirty=false;
     window._forceApply=true;try{_syncApply(d);}finally{window._forceApply=false;}
     svRenderRefPanel();
-    if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
+    if(SV_SUP==='apical'||SV_SUP==='klk'||SV_SUP==='wingagro'||SV_SUP==='ioi'){svRenderTable();if(window._svSel){try{svRenderDetail(getLiveFob(window._svSel,SV_SUP));}catch(e){}}}
     showToast('Reset to the last saved prices');
   });
 }
@@ -8022,7 +8121,7 @@ function svShowTrendPicker(){
 }
 
 function _findFcpoRef(supplier, name, packing){
-  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : supplier==='ioi'?IOI_DATA : WA_DATA;
   var match = arr.find(function(d){ return d.name===name && d.packing===packing; });
   return match ? match.fcpo_ref : null;
 }
@@ -8268,7 +8367,7 @@ function _l90Shell(){
   h+='</select></div>';
   if(S.tab!=='oil'){
     h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select onchange="_l90Set(\'sup\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
-    [['all','All'],['apical','Apical'],['klk','KLK'],['wingagro','Wing Agro']].forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===S.sup?' selected':'')+'>'+o[1]+'</option>';});
+    [['all','All'],['apical','Apical'],['klk','KLK'],['wingagro','Wing Agro'],['ioi','IOI']].forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===S.sup?' selected':'')+'>'+o[1]+'</option>';});
     h+='</select></div>';
     h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SEARCH PRODUCT</label><input type="text" value="'+S.q.replace(/"/g,'&quot;')+'" oninput="window._l90.q=this.value;_l90Out()" placeholder="e.g. shortening, 18L" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem;width:150px"></div>';
   }
@@ -8351,7 +8450,7 @@ function _l90PriceHtml(S,cut){
   });
   if(!changes.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No premium / discount or packaging changes in this period.</div>';
   changes.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
-  var CAP=400,shown=changes.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO'};
+  var CAP=400,shown=changes.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI'};
   var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:680px"><thead><tr>';
   ['Supplier','Product','Packing'].forEach(function(t){h+='<th style="'+_l90Th(1).replace('position:sticky;top:0;left:0','position:sticky;top:0')+'">'+t+'</th>';});
   h+='<th style="'+_l90Th()+'">Premium / Discount</th><th style="'+_l90Th()+'">Packaging</th></tr></thead><tbody>';
@@ -8402,7 +8501,7 @@ function _l90FobHtml(S,cut){
   });
   if(!rows.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No supplier price changes in this period.</div>';
   rows.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
-  var CAP=500,shown=rows.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO'};
+  var CAP=500,shown=rows.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI'};
   function chg(v){if(Math.abs(v)<0.005)return '<span style="color:#999">&ndash; no change</span>';var up=v>0;return '<b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(v))+'</b>';}
   var h='<div style="color:var(--mut);margin-bottom:6px"><b>vs yesterday</b> = change in supplier FOB from the previous saved day. <b>vs projection</b> = the real up / down after the base oil move (yesterday&rsquo;s price moved by the day&rsquo;s base oil is the projection).</div>';
   h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:700px"><thead><tr>';
@@ -8524,7 +8623,7 @@ function svShowProductTablePicker(supplier){
   if(!modal||!body||!title) return;
   title.textContent='Product Rates — Table View';
 
-  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : supplier==='ioi'?IOI_DATA : WA_DATA;
   var cats=[];
   arr.forEach(function(p){ if(p.cat && cats.indexOf(p.cat)===-1) cats.push(p.cat); });
 
@@ -8532,7 +8631,7 @@ function svShowProductTablePicker(supplier){
   html+='<div style="font-weight:700;color:var(--brand);margin-bottom:10px">Pick a supplier and packaging type, optionally narrow to a date range</div>';
   html+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap">';
   html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select id="ptSupplier" onchange="svShowProductTablePicker(this.value)" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem">';
-  ['apical','klk','wingagro'].forEach(function(s){ html+='<option value="'+s+'"'+(s===supplier?' selected':'')+'>'+s.toUpperCase()+'</option>'; });
+  ['apical','klk','wingagro','ioi'].forEach(function(s){ html+='<option value="'+s+'"'+(s===supplier?' selected':'')+'>'+s.toUpperCase()+'</option>'; });
   html+='</select></div>';
   html+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">PACKAGING TYPE</label><select id="ptCategory" style="padding:6px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.73rem">';
   cats.forEach(function(c){ html+='<option value="'+c+'">'+c+'</option>'; });
@@ -8559,7 +8658,7 @@ function svViewProductTable(fromDate, toDate, page){
   if(toDate===undefined) toDate=document.getElementById('ptTo').value;
   page = page || 1;
 
-  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : WA_DATA;
+  var arr = supplier==='apical'?APICAL_DATA : supplier==='klk'?KLK_DATA : supplier==='ioi'?IOI_DATA : WA_DATA;
   var names=[],cols=[],seenKey={};
   arr.forEach(function(p){
     if(p.cat!==category) return;
@@ -8789,7 +8888,7 @@ function _showRefLog(refLog){var fobLog=[];try{fobLog=JSON.parse(localStorage.ge
 }
 function svClearLog(){if(!confirm('Clear all saved price history?'))return;localStorage.removeItem('oillio_fob_log');localStorage.removeItem('oillio_ref_log');showToast('Price log cleared');var modal=document.getElementById('fullModal');if(modal)modal.className='';}
 function getLiveFob(p, s){
-  var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:KLK_REF;
+  var _ref=s==='apical'?APC_REF:s==='wingagro'?WA_REF:s==='ioi'?IOI_REF:KLK_REF;
   var fcpo=(p.fcpo_ref&&p.fcpo_ref!=='fixed'&&_ref[p.fcpo_ref]!=null)
     ?(_ref[p.fcpo_ref]+(p.fcpo_delta||0)):(p.fcpo_default||0);
   // Look up this specific product's adjustable pkg_cost and premium by name+packing
