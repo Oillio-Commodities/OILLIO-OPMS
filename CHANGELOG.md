@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026D — View Log: "Supplier Price Up / Down" with vs-projection (6 Nov 2026)
+- View Log > Last 90 Days has a new tab "Supplier Price Up / Down", for every supplier (Apical, KLK, Wing Agro and any supplier added later), per product per day (last save of the day).
+- Columns: Supplier FOB | vs yesterday (change in FOB from the previous saved day) | vs projection (the real up / down after the base oil move = change in premium/discount + packaging; i.e. yesterday's price moved by the day's base oil is the projection). Green up, red down. First-time products show "first price logged".
+- Example: base oil CP10 -20, supplier CP10 quote 1,200 projected -> 1,190 shows vs yesterday DOWN 30, vs projection DOWN 10.
+- Nothing else changed. Works from the next Save & Log Reference (uses the FOB already saved in the price log).
+
+---
+
 ## V06NOV2026C — Wing Agro: CP10 key-in box, Low MCPD & GE split into CP10 / CP8 (6 Nov 2026)
 - New "Wing Agro CP10 FOB" box on the Wing Agro page (User 0): key in the CP10 price once and press "Apply to all 8 jerry cans". All other prices follow automatically (20L and 25L alike): CP8 = CP10 + 15; Low MCPD & GE CP10 = CP10 + 40; Low MCPD & GE CP8 = CP8 + 40 (= CP10 + 55). Then press Save & Log Reference; the keyed CP10 and the rule are saved with the reference log.
 - Today (CP10 1,190): CP10 1,190; CP8 1,205; Low MCPD & GE CP10 1,230; Low MCPD & GE CP8 1,245 (20L and 25L). Up/down is measured against the projected price at the day's base oil (projection 1,200 -> 1,190 = DOWN 10).

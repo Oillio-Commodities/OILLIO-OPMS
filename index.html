@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V06NOV2026C';
+  var _v='V06NOV2026D';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8250,7 +8250,7 @@ function svViewLast90(){
   modal.className='open';
   Promise.all([
     fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
-    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();})
+    fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,fob,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}).then(function(j){return Array.isArray(j)?j:fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();});})
   ]).then(function(res){
     window._l90={oil:Array.isArray(res[0])?res[0]:[],price:Array.isArray(res[1])?res[1]:[],tab:'oil',days:90,sup:'all',q:''};
     _l90Shell();
@@ -8261,11 +8261,12 @@ function _l90Shell(){
   var h='<div style="font-size:.72rem">';
   h+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">';
   h+='<button onclick="_l90Set(\'tab\',\'oil\')" style="'+_l90TabCss(S.tab==='oil')+'">&#x1F6E2; Base Oil</button>';
+  h+='<button onclick="_l90Set(\'tab\',\'fob\')" style="'+_l90TabCss(S.tab==='fob')+'">&#x1F4C8; Supplier Price Up / Down</button>';
   h+='<button onclick="_l90Set(\'tab\',\'price\')" style="'+_l90TabCss(S.tab==='price')+'">&#x1F4E6; Premium / Discount &amp; Packaging</button>';
   h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">PERIOD</label><select onchange="_l90Set(\'days\',parseInt(this.value))" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
   [30,60,90,180,365].forEach(function(d){h+='<option value="'+d+'"'+(d===S.days?' selected':'')+'>Last '+d+' days</option>';});
   h+='</select></div>';
-  if(S.tab==='price'){
+  if(S.tab!=='oil'){
     h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select onchange="_l90Set(\'sup\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
     [['all','All'],['apical','Apical'],['klk','KLK'],['wingagro','Wing Agro']].forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===S.sup?' selected':'')+'>'+o[1]+'</option>';});
     h+='</select></div>';
@@ -8283,7 +8284,7 @@ function _l90Set(k,v){window._l90[k]=v;_l90Shell();}
 function _l90Out(){
   var S=window._l90,out=document.getElementById('l90Out');if(!out)return;
   var cut=_myDay(new Date(Date.now()-S.days*86400000));
-  out.innerHTML=(S.tab==='oil')?_l90OilHtml(S,cut):_l90PriceHtml(S,cut);
+  out.innerHTML=(S.tab==='oil')?_l90OilHtml(S,cut):(S.tab==='fob')?_l90FobHtml(S,cut):_l90PriceHtml(S,cut);
 }
 function _l90OilHtml(S,cut){
   var cols=OIL_TABLE_COLS,byDay={};
@@ -8368,6 +8369,60 @@ function _l90PriceHtml(S,cut){
     h+='<td style="'+tdl+'text-align:right;white-space:nowrap">'+(r.k==null?'':'<b>'+_l90Num(r.k)+'</b>'+_l90Delta(r.k,r.kp))+'</td></tr>';
   });
   h+='</tbody></table></div><div style="color:var(--mut);margin-top:6px">'+changes.length+' change(s)'+(changes.length>CAP?' &mdash; showing the newest '+CAP+'. Narrow by supplier, search or period to see the rest.':'.')+'</div>';
+  return h;
+}
+
+// SUPPLIER PRICE UP / DOWN — per product, per day (last save of the day), for every supplier in the price log (new suppliers appear automatically).
+//  "vs yesterday's price" = change in the supplier FOB from the previous saved day.
+//  "vs projection"        = what moved BEYOND the base oil = change in premium/discount + packaging. (FOB = base oil + premium + packaging, so yesterday's price moved by
+//                           the base oil is the projection; the premium/discount + packaging change is the real up/down against it.)
+function _l90FobHtml(S,cut){
+  var q=(S.q||'').toLowerCase().trim(),groups={};
+  S.price.forEach(function(r){
+    if(S.sup!=='all'&&r.supplier!==S.sup)return;
+    if(q&&((r.product_name||'')+' '+(r.packing||'')).toLowerCase().indexOf(q)<0)return;
+    var k=r.supplier+'|'+r.product_name+'|'+r.packing,d=_myDay(r.saved_at);
+    var g=groups[k]||(groups[k]={sup:r.supplier,name:r.product_name,packing:r.packing,days:{}});
+    var x=g.days[d]||(g.days[d]={ts:'',p:null,k:null,f:null});
+    if(r.saved_at>=x.ts){x.ts=r.saved_at;x.p=r.premium!=null?Number(r.premium):null;x.k=r.pkg_cost!=null?Number(r.pkg_cost):null;x.f=r.fob!=null?Number(r.fob):null;} // the day's LAST save wins
+  });
+  var rows=[];
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k],ds=Object.keys(g.days).sort(),prev=null;
+    ds.forEach(function(d){
+      var x=g.days[d];
+      if(d>=cut&&x.f!=null){
+        if(prev&&prev.f!=null){
+          var dF=x.f-prev.f,dP=(x.p!=null&&prev.p!=null?x.p-prev.p:0)+(x.k!=null&&prev.k!=null?x.k-prev.k:0);
+          if(Math.abs(dF)>=0.005||Math.abs(dP)>=0.005)rows.push({day:d,sup:g.sup,name:g.name,packing:g.packing,f:x.f,pf:prev.f,dF:dF,dP:dP});
+        }else if(!prev)rows.push({day:d,sup:g.sup,name:g.name,packing:g.packing,f:x.f,isNew:true});
+      }
+      if(x.f!=null)prev=x;
+    });
+  });
+  if(!rows.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No supplier price changes in this period.</div>';
+  rows.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
+  var CAP=500,shown=rows.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO'};
+  function chg(v){if(Math.abs(v)<0.005)return '<span style="color:#999">&ndash; no change</span>';var up=v>0;return '<b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(v))+'</b>';}
+  var h='<div style="color:var(--mut);margin-bottom:6px"><b>vs yesterday</b> = change in supplier FOB from the previous saved day. <b>vs projection</b> = the real up / down after the base oil move (yesterday&rsquo;s price moved by the day&rsquo;s base oil is the projection).</div>';
+  h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:700px"><thead><tr>';
+  ['Supplier','Product','Packing'].forEach(function(t){h+='<th style="'+_l90Th(1).replace('position:sticky;top:0;left:0','position:sticky;top:0')+'">'+t+'</th>';});
+  h+='<th style="'+_l90Th()+'">Supplier FOB</th><th style="'+_l90Th()+'">vs yesterday</th><th style="'+_l90Th()+'">vs projection</th></tr></thead><tbody>';
+  var curDay=null,n=0;
+  shown.forEach(function(r){
+    if(r.day!==curDay){
+      curDay=r.day;n=0;
+      var cnt=shown.filter(function(x){return x.day===curDay;}).length;
+      h+='<tr><td colspan="6" style="padding:7px 8px;background:#e8f0fa;color:#0a3d62;font-weight:800;border-top:2px solid #b8d0f0">'+_l90Date(curDay)+' <span style="font-weight:400;color:var(--mut)">&middot; '+cnt+' line'+(cnt>1?'s':'')+'</span></td></tr>';
+    }
+    var tdl='padding:5px 8px;border-bottom:1px solid #eee;'+(n++%2?'background:#fafafa;':'');
+    h+='<tr><td style="'+tdl+'font-size:.62rem;font-weight:700;color:#555;white-space:nowrap">'+(supLbl[r.sup]||String(r.sup||'').toUpperCase())+'</td>';
+    h+='<td style="'+tdl+'font-weight:600">'+(r.name||'')+'</td><td style="'+tdl+'color:#666">'+(r.packing||'')+'</td>';
+    h+='<td style="'+tdl+'text-align:right;white-space:nowrap"><b>'+_l90Num(r.f)+'</b></td>';
+    if(r.isNew)h+='<td colspan="2" style="'+tdl+'text-align:right;color:#2980b9;font-weight:700">first price logged</td></tr>';
+    else h+='<td style="'+tdl+'text-align:right;white-space:nowrap">'+chg(r.dF)+'</td><td style="'+tdl+'text-align:right;white-space:nowrap">'+chg(r.dP)+'</td></tr>';
+  });
+  h+='</tbody></table></div><div style="color:var(--mut);margin-top:6px">'+rows.length+' line(s)'+(rows.length>CAP?' &mdash; showing the newest '+CAP+'. Narrow by supplier, search or period to see the rest.':'.')+'</div>';
   return h;
 }
 /* ===== END LAST 90 DAYS ===== */
