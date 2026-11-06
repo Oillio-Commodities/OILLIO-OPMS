@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V06NOV2026B';
+  var _v='V06NOV2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1794,6 +1794,7 @@ function el(id){return document.getElementById(id);}
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
+    if (d.wingagro && d.wingagro.list_id === SUP_LISTS.wingagro.id && parseFloat(d.wingagro.wa_cp10_fob) > 0) waSetCp10(parseFloat(d.wingagro.wa_cp10_fob));
     // Keep the refs exactly as saved (needed to convert old-model premiums), THEN recalculate the auto fields
     var _oldRefs = {apc:Object.assign({},APC_REF), wa:Object.assign({},WA_REF), klk:Object.assign({},KLK_REF)};
     [APC_REF,WA_REF,KLK_REF].forEach(_deriveAuto);
@@ -1860,7 +1861,7 @@ function el(id){return document.getElementById(id);}
     var payload = {
       apical: Object.assign({}, APC_REF, {model_v: MODEL_V, list_id: SUP_LISTS.apical.id}),
       klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: SUP_LISTS.klk.id}),
-      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V, list_id: SUP_LISTS.wingagro.id}),
+      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V, list_id: SUP_LISTS.wingagro.id, wa_cp10_fob: WA_CP10, wa_rule: 'CP8=CP10+'+WA_CP8_ADD+'; LowMCPD&GE CP10=CP10+'+WA_LOW_ADD+'; LowMCPD&GE CP8=CP8+'+WA_LOW_ADD}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
@@ -6182,8 +6183,10 @@ var WA_PKG_DEF=[
 {id:3,cat:"SPECIALTY",name:"20kg Hpko 38/40",packing:"20kg carton",pkg_cost:82.0,premium:-42.0},
 {id:4,cat:"JERRY CANS",name:"25L Yellow Jerry Can – CP10",packing:"25L Jerry Can",pkg_cost:97.98,premium:93.02},
 {id:5,cat:"JERRY CANS",name:"25L Yellow Jerry Can – CP8",packing:"25L Jerry Can",pkg_cost:126.91,premium:112.89},
-{id:6,cat:"JERRY CANS",name:"20L Yellow Jerry Can – Low MCPD & GE",packing:"20L Jerry Can",pkg_cost:102.6859,premium:60.3141},
-{id:7,cat:"JERRY CANS",name:"25L Yellow Jerry Can – Low MCPD & GE",packing:"25L Jerry Can",pkg_cost:97.98,premium:64.8}
+{id:6,cat:"JERRY CANS",name:"20L Yellow Jerry Can – Low MCPD & GE – CP10",packing:"20L Jerry Can",pkg_cost:102.6859,premium:60.3141},
+{id:7,cat:"JERRY CANS",name:"25L Yellow Jerry Can – Low MCPD & GE – CP10",packing:"25L Jerry Can",pkg_cost:97.98,premium:64.8},
+{id:8,cat:"JERRY CANS",name:"20L Yellow Jerry Can – Low MCPD & GE – CP8",packing:"20L Jerry Can",pkg_cost:133,premium:-48.1},
+{id:9,cat:"JERRY CANS",name:"25L Yellow Jerry Can – Low MCPD & GE – CP8",packing:"25L Jerry Can",pkg_cost:126.91,premium:-42.01}
 ];
 var KLK_PKG_DEF=[
 {id:0,cat:"BOTTLE",name:"RBD PALM OLEIN CP6",packing:"900ML X 12 PET BOTTLES PER CARTON",pkg_cost:218.7932,premium:19.0368},
@@ -6438,8 +6441,10 @@ var WA_DATA=[
 {cat:'JERRY CANS',name:'25L Yellow Jerry Can – CP10',packing:'25L Jerry Can',load_ctn:1110.0,net_wt:22.5,fob_sua:1323.0,fcpo_default:1132.0,premium:93.02,pkg_cost:97.98,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'04Nov26'},
 {cat:'JERRY CANS',name:'20L Yellow Jerry Can – CP8',packing:'20L Jerry Can',load_ctn:1350.0,net_wt:18.0,fob_sua:1352.4,fcpo_default:1112.6,premium:106.8,pkg_cost:133.0,fcpo_ref:'malaysia_cp10',fcpo_delta:-47.4,fob_delta:0,upd:'03Aug26'},
 {cat:'JERRY CANS',name:'25L Yellow Jerry Can – CP8',packing:'25L Jerry Can',load_ctn:1110.0,net_wt:22.5,fob_sua:1352.4,fcpo_default:1112.6,premium:112.89,pkg_cost:126.91,fcpo_ref:'malaysia_cp10',fcpo_delta:-47.4,fob_delta:0,upd:'05Nov26'},
-{cat:'JERRY CANS',name:'20L Yellow Jerry Can – Low MCPD & GE',packing:'20L Jerry Can',load_ctn:1350.0,net_wt:18.0,fob_sua:1295.0,fcpo_default:1132.0,premium:60.3141,pkg_cost:102.6859,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'05Nov26'},
-{cat:'JERRY CANS',name:'25L Yellow Jerry Can – Low MCPD & GE',packing:'25L Jerry Can',load_ctn:1110.0,net_wt:22.5,fob_sua:1295.0,fcpo_default:1132.0,premium:64.8,pkg_cost:97.98,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'05Nov26'},
+{cat:'JERRY CANS',name:'20L Yellow Jerry Can – Low MCPD & GE – CP10',packing:'20L Jerry Can',load_ctn:1350.0,net_wt:18.0,fob_sua:1295.0,fcpo_default:1132.0,premium:60.3141,pkg_cost:102.6859,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'05Nov26'},
+{cat:'JERRY CANS',name:'25L Yellow Jerry Can – Low MCPD & GE – CP10',packing:'25L Jerry Can',load_ctn:1110.0,net_wt:22.5,fob_sua:1295.0,fcpo_default:1132.0,premium:64.8,pkg_cost:97.98,fcpo_ref:'malaysia_cp10',fcpo_delta:0.0,fob_delta:0,upd:'05Nov26'},
+{cat:'JERRY CANS',name:'20L Yellow Jerry Can – Low MCPD & GE – CP8',packing:'20L Jerry Can',load_ctn:1350.0,net_wt:18.0,fob_sua:1245.0,fcpo_default:1112.6,premium:-48.1,pkg_cost:133.0,fcpo_ref:'malaysia_cp10',fcpo_delta:-47.4,fob_delta:0,upd:'06Nov26'},
+{cat:'JERRY CANS',name:'25L Yellow Jerry Can – Low MCPD & GE – CP8',packing:'25L Jerry Can',load_ctn:1110.0,net_wt:22.5,fob_sua:1245.0,fcpo_default:1112.6,premium:-42.01,pkg_cost:126.91,fcpo_ref:'malaysia_cp10',fcpo_delta:-47.4,fob_delta:0,upd:'06Nov26'},
 {cat:'SPECIALTY',name:'20kg Hpks 33.5/35.5',packing:'20kg carton',load_ctn:1132.0,net_wt:20.0,fob_sua:2470.0,fcpo_default:2410.0,premium:-22.0,pkg_cost:82.0,fcpo_ref:'pk_stearin',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'},
 {cat:'SPECIALTY',name:'20kg Hpko 38/40',packing:'20kg carton',load_ctn:1132.0,net_wt:20.0,fob_sua:2130.0,fcpo_default:2090.0,premium:-42.0,pkg_cost:82.0,fcpo_ref:'pk_oil',fcpo_delta:0.0,fob_delta:0,upd:'03Aug26'}
 ]
@@ -6721,6 +6726,17 @@ function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||""
  if(!shown){out.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut)">No comparable products found</div>';return;}
  out.style.textAlign="left";out.innerHTML=html;}
 
+function waCp10Prev(){var el=document.getElementById('waCp10In'),pv=document.getElementById('waCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; CP8 (+'+WA_CP8_ADD+') <b>'+(c+WA_CP8_ADD)+'</b> &middot; Low MCPD&amp;GE CP10 (+'+WA_LOW_ADD+') <b>'+(c+WA_LOW_ADD)+'</b> &middot; Low MCPD&amp;GE CP8 <b>'+(c+WA_CP8_ADD+WA_LOW_ADD)+'</b>';}
+function waApplyCp10(){
+  if(_svBlockSim('re-pricing Wing Agro'))return;
+  var el=document.getElementById('waCp10In'),c=el?parseFloat(el.value):NaN;
+  if(isNaN(c)||c<=0){showToast('Key in the Wing Agro CP10 FOB first');return;}
+  waSetCp10(c);
+  var info=_svApplyListAuto('wingagro',true,true);
+  _svMarkDirty();
+  svRenderPkgFields();svRenderTable();
+  showToast('Wing Agro re-priced from CP10 '+c+': CP8 '+(c+WA_CP8_ADD)+', Low MCPD & GE CP10 '+(c+WA_LOW_ADD)+', CP8 '+(c+WA_CP8_ADD+WA_LOW_ADD)+' - now press Save & Log Reference',7000);
+}
 function svRenderRefPanel(){
   var s=SV_SUP,ref,def;
   var _oilTab=(s==='oilbase');
@@ -6752,6 +6768,13 @@ function svRenderRefPanel(){
       html+='<div style="padding:5px;background:#d6eaf8;border-radius:5px;font-weight:700;color:#1a5276;font-size:.9rem">'+SUP_MARGIN_CAP+' <span style="font-weight:500;font-size:.64rem;color:#5d7a99">(fixed &middot; used for supplier Est. value, not editable)</span></div>';
     }
     html+='</div>';
+  }
+  if(!_oilTab&&s==='wingagro'&&isEd){
+    html+='<div style="grid-column:1/-1;background:#fff8e6;border:2px solid #f39c12;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
+    html+='<div style="font-size:.62rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:3px">Wing Agro CP10 FOB (USD/MT) &mdash; 20L &amp; 25L jerry can</div>';
+    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="waCp10In" value="'+WA_CP10+'" oninput="waCp10Prev()" style="width:110px;padding:5px;border:2px solid #f39c12;border-radius:5px;font-weight:700;font-size:.9rem">';
+    html+='<button onclick="waApplyCp10()" style="background:#f39c12;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all 8 jerry cans</button></div>';
+    html+='<div id="waCp10Prev" style="margin-top:5px;font-size:.68rem;color:#7a5200"></div></div>';
   }
   if(!_oilTab){fld.innerHTML=html;svRenderPkgFields();return;} // supplier tabs: only margin factor + packaging/premiums
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
@@ -7132,13 +7155,24 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
   var q=APC_QUAL[name+'|'+packing];
   return q?name+' ('+q+')':name;
 }
-// Wing Agro: supplier quotes CP10 only. CP8 = CP10 + 15, Low MCPD & GE = CP10 + 40 (Joel, 6 Nov 2026) - change WA_CP10 on each update.
+// Wing Agro: supplier quotes CP10 only (20L and 25L same price). Everything else follows CP10 (Joel, 6 Nov 2026):
+//   CP8 = CP10 + 15 | Low MCPD & GE CP10 = CP10 + 40 | Low MCPD & GE CP8 = CP8 + 40 = CP10 + 55.
+// Key in the CP10 FOB in the "Wing Agro CP10 FOB" box (User 0) and all 8 jerry-can prices re-price automatically.
 var WA_CP10=1190,WA_CP8_ADD=15,WA_LOW_ADD=40;
+function waRows(){
+  var c=WA_CP10,k=c+WA_CP8_ADD,N='\u2013',out=[];
+  [['20L','20L Jerry Can'],['25L','25L Jerry Can']].forEach(function(z){
+    var y=z[0]+' Yellow Jerry Can ';
+    out.push([y+N+' CP10',z[1],c],[y+N+' CP8',z[1],k],[y+N+' Low MCPD & GE '+N+' CP10',z[1],c+WA_LOW_ADD],[y+N+' Low MCPD & GE '+N+' CP8',z[1],k+WA_LOW_ADD]);
+  });
+  return out;
+}
+function waSetCp10(v){WA_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.wingagro)SUP_LISTS.wingagro.rows=waRows();}
 var SUP_LISTS={
   klk:{id:'05NOV26',day:'2026-11-05',label:'5 Nov 2026',uplift:0,rows:KLK_LIST_05NOV26,name:'KLK'},
   apical:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:APC_LIST_06NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
-  wingagro:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:[['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',WA_CP10],['25L Yellow Jerry Can \u2013 CP10','25L Jerry Can',WA_CP10],['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',WA_CP10+WA_CP8_ADD],['25L Yellow Jerry Can \u2013 CP8','25L Jerry Can',WA_CP10+WA_CP8_ADD],['20L Yellow Jerry Can \u2013 Low MCPD & GE','20L Jerry Can',WA_CP10+WA_LOW_ADD],['25L Yellow Jerry Can \u2013 Low MCPD & GE','25L Jerry Can',WA_CP10+WA_LOW_ADD]],name:'Wing Agro'}
+  wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};

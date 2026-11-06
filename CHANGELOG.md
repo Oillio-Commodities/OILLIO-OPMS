@@ -5,8 +5,16 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026C — Wing Agro: CP10 key-in box, Low MCPD & GE split into CP10 / CP8 (6 Nov 2026)
+- New "Wing Agro CP10 FOB" box on the Wing Agro page (User 0): key in the CP10 price once and press "Apply to all 8 jerry cans". All other prices follow automatically (20L and 25L alike): CP8 = CP10 + 15; Low MCPD & GE CP10 = CP10 + 40; Low MCPD & GE CP8 = CP8 + 40 (= CP10 + 55). Then press Save & Log Reference; the keyed CP10 and the rule are saved with the reference log.
+- Today (CP10 1,190): CP10 1,190; CP8 1,205; Low MCPD & GE CP10 1,230; Low MCPD & GE CP8 1,245 (20L and 25L). Up/down is measured against the projected price at the day's base oil (projection 1,200 -> 1,190 = DOWN 10).
+- Low MCPD & GE is now two lines per size (CP10 and CP8); the existing ones were renamed "... Low MCPD & GE - CP10" and "... - CP8" was added for 20L and 25L (packaging cost estimated as for the CP8 cans).
+- List id 06NOV26B. Tested: all 8 SKUs match; re-keying CP10 1,200 gives 1,200 / 1,215 / 1,240 / 1,255.
+
+---
+
 ## V06NOV2026B — Wing Agro price update 6 Nov 2026 (CP8 and Low MCPD & GE now follow CP10)
-- Wing Agro 20L and 25L Yellow Jerry Can (FOB, USD/MT): CP10 1,220 -> 1,190 (DOWN 30); CP8 1,235 -> 1,205 (DOWN 30); Low MCPD & GE 1,295 -> 1,230 (DOWN 65).
+- Wing Agro 20L and 25L Yellow Jerry Can (FOB, USD/MT): CP10 1,190 (projection at today's base oil was 1,200, so DOWN 10 vs projection; down 30 vs the 5 Nov list of 1,220); CP8 1,205 (DOWN 10 vs projection 1,215); Low MCPD & GE 1,230 (superseded by V06NOV2026C).
 - New rule built in: CP8 = CP10 + 15, Low MCPD & GE = CP10 + 40. Only the CP10 figure (WA_CP10) needs to change on future updates.
 - New list id 06NOV26 (Save & Log Reference needed). Tested: all 6 rows match.
 
