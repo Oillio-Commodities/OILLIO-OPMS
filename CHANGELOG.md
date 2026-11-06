@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026E — Fix: Oil Base Table "Failed to load"
+- View Log > Oil Base Table crashed with "Failed to load" (the "changes shown vs ... not saved" note used variables from the Product table). Fixed; the note now shows on the oil table too when a weekday was not saved. No price changes.
+
+---
+
 ## V06NOV2026D — View Log: "Supplier Price Up / Down" with vs-projection (6 Nov 2026)
 - View Log > Last 90 Days has a new tab "Supplier Price Up / Down", for every supplier (Apical, KLK, Wing Agro and any supplier added later), per product per day (last save of the day).
 - Columns: Supplier FOB | vs yesterday (change in FOB from the previous saved day) | vs projection (the real up / down after the base oil move = change in premium/discount + packaging; i.e. yesterday's price moved by the day's base oil is the projection). Green up, red down. First-time products show "first price logged".
