@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026B — Wing Agro price update 6 Nov 2026 (CP8 and Low MCPD & GE now follow CP10)
+- Wing Agro 20L and 25L Yellow Jerry Can (FOB, USD/MT): CP10 1,220 -> 1,190 (DOWN 30); CP8 1,235 -> 1,205 (DOWN 30); Low MCPD & GE 1,295 -> 1,230 (DOWN 65).
+- New rule built in: CP8 = CP10 + 15, Low MCPD & GE = CP10 + 40. Only the CP10 figure (WA_CP10) needs to change on future updates.
+- New list id 06NOV26 (Save & Log Reference needed). Tested: all 6 rows match.
+
+---
+
 ## V06NOV2026A — Apical list 6 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
 - Apical supplier list of 6 Nov 2026 loaded (price validity: EOD 6 Nov; supplier's own terms ignored — Oillio terms apply).
 - Changes vs 5 Nov (USD/MT): Shortening 36/39 -20 (1,155), 38/40 & 40/42 -20 (1,150), 43/47 -20 (1,150), 46/48 -20 (1,145), 48/52 -10 (1,140); Spread Fat -25 (1,280); RCNO and HCNO unchanged; HPS Flakes 20ft -10 (1,225), 40ft -10 (1,240); Jerry Can CP10 -45 (1,300), CP8 -45 (1,310).
