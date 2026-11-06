@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V06NOV2026A — Apical list 6 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
+- Apical supplier list of 6 Nov 2026 loaded (price validity: EOD 6 Nov; supplier's own terms ignored — Oillio terms apply).
+- Changes vs 5 Nov (USD/MT): Shortening 36/39 -20 (1,155), 38/40 & 40/42 -20 (1,150), 43/47 -20 (1,150), 46/48 -20 (1,145), 48/52 -10 (1,140); Spread Fat -25 (1,280); RCNO and HCNO unchanged; HPS Flakes 20ft -10 (1,225), 40ft -10 (1,240); Jerry Can CP10 -45 (1,300), CP8 -45 (1,310).
+- Port Klang: HPKS, HPKO 38/40, HPKO 40/42 and HPL 41/43 unchanged; CBR -5 (1,935); Low GE & 3MCPD Shortening 36/39 -20 (1,175), 38/42 -20 (1,180), 43/48 -15 (1,190, also used for 46/48), 48/52 -10 (1,195).
+- Tested: list applied at the saved base oil — all rows match the supplier list (0 differences). New list id 06NOV26 (Save & Log Reference needed).
+
+---
+
 ## V05NOV2026J — Wing Agro price update (5 Nov 2026)
 - Wing Agro, 20L and 25L Yellow Jerry Can (FOB, USD/MT): CP10 1,255 -> 1,220 (DOWN 35); CP8 1,265 -> 1,235 (DOWN 30; CP8 is USD 15 over CP10). Low MCPD & GE unchanged at 1,295.
 - List id 05NOV26 (new, so Save & Log Reference is needed).
