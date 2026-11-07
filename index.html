@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026N';
+  var _v='V07NOV2026O';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7670,9 +7670,9 @@ function svOnPkgChange(inp){
   if(row)row[field]=val;
   svRenderTable();
 }
-function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK, Wing Agro or IOI first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}else if(s==='ioi'){ref=IOI_REF;key=IOI_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
-  // Propagate Apical oil price fields to WA_REF and KLK_REF
-  if(s==='apical'){
+function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!=null?window.USER_LEVEL:2);if(lvl!==0){showToast('Save & Log is for User 0 only');return;}var _onOilTab=(SV_SUP==='oilbase');var s=_onOilTab?'apical':SV_SUP;if(!s||s==='ableperfect'||s==='compare'){showToast('Select Apical, KLK, Wing Agro or IOI first');return;}var ref,key;if(s==='apical'){ref=APC_REF;key=APC_REF_KEY;}else if(s==='wingagro'){ref=WA_REF;key=WA_REF_KEY;}else if(s==='klk'){ref=KLK_REF;key=KLK_REF_KEY;}else if(s==='ioi'){ref=IOI_REF;key=IOI_REF_KEY;}else if(s==='abp'){ref=APC_REF;key=APC_REF_KEY;}var fields=document.getElementById(_onOilTab?'svOilFields':'svRefFields');if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){var k=inp.getAttribute('data-ref'),v=parseFloat(inp.value);if(!isNaN(v)){ref[k]=v;}});}
+  // Propagate Apical oil price fields to WA_REF and KLK_REF (Able Perfect shares the Apical base oil)
+  if(s==='apical'||s==='abp'){
     var _sf=['malaysia_cp10','indonesia_cp10','rbd_my','rbd_id','pk_olein','pk_oil','pk_stearin','stearin','coconut','cp6','pfad'];
     _sf.forEach(function(fld){
       if(fld in APC_REF){

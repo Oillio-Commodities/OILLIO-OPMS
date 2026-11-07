@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026O — Fix: Save & Log Reference on the Able Perfect tab (7 Nov 2026)
+- Pressing Save & Log Reference on the Able Perfect tab threw "undefined is not valid JSON" (Able had no base-oil reference to save). Able now saves the shared base oil (same as Apical) plus its own packaging, and the base oil is passed on to the other suppliers exactly as when saving from Apical.
+
 ## V07NOV2026N — Compare: all suppliers side by side; KLK 1.5L x 12 PET matched (7 Nov 2026)
 - Compare summary now has one column per supplier (Apical, KLK, Wing Agro, IOI, Able Perfect) with each one's lowest like-for-like FOB per product group, the best one highlighted green, then best / cheaper-by / next best / vs Able / Quote.
 - KLK CP6 1.5L x 12 PET is compared with Able 6 x 1.5ltr PET (x2, same kg per MT). Flagged: KLK list shows 10.8 kg / 1,830 ctn for this pack (identical to 1L x 12) - confirm with KLK.
