@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026L — Able Perfect is now a full quoting supplier (7 Nov 2026)
+- Able Perfect tab works like Apical / KLK / Wing Agro / IOI: category chips, product list, detail card, freight (FOB / manual / port), Add to Quote, quote report, PDF, WhatsApp copy, Oillio margin box and base-oil reference panel.
+- Able price = (daily base oil + Able packaging cost) x 1.015; Est = baseline x 0.985. CP8 = CP10 +15, CP6 = CP10 +60, Ghee = CP10 +20, shortening = RBD + melting-point offset. No premium/discount (direct OPMS access). 81 SKUs = only Able SKUs matching Apical / KLK / Wing Agro / IOI SKUs; full Able catalogue stays stored.
+- Compare now includes Able Perfect as a candidate in "best supplier": BEST flag, cheaper-than-next-best USD/MT and %, and a Quote button that opens the Able tab on that SKU. The old reference-only Able view is removed.
+- Quotation PDF and WhatsApp copy show Oillio Commodities Sdn Bhd only (checked for all five suppliers).
+
 ## V07NOV2026K — Compare tab: clear best supplier + jump to quote (7 Nov 2026)
 - Compare now opens on a "who is cheapest right now" table: every product group, the BEST supplier at today's live FOB, how much cheaper it is than the next-best supplier (USD/MT and %), the next-best supplier, the gap to the Able baseline, and a "Quote at <supplier>" button. Contested SKUs (2+ suppliers) are listed first.
 - Opening a product group shows a green BEST PRICE NOW banner (supplier, FOB, cheaper than next best by USD/MT and %, vs Able) and a Quote button on every supplier row. The button opens that supplier's tab with the SKU selected, so the quote, PDF and WhatsApp text are made from the supplier tab as before.
