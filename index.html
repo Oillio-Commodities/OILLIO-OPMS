@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V06NOV2026F';
+  var _v='V07NOV2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1795,6 +1795,7 @@ function el(id){return document.getElementById(id);}
     if (d.ioi) Object.keys(IOI_REF_DEF).forEach(function(k) {
       if (k in d.ioi) IOI_REF[k] = parseFloat(d.ioi[k]) || IOI_REF[k];
     });
+    if (d.ioi && d.ioi.list_id === SUP_LISTS.ioi.id && parseFloat(d.ioi.ioi_cp10_fob) > 0) ioiSetCp10(parseFloat(d.ioi.ioi_cp10_fob));
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
@@ -1820,6 +1821,7 @@ function el(id){return document.getElementById(id);}
     _applyPkg(d.klk_pkg, KLK_PKG, KLK_PKG_DEF);
     _applyPkg(d.wingagro_pkg, WA_PKG, WA_PKG_DEF);
     _applyPkg(d.ioi_pkg, IOI_PKG, IOI_PKG_DEF);
+    _flexiNormalise();
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
     var _savedV = parseFloat((d.klk && d.klk.model_v) || (d.apical && d.apical.model_v)) || 1;
     if (_savedV < MODEL_V) { _migrateModelV2(_oldRefs); window._modelPending = true; } else { window._modelPending = false; }
@@ -1870,7 +1872,7 @@ function el(id){return document.getElementById(id);}
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
-      ioi: Object.assign({}, IOI_REF, {model_v: MODEL_V, list_id: SUP_LISTS.ioi.id}),
+      ioi: Object.assign({}, IOI_REF, {model_v: MODEL_V, list_id: SUP_LISTS.ioi.id, ioi_cp10_fob: IOI_CP10, ioi_rule: 'FlexiHP=CP10+'+IOI_HEAT_ADD+'; CP8=CP10+'+IOI_CP8_ADD+'; CP6=CP10+'+IOI_CP6_ADD}),
       ioi_pkg: IOI_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       last_saved: savedTs,
       saved_by: 'User 0'
@@ -6304,12 +6306,12 @@ var KLK_PKG_DEF=[
 {id:99,cat:"TIN",name:"VEGETABLE GHEE",packing:"10L X 2 PLASTIC PAIL",pkg_cost:219.7,premium:2.65}
 ];
 var IOI_PKG_DEF=[
-{id:0,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-159.87},
-{id:1,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-159.87},
-{id:2,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:52.37,premium:-129.87},
-{id:3,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-163.24},
-{id:4,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-163.24},
-{id:5,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:60.74,premium:-133.24},
+{id:0,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:35,premium:-142.5},
+{id:1,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:35,premium:-142.5},
+{id:2,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:35,premium:-112.5},
+{id:3,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:40,premium:-142.5},
+{id:4,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:40,premium:-142.5},
+{id:5,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6",packing:"FLEXIBAG (WITH HEATING PAD)",pkg_cost:40,premium:-112.5},
 {id:6,cat:"JERRY CAN",name:"RBD PALM OLEIN CP10",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-192.305},
 {id:7,cat:"JERRY CAN",name:"RBD PALM OLEIN CP8",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-192.105},
 {id:8,cat:"JERRY CAN",name:"RBD PALM OLEIN CP6",packing:"20L WHITE JERRY CAN",pkg_cost:106.305,premium:-160.705},
@@ -6349,6 +6351,11 @@ var WA_PKG=loadPkgArr(WA_PKG_KEY,WA_PKG_DEF.map(function(d){return Object.assign
 var KLK_PKG=loadPkgArr(KLK_PKG_KEY,KLK_PKG_DEF.map(function(d){return Object.assign({},d);}));
 var IOI_PKG=loadPkgArr(IOI_PKG_KEY,IOI_PKG_DEF.map(function(d){return Object.assign({},d);}));
 
+// Flexibag packaging cost = USD 35/MT (normal) and USD 40/MT (with heating pad) for every supplier (Joel, 7 Nov 2026).
+// Supplier FOB does not change: the difference goes into the premium/discount. Runs on every load, so saved older values are corrected too.
+function _flexiTarget(pk){var u=String(pk||'').toUpperCase();if(u.indexOf('FLEXIBAG')<0)return null;if(/W\/O/.test(u))return 35;if(/DOUBLE|RAIL/.test(u))return null;return /HEATING PAD/.test(u)?40:35;}
+function _flexiNormalise(){[APC_PKG,KLK_PKG,WA_PKG,IOI_PKG].forEach(function(arr){arr.forEach(function(r){var t=_flexiTarget(r.packing);if(t==null||Math.abs(r.pkg_cost-t)<0.0001)return;r.premium=Math.round((r.premium+r.pkg_cost-t)*10000)/10000;r.pkg_cost=t;});});}
+_flexiNormalise();
 function getPkgArr(s){
   if(s==='apical')return APC_PKG;
   if(s==='wingagro')return WA_PKG;
@@ -6601,12 +6608,12 @@ var KLK_DATA=[
 ];
 // IOI (new supplier 6 Nov 2026) - modelled on KLK: same loadability, packaging cost estimated from the matching KLK SKUs (Flexibag from the Able Perfect calculator)
 var IOI_DATA=[
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1100,fcpo_default:1207.5,premium:-159.87,pkg_cost:52.37,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1110,fcpo_default:1217.5,premium:-159.87,pkg_cost:52.37,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1190,fcpo_default:1267.5,premium:-129.87,pkg_cost:52.37,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1105,fcpo_default:1207.5,premium:-163.24,pkg_cost:60.74,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1115,fcpo_default:1217.5,premium:-163.24,pkg_cost:60.74,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1195,fcpo_default:1267.5,premium:-133.24,pkg_cost:60.74,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1100,fcpo_default:1207.5,premium:-142.5,pkg_cost:35,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1110,fcpo_default:1217.5,premium:-142.5,pkg_cost:35,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (W/O HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1190,fcpo_default:1267.5,premium:-112.5,pkg_cost:35,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1105,fcpo_default:1207.5,premium:-142.5,pkg_cost:40,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1115,fcpo_default:1217.5,premium:-142.5,pkg_cost:40,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6',packing:'FLEXIBAG (WITH HEATING PAD)',load_ctn:1.0,net_wt:21.5,fob_mt:1195,fcpo_default:1267.5,premium:-112.5,pkg_cost:40,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1121.5,fcpo_default:1207.5,premium:-192.305,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP8',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1131.7,fcpo_default:1217.5,premium:-192.105,pkg_cost:106.305,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'06Nov26'},
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP6',packing:'20L WHITE JERRY CAN',load_ctn:1337.0,net_wt:18.0,fob_mt:1213.1,fcpo_default:1267.5,premium:-160.705,pkg_cost:106.305,fcpo_ref:'cp6',fcpo_delta:0,fob_delta:0,upd:'06Nov26'},
@@ -6808,6 +6815,17 @@ function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||""
  if(!shown){out.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut)">No comparable products found</div>';return;}
  out.style.textAlign="left";out.innerHTML=html;}
 
+function ioiCp10Prev(){var el=document.getElementById('ioiCp10In'),pv=document.getElementById('ioiCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; Flexibag + heating pad <b>'+(c+IOI_HEAT_ADD)+'</b> &middot; CP8 (+'+IOI_CP8_ADD+') <b>'+(c+IOI_CP8_ADD)+'</b> &middot; CP6 (+'+IOI_CP6_ADD+') <b>'+(c+IOI_CP6_ADD)+'</b> &middot; packed SKUs = Flexibag + the packing adder';}
+function ioiApplyCp10(){
+  if(_svBlockSim('re-pricing IOI'))return;
+  var el=document.getElementById('ioiCp10In'),c=el?parseFloat(el.value):NaN;
+  if(isNaN(c)||c<=0){showToast('Key in the IOI CP10 Flexibag price first');return;}
+  ioiSetCp10(c);
+  _svApplyListAuto('ioi',true,true);
+  _svMarkDirty();
+  svRenderPkgFields();svRenderTable();
+  showToast('IOI re-priced from CP10 '+c+': CP8 '+(c+IOI_CP8_ADD)+', CP6 '+(c+IOI_CP6_ADD)+' - now press Save & Log Reference',7000);
+}
 function waCp10Prev(){var el=document.getElementById('waCp10In'),pv=document.getElementById('waCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; CP8 (+'+WA_CP8_ADD+') <b>'+(c+WA_CP8_ADD)+'</b> &middot; Low MCPD&amp;GE CP10 (+'+WA_LOW_ADD+') <b>'+(c+WA_LOW_ADD)+'</b> &middot; Low MCPD&amp;GE CP8 <b>'+(c+WA_CP8_ADD+WA_LOW_ADD)+'</b>';}
 function waApplyCp10(){
   if(_svBlockSim('re-pricing Wing Agro'))return;
@@ -6851,6 +6869,13 @@ function svRenderRefPanel(){
       html+='<div style="padding:5px;background:#d6eaf8;border-radius:5px;font-weight:700;color:#1a5276;font-size:.9rem">'+SUP_MARGIN_CAP+' <span style="font-weight:500;font-size:.64rem;color:#5d7a99">(fixed &middot; used for supplier Est. value, not editable)</span></div>';
     }
     html+='</div>';
+  }
+  if(!_oilTab&&s==='ioi'&&isEd){
+    html+='<div style="grid-column:1/-1;background:#f3e8ff;border:2px solid #5b2c83;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
+    html+='<div style="font-size:.62rem;font-weight:700;color:#5b2c83;text-transform:uppercase;margin-bottom:3px">IOI CP10 FOB &mdash; Flexibag w/o heating pad (USD/MT)</div>';
+    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="ioiCp10In" value="'+IOI_CP10+'" oninput="ioiCp10Prev()" style="width:110px;padding:5px;border:2px solid #5b2c83;border-radius:5px;font-weight:700;font-size:.9rem">';
+    html+='<button onclick="ioiApplyCp10()" style="background:#5b2c83;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all IOI SKUs</button></div>';
+    html+='<div id="ioiCp10Prev" style="margin-top:5px;font-size:.68rem;color:#4a1f6b"></div></div>';
   }
   if(!_oilTab&&s==='wingagro'&&isEd){
     html+='<div style="grid-column:1/-1;background:#fff8e6;border:2px solid #f39c12;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
@@ -7251,18 +7276,22 @@ function waRows(){
   return out;
 }
 function waSetCp10(v){WA_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.wingagro)SUP_LISTS.wingagro.rows=waRows();}
-// IOI (6 Nov 2026): bulk Flexibag (w/o heating pad) price per oil + packing adders per MT. Heating pad Flexibag = +5. Re-key IOI_BASE on each update.
-var IOI_BASE={CP10:1100,CP8:1110,CP6:1190},IOI_HEAT_ADD=5;
-var IOI_ADD={'20L WHITE JERRY CAN':[21.50,21.70,23.10],'5L X 4 WHITE JERRY CANS PER CARTON':[22.45,22.65,24.10],'25L YELLOW JERRY CAN':[26.25,26.50,28.30],'20L YELLOW JERRY CAN':[21.05,21.25,22.70],'20L GREEN JERRY CAN':[21.30,21.45,null],'18L YELLOW JERRY CAN':[19.15,19.30,null],'5L X 4 PET BOTTLES PER CARTON':[21.80,21.95,23.40],'20KG BIB':[22.55,22.75,null]};
+// IOI (6 Nov 2026): key in ONE price - CP10 Flexibag (w/o heating pad). Everything else follows (Joel, 7 Nov 2026):
+//   Flexibag with heating pad = +5 | each pack = Flexibag CP10 + its packing adder (from IOI's sheet, CP10 column)
+//   CP8 = CP10 + 10 | CP6 = CP10 + 90 (same for every pack). 20L Green, 18L Yellow and 20KG BIB have no CP6 price.
+var IOI_CP10=1100,IOI_CP8_ADD=10,IOI_CP6_ADD=90,IOI_HEAT_ADD=5;
+var IOI_ADD={'20L WHITE JERRY CAN':21.50,'5L X 4 WHITE JERRY CANS PER CARTON':22.45,'25L YELLOW JERRY CAN':26.25,'20L YELLOW JERRY CAN':21.05,'20L GREEN JERRY CAN':21.30,'18L YELLOW JERRY CAN':19.15,'5L X 4 PET BOTTLES PER CARTON':21.80,'20KG BIB':22.55};
+var IOI_NO_CP6={'20L GREEN JERRY CAN':1,'18L YELLOW JERRY CAN':1,'20KG BIB':1};
 function ioiRows(){
-  var out=[],oils=['CP10','CP8','CP6'];
-  oils.forEach(function(o,k){
-    var nm='RBD PALM OLEIN '+o;
-    out.push([nm,'FLEXIBAG (W/O HEATING PAD)',IOI_BASE[o]],[nm,'FLEXIBAG (WITH HEATING PAD)',IOI_BASE[o]+IOI_HEAT_ADD]);
-    Object.keys(IOI_ADD).forEach(function(pk){var a=IOI_ADD[pk][k];if(a!=null)out.push([nm,pk,Math.round((IOI_BASE[o]+a)*100)/100]);});
+  var out=[],oils=[['CP10',0],['CP8',IOI_CP8_ADD],['CP6',IOI_CP6_ADD]],r2=function(v){return Math.round(v*100)/100;};
+  oils.forEach(function(o){
+    var nm='RBD PALM OLEIN '+o[0];
+    out.push([nm,'FLEXIBAG (W/O HEATING PAD)',r2(IOI_CP10+o[1])],[nm,'FLEXIBAG (WITH HEATING PAD)',r2(IOI_CP10+IOI_HEAT_ADD+o[1])]);
+    Object.keys(IOI_ADD).forEach(function(pk){if(o[0]==='CP6'&&IOI_NO_CP6[pk])return;out.push([nm,pk,r2(IOI_CP10+IOI_ADD[pk]+o[1])]);});
   });
   return out;
 }
+function ioiSetCp10(v){IOI_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.ioi)SUP_LISTS.ioi.rows=ioiRows();}
 var SUP_LISTS={
   klk:{id:'05NOV26',day:'2026-11-05',label:'5 Nov 2026',uplift:0,rows:KLK_LIST_05NOV26,name:'KLK'},
   apical:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:APC_LIST_06NOV26,name:'Apical'},
