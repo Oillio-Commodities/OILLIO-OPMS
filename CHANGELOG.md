@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026I — Able side widened to every OPMS customer quote, margin stripped (7 Nov 2026)
+- Able packaging costs were re-read from all 355 OPMS quotations (FOB tables), removing each quote's own margin first (price / (1 + margin) - base oil), so every Able SKU is the true 0%-margin FOB. Different customers agreed to the cent on every SKU used.
+- Correction: the PET bottle costs added in V07NOV2026G came from the small-pack quote that carries a 1% margin; now restated at 0% (e.g. 12 x 1L 1-pc cap 236.93, 5L x 4 152.02).
+- Added Able matches: KLK ghee 4L x 4 and 6L x 2 rect tins, 16kg and 16L tins, 220L drum; KLK 9L jerry can; KLK 16L tin big lid; KLK stearin 20kg carton (Able carton cost); Apical 18kg BIB spread fat; Apical RCNO 20kg / 18kg BIB / flexibag against Able CNR; Apical RPKO BIB against Able P. Kernel Oil.
+- CNR uses the Daily Oil Base Price "Coconut" field and PKO uses "RBD Palm Kernel Oil" - confirm these are the same grades as Able's CNR / PKO.
+- Hydrogenated lines (Hpks, Hpko, Hpkl, HCNO, HPS, CBR) and margarine / BOS stay uncompared.
+
+---
+
 ## V07NOV2026H — Able Perfect tab shows only the relevant SKUs; shortening 32-35 added (7 Nov 2026)
 - The Able Perfect tab now lists only the Able SKUs that match a SKU currently held under Apical, KLK, Wing Agro or IOI (71 lines, with a "Matches" column naming the suppliers). The full Able catalogue and packaging costs stay stored in the app (ABLE_SKUS) for later use.
 - Shortening 32-35 / 33-36 added: OPMS has the 32-35 base (1,115 on 6 Nov, = RBD + 30) but prices no pack for it, so it uses the same Able carton packaging cost as the other shortening grades (identical across all grades in OPMS).
