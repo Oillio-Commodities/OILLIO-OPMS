@@ -5,6 +5,17 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026F — Compare tab: every supplier SKU stated against the Able Perfect (Emerging Trend Global FOB) equivalent (7 Nov 2026)
+- Compare tab now has an **Able Perfect baseline row** for every comparable product group, followed by the Apical, KLK, Wing Agro and IOI SKUs on the same Able SKU name (same naming across suppliers).
+- Able side taken from OPMS (opms.ableperfect.com.my) > Emerging Trend Global > "ALL IN ONE FOB" (margin 0.00), plus the Shortening and Vegetable Ghee FOB quotes and the PET 5L x 4 pack. Able price = daily base oil + Able packaging cost per MT (read off OPMS, 6 Nov 2026), so it floats with the Daily Oil Base Price like every supplier.
+- Able baseline = Able FOB + 1.5%. Able Est = baseline x 0.985; supplier Est = FOB x 0.95 (as before).
+- Each supplier row shows USD/MT and % against the Able baseline (FOB) and against Able Est. Green up-arrow = supplier above Able, red down-arrow = supplier below Able.
+- Able spreads used: CP8 = CP10 + 15; Vegetable Ghee = CP10 + 20; shortening bases = RBD palm oil + offset by melting point (32-35 +30, 36-39 0, 39-42 0, 42-44 -5, 44-46 -10, 46-48 -10, 48-50 -15, 50-52 -45), as on the 6 Nov OPMS rate sheet.
+- Packs without an exact Able SKU are matched to the closest one and tagged "closest match" (e.g. 210L steel drum to Able 190kg metal drum). Oil/fat SKUs with no Able equivalent are listed under "No Able equivalent yet". CP6, margarine, BOS, Hpko/Hpks/Hpkl, CBR, RCNO/HCNO, HPS flakes and Apifil are not compared (not in the Able FOB list).
+- The earlier hand-made comparison groups (and their notes) are replaced by these automatic groups.
+
+---
+
 ## V07NOV2026E — CORRECTION: IOI packed prices are USD per unit, not per-MT adders
 - IOI's sheet quotes Flexibag in USD/MT (CP10 w/o heating pad 1,100, 21.5 MT per container; heating pad +5) and every packed SKU in USD PER UNIT (jerry can / carton / BIB). Previously loaded wrongly as "Flexibag + adder" (V06NOV2026F to V07NOV2026D), which understated all IOI packed prices by about USD 50-130/MT. Fixed: USD/MT = unit price / net kg x 1000.
 - Corrected IOI CP10 (USD/MT at base 1,090 | premium/discount | packaging): 20L Yellow 21.05 -> 1,169.44 (-24.13 | 103.57); 25L Yellow 26.25 -> 1,166.67 (-22.15 | 98.82); 20L White 21.50 -> 1,194.45 (-1.86 | 106.31); 18L Yellow 19.15 -> 1,182.10 (-20.75 | 112.85); 20L Green 21.30 -> 1,183.33 (-12.98 | 106.31); 5L x 4 White JC 22.45 -> 1,247.22 (-8.07 | 165.30); 5L x 4 PET 21.80 -> 1,211.11 (-12.43 | 133.54); 20KG BIB 22.55 -> 1,127.50 (-25.31 | 62.81). Flexibag unchanged: 1,100 / 1,105 with heating pad (-25 | 35 and 40).
