@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026H — Able Perfect tab shows only the relevant SKUs; shortening 32-35 added (7 Nov 2026)
+- The Able Perfect tab now lists only the Able SKUs that match a SKU currently held under Apical, KLK, Wing Agro or IOI (71 lines, with a "Matches" column naming the suppliers). The full Able catalogue and packaging costs stay stored in the app (ABLE_SKUS) for later use.
+- Shortening 32-35 / 33-36 added: OPMS has the 32-35 base (1,115 on 6 Nov, = RBD + 30) but prices no pack for it, so it uses the same Able carton packaging cost as the other shortening grades (identical across all grades in OPMS).
+- KLK Vegetable Ghee 1L x 12, 14L and 20L tins and KLK RBD Palm Oil 36-39 carton (tagged "different product") now compare against the closest Able SKU.
+
+---
+
 ## V07NOV2026G — Able Perfect tab; CP6 on the Able side; Est confirmed (7 Nov 2026)
 - New **Able Perfect** tab (next to IOI): every Able SKU built up like the suppliers = Daily Oil Base Price + Able packaging cost = Able FOB, then Baseline (+1.5%) and Est (baseline x 0.985, i.e. Able negotiating down to 0% margin). No premium/discount needed because Able pricing is read directly from OPMS. Filter by product, search by SKU.
 - CP6 added on the Able side as CP10 + 60 (CP8 = CP10 + 15). KLK/IOI CP6 SKUs now compare against Able CP6, including the PET bottle packs (900ml/1L x 12, 1.5L/1.8L/2L/3L x 6, 5L x 4) taken from the OPMS small-pack FOB quote (1-pc cap versions, tagged to confirm cap type).
