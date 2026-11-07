@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026M';
+  var _v='V07NOV2026N';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6821,7 +6821,7 @@ function _ablePack(prod,N,K){var F=N+' '+K,m;
   if(/HDPE PLASTIC DRUM/.test(K))return '211ltr (190kgs) plastic drum';
   if(/RECON STEEL DRUM/.test(K))return '190kg recon metal drum';
   if(/TIN/.test(K)){m=K.match(/^(\d+)L TIN (SMALL LID|FLEXSPOT)/);if(!m)return null;var t={'16':'16L SM tin','17':'17L SM tin','18':'18L SM HL tin','20':'20L SM tin'}[m[1]];return (m[1]==='16'&&m[2]!=='SMALL LID')?'16L BM tin':(t||null);}
-  if(/PET BOTTLES/.test(K)){var pm=K.match(/^([\d.]+)(ML|L) X (\d+)/);if(!pm)return null;return {'900MLx12':'12 x 900ml PET (SQ5 - 1pc cap)','1Lx12':'12 x 1ltr PET (SQ5 -1pc cap)','1.5Lx6':'6 x 1.5ltr PET (square)','1.8Lx6':'6 x 1.8ltr PET (Square with Handle @ MY)','2Lx6':'6 x 2ltr PET (square with Handle @ MY)','3Lx6':'6 x 3ltr PET (square)','4Lx4':'4 x 4ltr PET (square@MY)','5Lx4':'4 x 5ltr PET (square)'}[pm[1]+pm[2]+'x'+pm[3]]||null;}
+  if(/PET BOTTLES/.test(K)){var pm=K.match(/^([\d.]+)(ML|L) X (\d+)/);if(!pm)return null;return {'900MLx12':'12 x 900ml PET (SQ5 - 1pc cap)','1Lx12':'12 x 1ltr PET (SQ5 -1pc cap)','1.5Lx6':'6 x 1.5ltr PET (square)','1.5Lx12':'6 x 1.5ltr PET (square)','1.8Lx6':'6 x 1.8ltr PET (Square with Handle @ MY)','2Lx6':'6 x 2ltr PET (square with Handle @ MY)','3Lx6':'6 x 3ltr PET (square)','4Lx4':'4 x 4ltr PET (square@MY)','5Lx4':'4 x 5ltr PET (square)'}[pm[1]+pm[2]+'x'+pm[3]]||null;}
   if(/JERRY CAN/.test(K)){var wh=/WHITE|TRANSPARENT|TRANSLUCENT/.test(F),bm=/\bBM\b/.test(F),key;
     m=K.match(/^(\d+(?:\.\d+)?)L X (\d+)/);
     if(m){key={'4x4':'4 x 4ltr Jerrycan','5x4':'4 x 5ltr Jerrycan','3x6':'6 x 3ltr Jerrycan'}[m[1]+'x'+m[2]];if(!key)return null;if(wh&&key!=='6 x 3ltr Jerrycan')key+=' (White Transparent)';return key;}
@@ -6845,7 +6845,7 @@ function _cmpMap(sup,p){var N=(p.name||'').toUpperCase(),K=(p.packing||'').toUpp
   else return null;
   var key=_ablePack(prod,N,K);if(!key)return {none:true};
   var sk=ABLE_SKUS[key];if(!sk)return {none:true};var pkg=_ablePkg(sk,prod);if(pkg==null)return {none:true};if(prod==='short'&&!(deg in ABLE_SHORT_OFF))return {none:true};
-  var tag=(role!=='ref'&&!isFlex(p.packing)&&p.net_wt&&Math.abs(p.net_wt-sk.net)>0.5)?('closest match (Able net '+sk.net+' kg)'):(sk.t==='PET'&&!/^4 x [45]ltr/.test(key)?'Able 1-pc cap pack - confirm cap type':'');
+  var tag=(prod==='cp6'&&/^1\.5L X 12/.test(K))?'= 2 x Able 6x1.5L (same kg per MT) \u2013 KLK list shows 10.8 kg / 1,830 ctn (same as 1L x12), please confirm':(role!=='ref'&&!isFlex(p.packing)&&p.net_wt&&Math.abs(p.net_wt-sk.net)>0.5)?('closest match (Able net '+sk.net+' kg)'):(sk.t==='PET'&&!/^4 x [45]ltr/.test(key)?'Able 1-pc cap pack - confirm cap type':'');
   var title=_ableDisp(key)+' \u2013 '+(prod==='short'?'Shortening '+ABLE_SHORT_LBL[deg]:ABLE_PROD_LBL[prod]);
   return {gid:key+'|'+prod+'|'+(deg||''),title:title,able:{key:key,prod:prod,deg:deg,pkg:pkg,net:sk.net},role:role,tag:tag};}
 function ableFob(a){var b=ableBase(a.prod,a.deg);return b==null?null:b+a.pkg;}
@@ -6885,7 +6885,7 @@ var _SN={apical:'Apical',klk:'KLK',wingagro:'Wing Agro',ioi:'IOI',abp:'Able Perf
 function _cmpBest(g){var L=g.items.filter(function(x){return x.role==='cmp';}).map(function(x){return {it:x,fob:getLiveFob(x.p,x.sup)};}).filter(function(x){return x.fob>0;}).sort(function(a,b){return a.fob-b.fob;});
   var ai=_abpIdx(g.id);if(ai>=0){var ap=ABP_DATA[ai],af_=getLiveFob(ap,'abp');if(af_>0){L.push({it:{sup:'abp',p:ap,idx:ai,role:'cmp',tag:''},fob:af_});L.sort(function(a,b){return a.fob-b.fob;});}}
   if(!L.length)return null;var best=L[0],next=null;for(var i=1;i<L.length;i++){if(L[i].it.sup!==best.it.sup){next=L[i];break;}}
-  return {best:best,next:next,save:next?next.fob-best.fob:null,savePct:next?(next.fob-best.fob)/next.fob*100:null,n:L.length};}
+  return {best:best,next:next,save:next?next.fob-best.fob:null,savePct:next?(next.fob-best.fob)/next.fob*100:null,n:L.length,L:L};}
 function _cmpDelta(d,pct){if(d==null)return '\u2014';var up=d>=0,c=Math.abs(d)<0.005?'#555':up?'#1a7a4a':'#c0392b';
   return '<span style="font-weight:800;color:'+c+';white-space:nowrap">'+(Math.abs(d)<0.005?'=':up?'\u25B2 +':'\u25BC \u2212')+fmt(Math.abs(d),2)+' <span style="font-weight:600;font-size:.7rem">('+(up?'+':'\u2212')+fmt(Math.abs(pct),2)+'%)</span></span>';}
 function _cmpBanner(BG,ab){if(!BG)return '';var b=BG.best,SNb=_SN[b.it.sup];
@@ -6895,9 +6895,9 @@ function _cmpSummary(out,q){var B=_cmpBuild(),rows=[];B.groups.forEach(function(
   var wins={apical:0,klk:0,wingagro:0,ioi:0,abp:0};rows.forEach(function(r){wins[r.BG.best.it.sup]++;});
   var TH='style="padding:8px 10px;text-align:right"',THL='style="padding:8px 10px;text-align:left"';
   var h='<div style="font-size:.8rem;font-weight:800;color:var(--brand);margin-bottom:6px">Who is cheapest right now (like-for-like SKUs, live FOB per MT) \u2014 contested SKUs first</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'+Object.keys(wins).map(function(k){return '<div style="background:#f3f0fa;border-radius:7px;padding:5px 10px;font-size:.74rem"><b>'+_SN[k]+'</b>: best on '+wins[k]+' of '+rows.length+'</div>';}).join('')+'</div>'
-   +'<table style="width:100%;border-collapse:collapse;font-size:.77rem;background:var(--card)"><thead><tr style="background:#4a1a7a;color:#fff"><th '+THL+'>Product group</th><th '+THL+'>BEST supplier</th><th '+TH+'>Best FOB /MT</th><th '+TH+'>Cheaper than next best by</th><th '+THL+'>Next best</th><th '+TH+'>vs Able baseline</th><th '+TH+'>Quote</th></tr></thead><tbody>';
+   +'<table style="width:100%;border-collapse:collapse;font-size:.77rem;background:var(--card)"><thead><tr style="background:#4a1a7a;color:#fff"><th '+THL+'>Product group</th>'+['apical','klk','wingagro','ioi','abp'].map(function(k){return '<th '+TH+'>'+_SN[k]+'</th>';}).join('')+'<th '+THL+'>BEST supplier</th><th '+TH+'>Best FOB /MT</th><th '+TH+'>Cheaper than next best by</th><th '+THL+'>Next best</th><th '+TH+'>vs Able baseline</th><th '+TH+'>Quote</th></tr></thead><tbody>';
   rows.sort(function(a,b){var ca=a.BG.next?0:1,cb=b.BG.next?0:1;return ca!==cb?ca-cb:(a.g.title<b.g.title?-1:1);}).forEach(function(r){var b=r.BG.best,n=r.BG.next;
-   h+='<tr style="border-bottom:1px solid #eee"><td style="padding:7px 10px;font-weight:600;color:var(--brand)">'+r.g.title+'</td><td style="padding:7px 10px;font-weight:800;color:#1a7a4a">\u2B50 '+_SN[b.it.sup]+'</td><td style="padding:7px 10px;text-align:right;font-weight:700;white-space:nowrap">USD '+fmt(b.fob,2)+'</td><td style="padding:7px 10px;text-align:right;white-space:nowrap">'+(n?'<b style="color:#1a7a4a">USD '+fmt(r.BG.save,2)+' ('+fmt(r.BG.savePct,2)+'%)</b>':'<span style="color:var(--mut)">only supplier</span>')+'</td><td style="padding:7px 10px;color:var(--mut)">'+(n?_SN[n.it.sup]+' USD '+fmt(n.fob,2):'\u2014')+'</td><td style="padding:7px 10px;text-align:right">'+(r.ab==null?'\u2014':_cmpDelta(b.fob-r.ab,(b.fob-r.ab)/r.ab*100))+'</td><td style="padding:7px 10px;text-align:right"><button onclick="cmpQuote(\''+b.it.sup+'\','+b.it.idx+')" style="background:#1a7a4a;color:#fff;border:0;border-radius:6px;padding:4px 9px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">Quote at '+_SN[b.it.sup]+' \u2192</button></td></tr>';});
+   h+='<tr style="border-bottom:1px solid #eee"><td style="padding:7px 10px;font-weight:600;color:var(--brand)">'+r.g.title+'</td>'+['apical','klk','wingagro','ioi','abp'].map(function(k){var m=null;r.BG.L.forEach(function(x){if(x.it.sup===k&&(m==null||x.fob<m))m=x.fob;});return '<td style="padding:7px 10px;text-align:right;white-space:nowrap;'+(m!=null&&b.it.sup===k?'font-weight:800;color:#1a7a4a;background:#edfaf1':'color:#555')+'">'+(m==null?'\u2014':fmt(m,2))+'</td>';}).join('')+'<td style="padding:7px 10px;font-weight:800;color:#1a7a4a">\u2B50 '+_SN[b.it.sup]+'</td><td style="padding:7px 10px;text-align:right;font-weight:700;white-space:nowrap">USD '+fmt(b.fob,2)+'</td><td style="padding:7px 10px;text-align:right;white-space:nowrap">'+(n?'<b style="color:#1a7a4a">USD '+fmt(r.BG.save,2)+' ('+fmt(r.BG.savePct,2)+'%)</b>':'<span style="color:var(--mut)">only supplier</span>')+'</td><td style="padding:7px 10px;color:var(--mut)">'+(n?_SN[n.it.sup]+' USD '+fmt(n.fob,2):'\u2014')+'</td><td style="padding:7px 10px;text-align:right">'+(r.ab==null?'\u2014':_cmpDelta(b.fob-r.ab,(b.fob-r.ab)/r.ab*100))+'</td><td style="padding:7px 10px;text-align:right"><button onclick="cmpQuote(\''+b.it.sup+'\','+b.it.idx+')" style="background:#1a7a4a;color:#fff;border:0;border-radius:6px;padding:4px 9px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap">Quote at '+_SN[b.it.sup]+' \u2192</button></td></tr>';});
   out.style.textAlign="left";out.innerHTML=h+'</tbody></table><div style="font-size:.71rem;color:var(--mut);margin-top:8px">Pick a product group above for the full side-by-side with Able Perfect. Variants (Low MCPD / Low GE) and different-product references are not counted as best.</div>';}
 function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||"";var q=((document.getElementById("cmpQ")||{}).value||"").toLowerCase();var out=document.getElementById("cmpOut");if(!out)return;
  if(!gid){_cmpSummary(out,q);return;}

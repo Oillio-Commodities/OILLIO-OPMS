@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026N — Compare: all suppliers side by side; KLK 1.5L x 12 PET matched (7 Nov 2026)
+- Compare summary now has one column per supplier (Apical, KLK, Wing Agro, IOI, Able Perfect) with each one's lowest like-for-like FOB per product group, the best one highlighted green, then best / cheaper-by / next best / vs Able / Quote.
+- KLK CP6 1.5L x 12 PET is compared with Able 6 x 1.5ltr PET (x2, same kg per MT). Flagged: KLK list shows 10.8 kg / 1,830 ctn for this pack (identical to 1L x 12) - confirm with KLK.
+
 ## V07NOV2026M — Able Perfect saved to the database like the other suppliers + 4L PET match (7 Nov 2026)
 - Able Perfect pkg/premium are now saved with Save & Log Reference (ref_prices.abp_pkg), loaded for all users, written to the price log (supplier 'abp') and the oil base log, shown in the log/product-table viewers and the customer product lists, and included in the simulation snapshot - same as Apical/KLK/Wing Agro/IOI.
 - NEEDS ONE DATABASE COLUMN: `alter table ref_prices add column abp_pkg jsonb;` until added, saving still works for everything else and shows a warning.
