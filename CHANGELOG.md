@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026E — CORRECTION: IOI packed prices are USD per unit, not per-MT adders
+- IOI's sheet quotes Flexibag in USD/MT (CP10 w/o heating pad 1,100, 21.5 MT per container; heating pad +5) and every packed SKU in USD PER UNIT (jerry can / carton / BIB). Previously loaded wrongly as "Flexibag + adder" (V06NOV2026F to V07NOV2026D), which understated all IOI packed prices by about USD 50-130/MT. Fixed: USD/MT = unit price / net kg x 1000.
+- Corrected IOI CP10 (USD/MT at base 1,090 | premium/discount | packaging): 20L Yellow 21.05 -> 1,169.44 (-24.13 | 103.57); 25L Yellow 26.25 -> 1,166.67 (-22.15 | 98.82); 20L White 21.50 -> 1,194.45 (-1.86 | 106.31); 18L Yellow 19.15 -> 1,182.10 (-20.75 | 112.85); 20L Green 21.30 -> 1,183.33 (-12.98 | 106.31); 5L x 4 White JC 22.45 -> 1,247.22 (-8.07 | 165.30); 5L x 4 PET 21.80 -> 1,211.11 (-12.43 | 133.54); 20KG BIB 22.55 -> 1,127.50 (-25.31 | 62.81). Flexibag unchanged: 1,100 / 1,105 with heating pad (-25 | 35 and 40).
+- CP8 = CP10 + 10/MT and CP6 = CP10 + 90/MT for every SKU (e.g. 20L Yellow CP8 1,179.44, CP6 1,259.44). Premiums load into the Packaging / Premium table; prices float with the daily base oil.
+- Tested: all 27 SKUs match; 20L Yellow CP10 = 21.05 per jerry can.
+
+---
+
 ## V07NOV2026D — Back to the standard model for IOI and Wing Agro (no separate boxes)
 - Removed the extra "IOI" and "Wing Agro" price boxes. Every supplier now works the same way: FOB = daily base oil + premium/discount + packaging cost. A supplier list sets the premium of each SKU in the Packaging / Premium table once; after that every price floats with the Daily Oil Base Price.
 - Wing Agro list 6 Nov 2026 (base Malaysia CP10 1,090): CP10 1,190; CP8 = CP10 + 15 = 1,205; Low MCPD & GE CP10 = CP10 + 40 = 1,230; Low MCPD & GE CP8 = CP8 + 40 = 1,245 (20L and 25L).
