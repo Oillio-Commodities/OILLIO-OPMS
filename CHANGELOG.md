@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026M — Able Perfect saved to the database like the other suppliers + 4L PET match (7 Nov 2026)
+- Able Perfect pkg/premium are now saved with Save & Log Reference (ref_prices.abp_pkg), loaded for all users, written to the price log (supplier 'abp') and the oil base log, shown in the log/product-table viewers and the customer product lists, and included in the simulation snapshot - same as Apical/KLK/Wing Agro/IOI.
+- NEEDS ONE DATABASE COLUMN: `alter table ref_prices add column abp_pkg jsonb;` until added, saving still works for everything else and shows a warning.
+- New Able SKU from OPMS: 4 x 4ltr PET (square@MY) (net 14.4 kg, 1,231/FCL, pkg 183.65) - matches KLK CP6 4L x 4 PET.
+
 ## V07NOV2026L — Able Perfect is now a full quoting supplier (7 Nov 2026)
 - Able Perfect tab works like Apical / KLK / Wing Agro / IOI: category chips, product list, detail card, freight (FOB / manual / port), Add to Quote, quote report, PDF, WhatsApp copy, Oillio margin box and base-oil reference panel.
 - Able price = (daily base oil + Able packaging cost) x 1.015; Est = baseline x 0.985. CP8 = CP10 +15, CP6 = CP10 +60, Ghee = CP10 +20, shortening = RBD + melting-point offset. No premium/discount (direct OPMS access). 81 SKUs = only Able SKUs matching Apical / KLK / Wing Agro / IOI SKUs; full Able catalogue stays stored.
