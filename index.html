@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026B';
+  var _v='V07NOV2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1799,7 +1799,7 @@ function el(id){return document.getElementById(id);}
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
-    if (d.wingagro && d.wingagro.list_id === SUP_LISTS.wingagro.id && parseFloat(d.wingagro.wa_cp10_fob) > 0) waSetCp10(parseFloat(d.wingagro.wa_cp10_fob));
+    if (d.wingagro && d.wingagro.list_id === SUP_LISTS.wingagro.id && d.wingagro.wa_prem != null && !isNaN(parseFloat(d.wingagro.wa_prem))) waSetPrem(parseFloat(d.wingagro.wa_prem));
     // Keep the refs exactly as saved (needed to convert old-model premiums), THEN recalculate the auto fields
     var _oldRefs = {apc:Object.assign({},APC_REF), wa:Object.assign({},WA_REF), klk:Object.assign({},KLK_REF)};
     [APC_REF,WA_REF,KLK_REF,IOI_REF].forEach(_deriveAuto);
@@ -1868,7 +1868,7 @@ function el(id){return document.getElementById(id);}
     var payload = {
       apical: Object.assign({}, APC_REF, {model_v: MODEL_V, list_id: SUP_LISTS.apical.id}),
       klk: Object.assign({}, KLK_REF, {model_v: MODEL_V, list_id: SUP_LISTS.klk.id}),
-      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V, list_id: SUP_LISTS.wingagro.id, wa_cp10_fob: WA_CP10, wa_rule: 'CP8=CP10+'+WA_CP8_ADD+'; LowMCPD&GE CP10=CP10+'+WA_LOW_ADD+'; LowMCPD&GE CP8=CP8+'+WA_LOW_ADD}),
+      wingagro: Object.assign({}, WA_REF, {model_v: MODEL_V, list_id: SUP_LISTS.wingagro.id, wa_prem: WA_PREM, wa_rule: 'CP10=BaseCP10+prem; CP8=CP10+'+WA_CP8_ADD+'; LowMCPD&GE CP10=CP10+'+WA_LOW_ADD+'; LowMCPD&GE CP8=CP8+'+WA_LOW_ADD}),
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
@@ -6826,16 +6826,16 @@ function ioiApplyPrem(){
   svRenderPkgFields();svRenderTable();
   showToast('IOI re-priced: Malaysia CP10 base + '+p+' - now press Save & Log Reference',7000);
 }
-function waCp10Prev(){var el=document.getElementById('waCp10In'),pv=document.getElementById('waCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; CP8 (+'+WA_CP8_ADD+') <b>'+(c+WA_CP8_ADD)+'</b> &middot; Low MCPD&amp;GE CP10 (+'+WA_LOW_ADD+') <b>'+(c+WA_LOW_ADD)+'</b> &middot; Low MCPD&amp;GE CP8 <b>'+(c+WA_CP8_ADD+WA_LOW_ADD)+'</b>';}
-function waApplyCp10(){
+function waPremPrev(){var el=document.getElementById('waPremIn'),pv=document.getElementById('waPremPrev');if(!el||!pv)return;var p=parseFloat(el.value);if(isNaN(p)){pv.textContent='';return;}var b=WA_REF.malaysia_cp10||0,c=Math.round((b+p)*100)/100;pv.innerHTML='Base CP10 <b>'+b+'</b> + premium <b>'+p+'</b> = Wing Agro CP10 <b>'+c+'</b> &middot; CP8 (+'+WA_CP8_ADD+') <b>'+(c+WA_CP8_ADD)+'</b> &middot; Low MCPD&amp;GE CP10 (+'+WA_LOW_ADD+') <b>'+(c+WA_LOW_ADD)+'</b> &middot; Low MCPD&amp;GE CP8 <b>'+(c+WA_CP8_ADD+WA_LOW_ADD)+'</b>. Moves automatically with the Daily Oil Base Price.';}
+function waApplyPrem(){
   if(_svBlockSim('re-pricing Wing Agro'))return;
-  var el=document.getElementById('waCp10In'),c=el?parseFloat(el.value):NaN;
-  if(isNaN(c)||c<=0){showToast('Key in the Wing Agro CP10 FOB first');return;}
-  waSetCp10(c);
-  var info=_svApplyListAuto('wingagro',true,true);
+  var el=document.getElementById('waPremIn'),p=el?parseFloat(el.value):NaN;
+  if(isNaN(p)){showToast('Key in the Wing Agro premium first');return;}
+  waSetPrem(p);
+  _svApplyListAuto('wingagro',true,true);
   _svMarkDirty();
   svRenderPkgFields();svRenderTable();
-  showToast('Wing Agro re-priced from CP10 '+c+': CP8 '+(c+WA_CP8_ADD)+', Low MCPD & GE CP10 '+(c+WA_LOW_ADD)+', CP8 '+(c+WA_CP8_ADD+WA_LOW_ADD)+' - now press Save & Log Reference',7000);
+  showToast('Wing Agro re-priced: Malaysia CP10 base + '+p+' - now press Save & Log Reference',7000);
 }
 function svRenderRefPanel(){
   var s=SV_SUP,ref,def;
@@ -6879,10 +6879,10 @@ function svRenderRefPanel(){
   }
   if(!_oilTab&&s==='wingagro'&&isEd){
     html+='<div style="grid-column:1/-1;background:#fff8e6;border:2px solid #f39c12;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
-    html+='<div style="font-size:.62rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:3px">Wing Agro CP10 FOB (USD/MT) &mdash; 20L &amp; 25L jerry can</div>';
-    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="waCp10In" value="'+WA_CP10+'" oninput="waCp10Prev()" style="width:110px;padding:5px;border:2px solid #f39c12;border-radius:5px;font-weight:700;font-size:.9rem">';
-    html+='<button onclick="waApplyCp10()" style="background:#f39c12;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all 8 jerry cans</button></div>';
-    html+='<div id="waCp10Prev" style="margin-top:5px;font-size:.68rem;color:#7a5200"></div></div>';
+    html+='<div style="font-size:.62rem;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:3px">Wing Agro premium over Malaysia CP10 base (USD/MT) &mdash; 20L &amp; 25L jerry can CP10</div>';
+    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="waPremIn" value="'+WA_PREM+'" oninput="waPremPrev()" style="width:110px;padding:5px;border:2px solid #f39c12;border-radius:5px;font-weight:700;font-size:.9rem">';
+    html+='<button onclick="waApplyPrem()" style="background:#f39c12;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all Wing Agro jerry cans</button></div>';
+    html+='<div id="waPremPrev" style="margin-top:5px;font-size:.68rem;color:#7a5200"></div></div>';
   }
   if(!_oilTab){fld.innerHTML=html;svRenderPkgFields();return;} // supplier tabs: only margin factor + packaging/premiums
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
@@ -7263,19 +7263,20 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
   var q=APC_QUAL[name+'|'+packing];
   return q?name+' ('+q+')':name;
 }
-// Wing Agro: supplier quotes CP10 only (20L and 25L same price). Everything else follows CP10 (Joel, 6 Nov 2026):
+// Wing Agro: CP10 comes from the DAILY OIL BASE PRICE (Malaysia CP10) + a fixed Wing Agro premium (Joel, 7 Nov 2026); 20L and 25L same price. Everything else follows:
 //   CP8 = CP10 + 15 | Low MCPD & GE CP10 = CP10 + 40 | Low MCPD & GE CP8 = CP8 + 40 = CP10 + 55.
-// Key in the CP10 FOB in the "Wing Agro CP10 FOB" box (User 0) and all 8 jerry-can prices re-price automatically.
-var WA_CP10=1190,WA_CP8_ADD=15,WA_LOW_ADD=40;
+// WA_PREM (6 Nov: Wing Agro CP10 1,190 over base 1,090 = +100) only changes when Wing Agro changes its premium; the daily base oil moves every price automatically.
+var WA_PREM=100,WA_CP8_ADD=15,WA_LOW_ADD=40;
+function waCp10(){return Math.round(((WA_REF.malaysia_cp10||0)+WA_PREM)*100)/100;}
 function waRows(){
-  var c=WA_CP10,k=c+WA_CP8_ADD,N='\u2013',out=[];
+  var c=waCp10(),k=c+WA_CP8_ADD,N='\u2013',out=[];
   [['20L','20L Jerry Can'],['25L','25L Jerry Can']].forEach(function(z){
     var y=z[0]+' Yellow Jerry Can ';
     out.push([y+N+' CP10',z[1],c],[y+N+' CP8',z[1],k],[y+N+' Low MCPD & GE '+N+' CP10',z[1],c+WA_LOW_ADD],[y+N+' Low MCPD & GE '+N+' CP8',z[1],k+WA_LOW_ADD]);
   });
   return out;
 }
-function waSetCp10(v){WA_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.wingagro)SUP_LISTS.wingagro.rows=waRows();}
+function waSetPrem(v){WA_PREM=v;}
 // IOI (6 Nov 2026): the IOI CP10 price comes from the DAILY OIL BASE PRICE (Malaysia CP10) + a fixed IOI premium; everything else follows by formula (Joel, 7 Nov 2026):
 //   CP10 Flexibag (w/o heating pad) = Malaysia CP10 base + IOI_PREM | Flexibag with heating pad = +5 | each pack = Flexibag CP10 + its packing adder (IOI sheet, CP10 column)
 //   CP8 = CP10 + 10 | CP6 = CP10 + 90 (every pack). 20L Green, 18L Yellow and 20KG BIB have no CP6 price.
@@ -7299,8 +7300,9 @@ var SUP_LISTS={
   apical:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:APC_LIST_06NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
   ioi:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,name:'IOI'},
-  wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
+  wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,name:'Wing Agro'}
 };
+Object.defineProperty(SUP_LISTS.wingagro,'rows',{enumerable:true,get:function(){return waRows();}});
 Object.defineProperty(SUP_LISTS.ioi,'rows',{enumerable:true,get:function(){return ioiRows();}}); // always at today's base oil
 
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};

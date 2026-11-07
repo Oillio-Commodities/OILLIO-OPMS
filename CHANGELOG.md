@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026C — Wing Agro now driven by the Daily Oil Base Price (same as IOI)
+- Wing Agro CP10 = Malaysia CP10 from the Daily Oil Base Price + a fixed Wing Agro premium (6 Nov: quote 1,190 over base 1,090 = +100). The typed "CP10 FOB" box is replaced by "Wing Agro premium over Malaysia CP10 base" (+100); change it only when Wing Agro changes its premium, then Apply and Save & Log Reference.
+- Formula unchanged: CP8 = CP10 + 15; Low MCPD & GE CP10 = CP10 + 40; Low MCPD & GE CP8 = CP8 + 40 (20L and 25L alike). When the base oil moves, all Wing Agro prices move with it automatically.
+- Tested: base 1,090 -> 1,190 / 1,205 / 1,230 / 1,245; base 1,070 -> 1,170 / 1,185 / 1,210 / 1,225; supplier monitor green.
+
+---
+
 ## V07NOV2026B — IOI now driven by the Daily Oil Base Price (replaces the typed CP10 box)
 - IOI CP10 = Malaysia CP10 from the Daily Oil Base Price + a fixed IOI premium (6 Nov: sheet 1,100 over base 1,090 = +10). No separate price is keyed in any more: when you change the base oil, every IOI price moves automatically.
 - Formula (unchanged): Flexibag with heating pad = CP10 + 5; packed SKUs = Flexibag CP10 + packing adder; CP8 = CP10 + 10; CP6 = CP10 + 90.
