@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026J — Coconut (CNR) and palm kernel oil removed from the Able comparison (7 Nov 2026)
+- Apical RCNO and RPKO SKUs are no longer compared against Able (per Joel). Everything else in V07NOV2026I is unchanged.
+
+---
+
 ## V07NOV2026I — Able side widened to every OPMS customer quote, margin stripped (7 Nov 2026)
 - Able packaging costs were re-read from all 355 OPMS quotations (FOB tables), removing each quote's own margin first (price / (1 + margin) - base oil), so every Able SKU is the true 0%-margin FOB. Different customers agreed to the cent on every SKU used.
 - Correction: the PET bottle costs added in V07NOV2026G came from the small-pack quote that carries a 1% margin; now restated at 0% (e.g. 12 x 1L 1-pc cap 236.93, 5L x 4 152.02).

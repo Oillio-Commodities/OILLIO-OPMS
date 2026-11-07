@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026I';
+  var _v='V07NOV2026J';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6797,11 +6797,11 @@ function _cmpFind(sup,name,packing){var D=_cmpData(sup);for(var i=0;i<D.length;i
 var ABLE_MARKUP=1.015,ABLE_EST=0.985,ABLE_CP8_ADD=15,ABLE_CP6_ADD=60,ABLE_GHEE_ADD=20;
 var ABLE_SHORT_OFF={'32':30,'36':0,'39':0,'42':-5,'44':-10,'46':-10,'48':-15,'50':-45};
 var ABLE_SHORT_LBL={'32':'32-35','36':'36-39','39':'39-42','42':'42-44','44':'44-46','46':'46-48','48':'48-50','50':'50-52'};
-var ABLE_PROD_LBL={cp10:'P.Olein CP10',cp8:'P.Olein CP8',cp6:'P.Olein CP6',cnr:'Refined Coconut Oil (CNR)',pko:'P. Kernel Oil',rbd:'RBD Palm Oil',stearin:'P. Stearin',pfad:'PFAD',ghee:'Vegetable Ghee'};
+var ABLE_PROD_LBL={cp10:'P.Olein CP10',cp8:'P.Olein CP8',cp6:'P.Olein CP6',rbd:'RBD Palm Oil',stearin:'P. Stearin',pfad:'PFAD',ghee:'Vegetable Ghee'};
 function _ableDisp(k){return k.replace(/^G:/,'');}
 function ableBase(prod,deg){var R=APC_REF||{},c=R.malaysia_cp10;
   if(prod==='cp10')return c;if(prod==='cp8')return c==null?null:c+ABLE_CP8_ADD;if(prod==='cp6')return c==null?null:c+ABLE_CP6_ADD;if(prod==='ghee')return c==null?null:c+ABLE_GHEE_ADD;
-  if(prod==='cnr')return R.coconut;if(prod==='pko')return R.pk_oil;if(prod==='rbd')return R.rbd_my;if(prod==='stearin')return R.stearin;if(prod==='pfad')return R.pfad;
+  if(prod==='rbd')return R.rbd_my;if(prod==='stearin')return R.stearin;if(prod==='pfad')return R.pfad;
   if(prod==='short')return R.rbd_my==null?null:R.rbd_my+(ABLE_SHORT_OFF[deg]||0);return null;}
 function _degKey(a,b){var m=(a+b)/2;return m<35.5?'32':m<38.25?'36':m<42?'39':m<43?'42':m<45.5?'44':m<47.5?'46':m<51?'48':m<53?'50':null;}
 function _ablePack(prod,N,K){var F=N+' '+K,m;
@@ -6831,8 +6831,6 @@ function _cmpMap(sup,p){var N=(p.name||'').toUpperCase(),K=(p.packing||'').toUpp
   if(/CP10/.test(N))prod='cp10';else if(/CP8/.test(N))prod='cp8';else if(/CP6/.test(N))prod='cp6';
   else if(/SHORTENING/.test(N)){m=N.match(/SHORTENING\s*(\d+)\s*[\/-]\s*(\d+)/);if(!m)return null;deg=_degKey(+m[1],+m[2]);if(!deg)return null;prod='short';}
   else if(/VEGETABLE GHEE/.test(N))prod='ghee';
-  else if(/RCNO/.test(N))prod='cnr';
-  else if(/RPKO/.test(N))prod='pko';
   else if(/STEARIN|SPREAD FAT/.test(N)&&!/HPS/.test(N))prod='stearin';
   else if(/^PFAD/.test(N))prod='pfad';
   else if(/RBD PALM OIL 36-39/.test(N)&&/CARTON/.test(K)){prod='short';deg='36';role='ref';}
