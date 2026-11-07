@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026O';
+  var _v='V07NOV2026P';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -499,7 +499,7 @@ body.not-u0 .u0-only{display:none!important}
 body.sim-on button[onclick*="svSaveRef"],body.sim-on button[onclick*="svResetRef"],body.sim-on button[onclick*="copyReport"],body.sim-on button[onclick*="doPrint"],body.sim-on button[onclick*="openPrintPreview"],body.sim-on button[onclick*="downloadPdf"],body.sim-on button[onclick*="generatePDF"],body.sim-on button[onclick*="copyAsImage"],body.sim-on button[onclick*="svLoadList"],body.sim-on button[onclick*="svApplyListAll"]{opacity:.3!important;filter:grayscale(1)!important;pointer-events:none!important;cursor:not-allowed!important}
 body.sim-on #reportTxt{color:#c0392b;font-weight:700}
 </style>
-<script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l);return false;};</script></head>
+<script>window.onerror=function(m,s,l,c,e){alert("JS Error:\n"+m+"\nLine "+l+(e&&e.stack?"\n"+String(e.stack).split("\n").slice(0,4).join("\n").slice(0,400):""));return false;};</script></head>
 <body data-build="202606070555">
 <div id="verBanner" style="display:none"></div>
 <div id="modelBanner" style="display:none;position:sticky;top:0;z-index:8999;background:#fff3cd;color:#7a4b00;border-bottom:2px solid #f0a500;padding:9px 14px;font-size:.78rem;font-weight:600;text-align:center"></div>
@@ -7694,7 +7694,7 @@ function svSaveRef(){if(_svBlockSim('saving'))return;var lvl=(window.USER_LEVEL!
   var pkgKey=s==='apical'?APC_PKG_KEY:s==='wingagro'?WA_PKG_KEY:s==='ioi'?IOI_PKG_KEY:s==='abp'?ABP_PKG_KEY:KLK_PKG_KEY;
   localStorage.setItem(pkgKey,JSON.stringify(pkgArr.map(function(r){return {id:r.id,pkg_cost:r.pkg_cost,premium:r.premium};})));
   var log=[];try{log=JSON.parse(localStorage.getItem('oillio_ref_log')||'[]');}catch(e){}
-  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref)),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
+  log.push({date:today,ts:new Date().toISOString(),supplier:s,user:'User 0',ref:JSON.parse(JSON.stringify(ref||{})),pkg:pkgArr.map(function(r){return {name:r.name,packing:r.packing,pkg_cost:r.pkg_cost,premium:r.premium};})});if(log.length>500)log=log.slice(-500);localStorage.setItem('oillio_ref_log',JSON.stringify(log));if(fields){fields.querySelectorAll('[data-ref]').forEach(function(inp){inp.readOnly=true;inp.style.background='#f0f0f0';inp.style.borderColor='#ccc';inp.style.color='#666';inp.title='Saved '+today+' — click to edit again';inp.onclick=function(){this.readOnly=false;this.style.background='#fffde7';this.style.borderColor='#f9a825';this.style.color='#b45309';this.title='';};});}svRenderTable();if(window._svSel){var fob=getLiveFob(window._svSel,s);svRenderDetail(fob);}var note=document.getElementById('svRefNote');if(note){note.textContent='Saved '+today+' — prices locked until next edit';note.style.color='#1a7a4a';}showToast('Reference prices saved & locked for '+today);
   // Push to Sheets so all devices/users get the update
   _syncSave();
 }function svResetRef(){

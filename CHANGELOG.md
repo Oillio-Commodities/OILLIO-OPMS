@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026P — Error pop-up now shows where the error came from (7 Nov 2026)
+- The "JS Error" pop-up also lists the first lines of the error trace, so a rare error can be located quickly. Save & Log Reference also tolerates a missing reference.
+
 ## V07NOV2026O — Fix: Save & Log Reference on the Able Perfect tab (7 Nov 2026)
 - Pressing Save & Log Reference on the Able Perfect tab threw "undefined is not valid JSON" (Able had no base-oil reference to save). Able now saves the shared base oil (same as Apical) plus its own packaging, and the base oil is passed on to the other suppliers exactly as when saving from Apical.
 
