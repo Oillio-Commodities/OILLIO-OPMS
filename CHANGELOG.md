@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026G — Able Perfect tab; CP6 on the Able side; Est confirmed (7 Nov 2026)
+- New **Able Perfect** tab (next to IOI): every Able SKU built up like the suppliers = Daily Oil Base Price + Able packaging cost = Able FOB, then Baseline (+1.5%) and Est (baseline x 0.985, i.e. Able negotiating down to 0% margin). No premium/discount needed because Able pricing is read directly from OPMS. Filter by product, search by SKU.
+- CP6 added on the Able side as CP10 + 60 (CP8 = CP10 + 15). KLK/IOI CP6 SKUs now compare against Able CP6, including the PET bottle packs (900ml/1L x 12, 1.5L/1.8L/2L/3L x 6, 5L x 4) taken from the OPMS small-pack FOB quote (1-pc cap versions, tagged to confirm cap type).
+- Shortening 32-35 / 33-36 and other packs not in the OPMS lists stay under "No Able equivalent yet".
+
+---
+
 ## V07NOV2026F — Compare tab: every supplier SKU stated against the Able Perfect (Emerging Trend Global FOB) equivalent (7 Nov 2026)
 - Compare tab now has an **Able Perfect baseline row** for every comparable product group, followed by the Apical, KLK, Wing Agro and IOI SKUs on the same Able SKU name (same naming across suppliers).
 - Able side taken from OPMS (opms.ableperfect.com.my) > Emerging Trend Global > "ALL IN ONE FOB" (margin 0.00), plus the Shortening and Vegetable Ghee FOB quotes and the PET 5L x 4 pack. Able price = daily base oil + Able packaging cost per MT (read off OPMS, 6 Nov 2026), so it floats with the Daily Oil Base Price like every supplier.
