@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026S — Total freight is now exactly rate x FCL (7 Nov 2026)
+- Total freight in the on-screen report, WhatsApp copy and PDF was built from the rounded per-unit freight (e.g. 3,800.02 for a USD 3,800 FCL). It is now the exact freight rate x number of FCL (3,800.00), and Total FOB+Freight = Total FOB + that freight. Per-unit figures unchanged.
+
 ## V07NOV2026R — Freight dates and 1-month outdated flag (7 Nov 2026)
 - Port lists (supplier tabs incl. Able Perfect, and the main quote screen): every port shows its rate date; anything older than 1 month is marked red "OUTDATED" (was 3 / 6 months).
 - Selecting an outdated port shows a warning on the selected-port box and a pop-up message; the confirmation screen before Copy / Save PDF shows the rate date, an outdated warning, or "manual rate" for a typed-in freight.

@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026R';
+  var _v='V07NOV2026S';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -2692,7 +2692,7 @@ function buildTableHTML(forWindow){
     var tu=item.fcl*(item.sku.sku_fcl||1),tm=round4(tu*item.sku.net_wt/1000);
     var frUnit=hasFr?round4(_fr/(item.sku.sku_fcl||1)):0;
     var cifUnit=round4(p.fs+frUnit);
-    var tfob=round4(tu*p.fs),tFr=round4(tu*frUnit),tCif=round4(tu*cifUnit);
+    var tfob=round4(tu*p.fs),tFr=hasFr?round4(_fr*item.fcl):0,tCif=round4(tfob+tFr);
     gFob+=tfob;gFr+=tFr;gMt+=tm;gFcl+=item.fcl;
     var bg=i%2===0?'#fff':'#f4f8fc';
     s+='<tr style="background:'+bg+'">';
@@ -2888,7 +2888,7 @@ function buildTxtTable(){
     var frUnit=hasFr?round4(_fr/(item.sku.sku_fcl||1)):0;
     var cifUnit=round4(p.fs+frUnit);
     var cifMT=item.sku.net_wt>0?round4(cifUnit/item.sku.net_wt*1000):0;
-    var tfob=round4(tu*p.fs),tFr=round4(tu*frUnit),tCif=round4(tu*cifUnit);
+    var tfob=round4(tu*p.fs),tFr=hasFr?round4(_fr*item.fcl):0,tCif=round4(tfob+tFr);
     gFob+=tfob;gFr+=tFr;gMt+=tm;gFcl+=item.fcl;
     r+=SEP+NL;
     r+='*Item '+(i+1)+': '+itemDisplayName(item)+'*'+NL;
@@ -3515,8 +3515,8 @@ function doPrint(){if(_svBlockSim('the PDF report'))return;
         var p=item.supplier==='apical'?calcApicalItemP(item):item.supplier==='klk'?calcKlkP(item.sku,item.oilPrice,item.add||0,item.mgn||0,item.mode,item.port):calcP(item.sku,item.oilPrice,item.add,item.mgn,item.mode,item.port);
         var lc=item.sku.sku_fcl||1,nw=item.sku.net_wt||20,lc_=lc*item.fcl;
         var fob_sku=round4(p.fs),fob_tot=round4(fob_sku*lc_);
-        var frU=hasFr?round4(_fr/lc):0,total_sku=round4(fob_sku+frU),total_tot=round4(total_sku*lc_);
-        gFob+=fob_tot;gFr+=round4(frU*lc_);gTotal+=total_tot;
+        var frU=hasFr?round4(_fr/lc):0,total_sku=round4(fob_sku+frU),total_tot=round4(fob_tot+(hasFr?_fr*item.fcl:0));
+        gFob+=fob_tot;gFr+=hasFr?round4(_fr*item.fcl):0;gTotal+=total_tot;
         var p_=APICAL_DATA.concat(WA_DATA).concat(KLK_DATA).concat(IOI_DATA).concat(ABP_DATA).filter(function(x){return x.name===item.oilName||x.name===(item.sku&&item.sku.name);})[0]||{};
         var fobl=p_.fob_jkt!=null?'FOB Tj Priok':p_.fob_kl!=null?'FOB Port Klang':'FOB Origin';
         if(item.supplier==='wingagro')fobl='FOB Surabaya';
