@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026A';
+  var _v='V07NOV2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1795,7 +1795,7 @@ function el(id){return document.getElementById(id);}
     if (d.ioi) Object.keys(IOI_REF_DEF).forEach(function(k) {
       if (k in d.ioi) IOI_REF[k] = parseFloat(d.ioi[k]) || IOI_REF[k];
     });
-    if (d.ioi && d.ioi.list_id === SUP_LISTS.ioi.id && parseFloat(d.ioi.ioi_cp10_fob) > 0) ioiSetCp10(parseFloat(d.ioi.ioi_cp10_fob));
+    if (d.ioi && d.ioi.list_id === SUP_LISTS.ioi.id && d.ioi.ioi_prem != null && !isNaN(parseFloat(d.ioi.ioi_prem))) ioiSetPrem(parseFloat(d.ioi.ioi_prem));
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];
     });
@@ -1872,7 +1872,7 @@ function el(id){return document.getElementById(id);}
       apical_pkg: APC_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       klk_pkg: KLK_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       wingagro_pkg: WA_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
-      ioi: Object.assign({}, IOI_REF, {model_v: MODEL_V, list_id: SUP_LISTS.ioi.id, ioi_cp10_fob: IOI_CP10, ioi_rule: 'FlexiHP=CP10+'+IOI_HEAT_ADD+'; CP8=CP10+'+IOI_CP8_ADD+'; CP6=CP10+'+IOI_CP6_ADD}),
+      ioi: Object.assign({}, IOI_REF, {model_v: MODEL_V, list_id: SUP_LISTS.ioi.id, ioi_prem: IOI_PREM, ioi_rule: 'CP10=BaseCP10+prem; FlexiHP=CP10+'+IOI_HEAT_ADD+'; CP8=CP10+'+IOI_CP8_ADD+'; CP6=CP10+'+IOI_CP6_ADD}),
       ioi_pkg: IOI_PKG.map(function(r){return {id:r.id,premium:r.premium,pkg_cost:r.pkg_cost};}),
       last_saved: savedTs,
       saved_by: 'User 0'
@@ -6815,16 +6815,16 @@ function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||""
  if(!shown){out.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut)">No comparable products found</div>';return;}
  out.style.textAlign="left";out.innerHTML=html;}
 
-function ioiCp10Prev(){var el=document.getElementById('ioiCp10In'),pv=document.getElementById('ioiCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; Flexibag + heating pad <b>'+(c+IOI_HEAT_ADD)+'</b> &middot; CP8 (+'+IOI_CP8_ADD+') <b>'+(c+IOI_CP8_ADD)+'</b> &middot; CP6 (+'+IOI_CP6_ADD+') <b>'+(c+IOI_CP6_ADD)+'</b> &middot; packed SKUs = Flexibag + the packing adder';}
-function ioiApplyCp10(){
+function ioiPremPrev(){var el=document.getElementById('ioiPremIn'),pv=document.getElementById('ioiPremPrev');if(!el||!pv)return;var p=parseFloat(el.value);if(isNaN(p)){pv.textContent='';return;}var b=IOI_REF.cp10||0,c=Math.round((b+p)*100)/100;pv.innerHTML='Base CP10 <b>'+b+'</b> + premium <b>'+p+'</b> = IOI CP10 <b>'+c+'</b> &middot; heating pad <b>'+(c+IOI_HEAT_ADD)+'</b> &middot; CP8 (+'+IOI_CP8_ADD+') <b>'+(c+IOI_CP8_ADD)+'</b> &middot; CP6 (+'+IOI_CP6_ADD+') <b>'+(c+IOI_CP6_ADD)+'</b> &middot; packed SKUs = Flexibag + packing adder. Moves automatically with the Daily Oil Base Price.';}
+function ioiApplyPrem(){
   if(_svBlockSim('re-pricing IOI'))return;
-  var el=document.getElementById('ioiCp10In'),c=el?parseFloat(el.value):NaN;
-  if(isNaN(c)||c<=0){showToast('Key in the IOI CP10 Flexibag price first');return;}
-  ioiSetCp10(c);
+  var el=document.getElementById('ioiPremIn'),p=el?parseFloat(el.value):NaN;
+  if(isNaN(p)){showToast('Key in the IOI premium first');return;}
+  ioiSetPrem(p);
   _svApplyListAuto('ioi',true,true);
   _svMarkDirty();
   svRenderPkgFields();svRenderTable();
-  showToast('IOI re-priced from CP10 '+c+': CP8 '+(c+IOI_CP8_ADD)+', CP6 '+(c+IOI_CP6_ADD)+' - now press Save & Log Reference',7000);
+  showToast('IOI re-priced: Malaysia CP10 base + '+p+' - now press Save & Log Reference',7000);
 }
 function waCp10Prev(){var el=document.getElementById('waCp10In'),pv=document.getElementById('waCp10Prev');if(!el||!pv)return;var c=parseFloat(el.value);if(isNaN(c)){pv.textContent='';return;}pv.innerHTML='CP10 <b>'+c+'</b> &middot; CP8 (+'+WA_CP8_ADD+') <b>'+(c+WA_CP8_ADD)+'</b> &middot; Low MCPD&amp;GE CP10 (+'+WA_LOW_ADD+') <b>'+(c+WA_LOW_ADD)+'</b> &middot; Low MCPD&amp;GE CP8 <b>'+(c+WA_CP8_ADD+WA_LOW_ADD)+'</b>';}
 function waApplyCp10(){
@@ -6872,10 +6872,10 @@ function svRenderRefPanel(){
   }
   if(!_oilTab&&s==='ioi'&&isEd){
     html+='<div style="grid-column:1/-1;background:#f3e8ff;border:2px solid #5b2c83;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
-    html+='<div style="font-size:.62rem;font-weight:700;color:#5b2c83;text-transform:uppercase;margin-bottom:3px">IOI CP10 FOB &mdash; Flexibag w/o heating pad (USD/MT)</div>';
-    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="ioiCp10In" value="'+IOI_CP10+'" oninput="ioiCp10Prev()" style="width:110px;padding:5px;border:2px solid #5b2c83;border-radius:5px;font-weight:700;font-size:.9rem">';
-    html+='<button onclick="ioiApplyCp10()" style="background:#5b2c83;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all IOI SKUs</button></div>';
-    html+='<div id="ioiCp10Prev" style="margin-top:5px;font-size:.68rem;color:#4a1f6b"></div></div>';
+    html+='<div style="font-size:.62rem;font-weight:700;color:#5b2c83;text-transform:uppercase;margin-bottom:3px">IOI premium over Malaysia CP10 base (USD/MT) &mdash; Flexibag w/o heating pad</div>';
+    html+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" step="1" id="ioiPremIn" value="'+IOI_PREM+'" oninput="ioiPremPrev()" style="width:110px;padding:5px;border:2px solid #5b2c83;border-radius:5px;font-weight:700;font-size:.9rem">';
+    html+='<button onclick="ioiApplyPrem()" style="background:#5b2c83;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.74rem;font-weight:800;cursor:pointer">Apply to all IOI SKUs</button></div>';
+    html+='<div id="ioiPremPrev" style="margin-top:5px;font-size:.68rem;color:#4a1f6b"></div></div>';
   }
   if(!_oilTab&&s==='wingagro'&&isEd){
     html+='<div style="grid-column:1/-1;background:#fff8e6;border:2px solid #f39c12;border-radius:6px;padding:8px 10px;margin-bottom:8px">';
@@ -7276,14 +7276,16 @@ function waRows(){
   return out;
 }
 function waSetCp10(v){WA_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.wingagro)SUP_LISTS.wingagro.rows=waRows();}
-// IOI (6 Nov 2026): key in ONE price - CP10 Flexibag (w/o heating pad). Everything else follows (Joel, 7 Nov 2026):
-//   Flexibag with heating pad = +5 | each pack = Flexibag CP10 + its packing adder (from IOI's sheet, CP10 column)
-//   CP8 = CP10 + 10 | CP6 = CP10 + 90 (same for every pack). 20L Green, 18L Yellow and 20KG BIB have no CP6 price.
-var IOI_CP10=1100,IOI_CP8_ADD=10,IOI_CP6_ADD=90,IOI_HEAT_ADD=5;
+// IOI (6 Nov 2026): the IOI CP10 price comes from the DAILY OIL BASE PRICE (Malaysia CP10) + a fixed IOI premium; everything else follows by formula (Joel, 7 Nov 2026):
+//   CP10 Flexibag (w/o heating pad) = Malaysia CP10 base + IOI_PREM | Flexibag with heating pad = +5 | each pack = Flexibag CP10 + its packing adder (IOI sheet, CP10 column)
+//   CP8 = CP10 + 10 | CP6 = CP10 + 90 (every pack). 20L Green, 18L Yellow and 20KG BIB have no CP6 price.
+// IOI_PREM (6 Nov: sheet 1,100 over base 1,090 = +10) only changes when IOI changes its premium; the daily base oil moves every IOI price automatically.
+var IOI_PREM=10,IOI_CP8_ADD=10,IOI_CP6_ADD=90,IOI_HEAT_ADD=5;
+function ioiCp10(){return Math.round(((IOI_REF.cp10||0)+IOI_PREM)*100)/100;}
 var IOI_ADD={'20L WHITE JERRY CAN':21.50,'5L X 4 WHITE JERRY CANS PER CARTON':22.45,'25L YELLOW JERRY CAN':26.25,'20L YELLOW JERRY CAN':21.05,'20L GREEN JERRY CAN':21.30,'18L YELLOW JERRY CAN':19.15,'5L X 4 PET BOTTLES PER CARTON':21.80,'20KG BIB':22.55};
 var IOI_NO_CP6={'20L GREEN JERRY CAN':1,'18L YELLOW JERRY CAN':1,'20KG BIB':1};
 function ioiRows(){
-  var out=[],oils=[['CP10',0],['CP8',IOI_CP8_ADD],['CP6',IOI_CP6_ADD]],r2=function(v){return Math.round(v*100)/100;};
+  var IOI_CP10=ioiCp10(),out=[],oils=[['CP10',0],['CP8',IOI_CP8_ADD],['CP6',IOI_CP6_ADD]],r2=function(v){return Math.round(v*100)/100;};
   oils.forEach(function(o){
     var nm='RBD PALM OLEIN '+o[0];
     out.push([nm,'FLEXIBAG (W/O HEATING PAD)',r2(IOI_CP10+o[1])],[nm,'FLEXIBAG (WITH HEATING PAD)',r2(IOI_CP10+IOI_HEAT_ADD+o[1])]);
@@ -7291,14 +7293,16 @@ function ioiRows(){
   });
   return out;
 }
-function ioiSetCp10(v){IOI_CP10=v;if(window.SUP_LISTS&&SUP_LISTS.ioi)SUP_LISTS.ioi.rows=ioiRows();}
+function ioiSetPrem(v){IOI_PREM=v;}
 var SUP_LISTS={
   klk:{id:'05NOV26',day:'2026-11-05',label:'5 Nov 2026',uplift:0,rows:KLK_LIST_05NOV26,name:'KLK'},
   apical:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:APC_LIST_06NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
-  ioi:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
+  ioi:{id:'06NOV26',day:'2026-11-06',label:'6 Nov 2026',uplift:0,name:'IOI'},
   wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
+Object.defineProperty(SUP_LISTS.ioi,'rows',{enumerable:true,get:function(){return ioiRows();}}); // always at today's base oil
+
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
 var _listOnSets={};
 function _svListData(sup){return sup==='apical'?APICAL_DATA:sup==='wingagro'?WA_DATA:sup==='ioi'?IOI_DATA:KLK_DATA;}

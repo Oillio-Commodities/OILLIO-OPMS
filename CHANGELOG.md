@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026B — IOI now driven by the Daily Oil Base Price (replaces the typed CP10 box)
+- IOI CP10 = Malaysia CP10 from the Daily Oil Base Price + a fixed IOI premium (6 Nov: sheet 1,100 over base 1,090 = +10). No separate price is keyed in any more: when you change the base oil, every IOI price moves automatically.
+- Formula (unchanged): Flexibag with heating pad = CP10 + 5; packed SKUs = Flexibag CP10 + packing adder; CP8 = CP10 + 10; CP6 = CP10 + 90.
+- The IOI box on the IOI page is now "IOI premium over Malaysia CP10 base" (default +10). Only change it when IOI changes its premium, then Apply and Save & Log Reference (premium saved with the log).
+- Tested: base 1,090 -> Flexibag CP10 1,100 / CP6 1,190, 20L Yellow 1,121.05 / 1,131.05 / 1,211.05; base 1,070 -> 1,080 / 1,170, 1,101.05 / 1,111.05 / 1,191.05; premium 15 at base 1,070 -> 1,085.
+
+---
+
 ## V07NOV2026A — IOI price formula + Flexibag packaging cost for all suppliers
 - IOI: key in ONE price, the CP10 Flexibag (w/o heating pad), in the new "IOI CP10 FOB" box (User 0) and press "Apply to all IOI SKUs". Everything else follows: Flexibag with heating pad = CP10 + 5; each pack = CP10 + its packing adder (CP10 column of IOI's sheet); CP8 = CP10 + 10; CP6 = CP10 + 90 (every pack). SKUs without a CP6 price (20L Green, 18L Yellow, 20KG BIB) stay CP10 and CP8 only. Then Save & Log Reference (the keyed CP10 and the rule are saved with the log).
 - Result at CP10 1,100: CP8 1,110, CP6 1,190; 20L Yellow CP10 1,121.05 / CP8 1,131.05 / CP6 1,211.05. (The CP8 / CP6 packed prices differ by a few cents from IOI's sheet because the sheet's CP8 / CP6 adders were slightly different; the +10 / +90 rule now governs.)
