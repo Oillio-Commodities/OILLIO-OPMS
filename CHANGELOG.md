@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026R — Freight dates and 1-month outdated flag (7 Nov 2026)
+- Port lists (supplier tabs incl. Able Perfect, and the main quote screen): every port shows its rate date; anything older than 1 month is marked red "OUTDATED" (was 3 / 6 months).
+- Selecting an outdated port shows a warning on the selected-port box and a pop-up message; the confirmation screen before Copy / Save PDF shows the rate date, an outdated warning, or "manual rate" for a typed-in freight.
+- Report format unchanged (checked on Able Perfect and KLK, port and manual freight): per item FOB price/SKU, FOB/MT, total FOB, then freight rate / units per FCL, FOB + freight per SKU and per MT, with FOB / freight / grand totals.
+
 ## V07NOV2026Q — Freight table refreshed from the Able Perfect OPMS port list (7 Nov 2026)
 - Compared all 638 ports with OPMS Ports (Displaying 1-638 of 638): the app was behind on 96 ports (OPMS latest 6 Nov 2026). Now identical: 68 rates changed and 28 only had a newer date, plus 1 port renamed (Karachi 40' - ONE 6,100 -> KARACHI(40') 2,900).
 - Biggest moves: West Africa +700 (Cotonou, Abidjan, Tema, Lome, Lagos/Apapa/Lekki/Onne 3,100/3,450 -> 3,800/4,300, Pointe Noire 3,450 -> 4,000), Libya 7,600 -> 8,000 (Al Khoums IND 12,800 -> 8,500), Equatorial Guinea Marguisia 4,500 -> 6,800, Kismayu 3,900 -> 6,000, Tamatave 40' 4,800 -> 6,800, Egypt 5,500 -> 5,000, Beirut 6,750 -> 5,000 (Flexi 5,500, IND 5,400), Karachi-ONE 4,300 -> 2,400, Ulsan 1,150 -> 450, Mundra 1,750 -> 2,500, Yangon unchanged 550 (re-dated 6 Nov).
