@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026Q — Freight table refreshed from the Able Perfect OPMS port list (7 Nov 2026)
+- Compared all 638 ports with OPMS Ports (Displaying 1-638 of 638): the app was behind on 96 ports (OPMS latest 6 Nov 2026). Now identical: 68 rates changed and 28 only had a newer date, plus 1 port renamed (Karachi 40' - ONE 6,100 -> KARACHI(40') 2,900).
+- Biggest moves: West Africa +700 (Cotonou, Abidjan, Tema, Lome, Lagos/Apapa/Lekki/Onne 3,100/3,450 -> 3,800/4,300, Pointe Noire 3,450 -> 4,000), Libya 7,600 -> 8,000 (Al Khoums IND 12,800 -> 8,500), Equatorial Guinea Marguisia 4,500 -> 6,800, Kismayu 3,900 -> 6,000, Tamatave 40' 4,800 -> 6,800, Egypt 5,500 -> 5,000, Beirut 6,750 -> 5,000 (Flexi 5,500, IND 5,400), Karachi-ONE 4,300 -> 2,400, Ulsan 1,150 -> 450, Mundra 1,750 -> 2,500, Yangon unchanged 550 (re-dated 6 Nov).
+
 ## V07NOV2026P — Error pop-up now shows where the error came from (7 Nov 2026)
 - The "JS Error" pop-up also lists the first lines of the error trace, so a rare error can be located quickly. Save & Log Reference also tolerates a missing reference.
 
