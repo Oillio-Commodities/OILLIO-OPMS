@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026K — Compare tab: clear best supplier + jump to quote (7 Nov 2026)
+- Compare now opens on a "who is cheapest right now" table: every product group, the BEST supplier at today's live FOB, how much cheaper it is than the next-best supplier (USD/MT and %), the next-best supplier, the gap to the Able baseline, and a "Quote at <supplier>" button. Contested SKUs (2+ suppliers) are listed first.
+- Opening a product group shows a green BEST PRICE NOW banner (supplier, FOB, cheaper than next best by USD/MT and %, vs Able) and a Quote button on every supplier row. The button opens that supplier's tab with the SKU selected, so the quote, PDF and WhatsApp text are made from the supplier tab as before.
+- Best is judged on like-for-like SKUs only (variants such as Low MCPD / Low GE and different-product references are not counted).
+- Able Perfect tab is marked reference-only (quotes are made from the supplier tabs).
+- Quotation PDF / WhatsApp text checked: they carry only Oillio Commodities Sdn Bhd (no supplier or Able names) for Apical, KLK, Wing Agro and IOI.
+
+---
+
 ## V07NOV2026J — Coconut (CNR) and palm kernel oil removed from the Able comparison (7 Nov 2026)
 - Apical RCNO and RPKO SKUs are no longer compared against Able (per Joel). Everything else in V07NOV2026I is unchanged.
 
