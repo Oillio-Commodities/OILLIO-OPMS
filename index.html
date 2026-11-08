@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026T';
+  var _v='V07NOV2026U';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1027,6 +1027,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
       <!-- Left: customer list -->
       <div>
         <input type="text" id="custSearchBox" placeholder="🔍 Search customers..." oninput="svRenderCustList()" style="width:100%;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.8rem;margin-bottom:8px">
+        <div style="display:flex;gap:6px;margin-bottom:8px"><select id="custFilter" onchange="svRenderCustList()" style="flex:1;padding:6px;border:1.5px solid var(--bdr);border-radius:6px;font-size:.74rem"><option value="">All customers</option><option value="idle">Not quoted in 60+ days</option></select><button onclick="svExportCustomersCSV()" title="Download all customers as CSV (backup)" style="background:#fff;border:1.5px solid var(--bdr);border-radius:6px;padding:6px 9px;font-size:.72rem;font-weight:700;cursor:pointer">&#x2B07; CSV</button></div>
         <button onclick="svNewCustomer()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:8px;font-size:.78rem;font-weight:700;cursor:pointer;margin-bottom:10px">+ New Customer</button>
         <div id="custListPanel" style="max-height:520px;overflow-y:auto"></div>
       </div>
@@ -2007,28 +2008,94 @@ function el(id){return document.getElementById(id);}
     }).join('');
   }
 
-  function svCustLookup(name) {
-    // Quick lookup while building a quote — just informational, no auto-fill of products
-    if (!name) return;
-  }
 
   // ── CUSTOMERS TAB: list + multi-product profile editor ──
   var _custEditId = null;   // currently editing customer id (null = new)
   var _custEditProducts = []; // working list of {supplier, product} for the open editor
+
+  // ── Customer helpers: normalised name, last-quote info, duplicate guard, CSV backup ──
+  function _custKey(n) {
+    return String(n||'').toLowerCase().replace(/\b(sdn\.?|bhd\.?|berhad|ltd\.?|limited|llc|inc\.?|co\.?|company|pte\.?|pvt\.?|corp\.?|trading|enterprise|enterprises|s\.?a\.?)\b/g,' ').replace(/[^a-z0-9]+/g,'');
+  }
+  function _custDup(name, exceptId) {
+    var k = _custKey(name); if (!k) return null;
+    return (_custCache||[]).filter(function(c) { return c.id !== exceptId && _custKey(c.name) === k; })[0] || null;
+  }
+  function _custLastQuoted(c) {
+    var t = 0; (c.products||[]).forEach(function(p) { var d = Date.parse(p.lastQuoted||''); if (d > t) t = d; });
+    return t;
+  }
+  function _daysAgo(t) { return t ? Math.floor((Date.now() - t) / 86400000) : null; }
+  function _custProdLabel(it) { return it.oilName + ' — ' + ((it.sku && it.sku.type) || ''); }
+  function _custFind(name) {
+    var k = _custKey(name); if (!k) return null;
+    return (_custCache||[]).filter(function(c) { return _custKey(c.name) === k; })[0] || null;
+  }
+  function svExportCustomersCSV() {
+    var rows = [['Name','Country','Port','Notes','Last quoted','Products (supplier | product | margin% | last FOB | last quoted)']];
+    (_custCache||[]).forEach(function(c) {
+      var lq = _custLastQuoted(c);
+      rows.push([c.name||'', c.country||'', c.port||'', c.notes||'', lq ? new Date(lq).toISOString().slice(0,10) : '',
+        (c.products||[]).map(function(p) { return [p.supplier, p.product, p.mgn||'', p.lastFob||'', (p.lastQuoted||'').slice(0,10)].join(' | '); }).join(' ;; ')]);
+    });
+    var csv = rows.map(function(r) { return r.map(function(v) { return '"' + String(v).replace(/"/g,'""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
+    a.download = 'oillio_customers_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    showToast('✓ Backup downloaded (' + (_custCache||[]).length + ' customers)');
+  }
+  // After a quote is copied / saved as PDF: remember price, margin and port per product for that customer
+  function svRecordQuote() {
+    try {
+      var nm = ((document.getElementById('qCust')||{}).value || '').trim();
+      var c = _custFind(nm);
+      if (!c || !QITEMS.length) return;
+      var prods = (c.products||[]).slice(), now = new Date().toISOString();
+      QITEMS.forEach(function(it) {
+        if (!it.supplier) return;
+        var lab = _custProdLabel(it), p = prods.filter(function(x) { return x.supplier === it.supplier && x.product === lab; })[0];
+        if (!p) { p = { supplier: it.supplier, product: lab }; prods.push(p); }
+        var h = (p.hist||[]).slice(-9);
+        h.push({ d: now.slice(0,10), fob: Math.round(it.oilPrice*100)/100, mgn: it.mgn, fcl: it.fcl||1, port: (it.port && it.port.port) || '' });
+        p.hist = h; p.lastFob = Math.round(it.oilPrice*100)/100; p.lastQuoted = now; p.mgn = it.mgn; p.fcl = it.fcl || 1;
+      });
+      var payload = { products: prods, updated_at: now };
+      if (SV_FR.mode === 'port' && SV_FR.port) { payload.country = SV_FR.port.country || c.country || ''; payload.port = SV_FR.port.port || c.port || ''; }
+      fetch(_SB_URL + '/rest/v1/customers?id=eq.' + c.id, { method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(payload) })
+        .then(function(r) { if (r.ok) { showToast('✓ Quote logged to ' + c.name + '’s history'); _loadAllCustomers(function() { _populateCustList(); svRenderCustList(); }); } });
+    } catch (e) {}
+  }
+  // Typing a known customer name on an empty cart: offer to load their usual products
+  var _custAsked = '';
+  function svCustLookup(name) {
+    var c = _custFind(name);
+    if (!c || !c.products || !c.products.length) { _custAsked = ''; return; }
+    if (QITEMS.length || _custAsked === c.id) return;
+    _custAsked = c.id;
+    if (confirm('"' + c.name + '" is a saved customer with ' + c.products.length + ' usual product(s).\n\nLoad them into the quote at today’s supplier prices?')) {
+      _custEditId = c.id; svLoadCustomerToQuote();
+    }
+  }
 
   function svRenderCustList() {
     var panel = document.getElementById('custListPanel');
     if (!panel) return;
     var q = ((document.getElementById('custSearchBox')||{}).value || '').toLowerCase();
     var list = _custCache.filter(function(c) {
-      return !q || (c.name||'').toLowerCase().indexOf(q) >= 0 || (c.country||'').toLowerCase().indexOf(q) >= 0;
+      if (q && (c.name||'').toLowerCase().indexOf(q) < 0 && (c.country||'').toLowerCase().indexOf(q) < 0) return false;
+      var f = (document.getElementById('custFilter')||{}).value || '';
+      if (f === 'idle') { var d = _daysAgo(_custLastQuoted(c)); return d === null || d >= 60; }
+      return true;
     });
+    list.sort(function(a, b) { return _custLastQuoted(b) - _custLastQuoted(a) || (a.name||'').localeCompare(b.name||''); });
     if (!list.length) { panel.innerHTML = '<div style="color:var(--mut);font-size:.78rem;padding:10px">No customers found.</div>'; return; }
     panel.innerHTML = list.map(function(c) {
       var sel = c.id === _custEditId ? 'background:#e8f5e9;border-left:3px solid #1a7a4a' : 'background:#fff;border-left:3px solid transparent';
       return '<div onclick="svOpenCustomer(' + c.id + ')" style="cursor:pointer;padding:8px 10px;margin-bottom:4px;border-radius:6px;' + sel + '">' +
         '<div style="font-weight:700;font-size:.8rem">' + (c.name||'') + '</div>' +
         '<div style="font-size:.68rem;color:var(--mut)">' + [c.country, c.port].filter(Boolean).join(' • ') + '</div>' +
+        (function() { var d = _daysAgo(_custLastQuoted(c)); return '<div style="font-size:.64rem;color:' + (d === null ? '#999' : d >= 60 ? '#c0392b' : '#1a7a4a') + '">' + (d === null ? 'never quoted' : 'last quoted ' + (d === 0 ? 'today' : d + ' day' + (d === 1 ? '' : 's') + ' ago')) + '</div>'; })() +
         '</div>';
     }).join('');
   }
@@ -2077,6 +2144,18 @@ function el(id){return document.getElementById(id);}
     panel.innerHTML = html;
   }
 
+  function _custLastLine(p) {
+    if (!p.lastQuoted) return '';
+    var live = null;
+    try { var it = { supplier: p.supplier, oilName: (p.product||'').split(' \u2014 ')[0], sku: { type: (p.product||'').split(' \u2014 ').slice(1).join(' \u2014 ') } }; live = _cartLive(it); } catch (e) {}
+    var d = _daysAgo(Date.parse(p.lastQuoted));
+    var txt = 'Last quoted ' + (p.lastQuoted||'').slice(0,10) + ' (' + d + 'd ago) at FOB ' + fmt(p.lastFob,2) + (p.mgn != null ? ', margin ' + p.mgn + '%' : '');
+    if (live != null) { var df = live - p.lastFob; txt += ' \u2014 today ' + fmt(live,2) + ' (' + (df >= 0 ? '+' : '') + fmt(df,2) + ')'; }
+    var hh = (p.hist||[]).length > 1 ? ' \u00b7 ' + p.hist.length + ' quotes on record' : '';
+    return '<div style="font-size:.64rem;color:#666;margin:-3px 0 7px 4px">' + txt + hh + '</div>';
+  }
+  function svCustRowMgn(i, v) { _custEditProducts[i].mgn = v === '' ? null : parseFloat(v); document.getElementById('ceProductRows').innerHTML = _renderCustProductRows(); }
+  function svCustRowFcl(i, v) { _custEditProducts[i].fcl = v === '' ? null : parseInt(v, 10); }
   function _renderCustProductRows() {
     if (!_custEditProducts.length) return '<div style="color:var(--mut);font-size:.75rem;padding:6px 0">No products added yet.</div>';
     return _custEditProducts.map(function(p, i) {
@@ -2096,8 +2175,10 @@ function el(id){return document.getElementById(id);}
           '<option value="wingagro"' + (p.supplier==='wingagro'?' selected':'') + '>Wing Agro</option>' +
         '</select>' +
         '<select onchange="svCustRowProduct(' + i + ',this.value)" style="flex:1;padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">' + opts + '</select>' +
+        '<input type="number" step="0.1" min="0" value="' + (p.mgn != null ? p.mgn : '') + '" placeholder="Mgn %" title="Oillio margin % (minimum 2.5)" onchange="svCustRowMgn(' + i + ',this.value)" style="width:62px;padding:5px;border:1.5px solid ' + ((p.mgn != null && p.mgn < 2.5) ? '#c0392b' : 'var(--bdr)') + ';border-radius:5px;font-size:.72rem">' +
+        '<input type="number" step="1" min="1" value="' + (p.fcl || '') + '" placeholder="FCL" title="Usual number of FCL" onchange="svCustRowFcl(' + i + ',this.value)" style="width:50px;padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">' +
         '<button onclick="svRemoveCustProductRow(' + i + ')" style="background:#fff;color:#c0392b;border:1px solid #c0392b;border-radius:5px;padding:4px 8px;font-size:.7rem;cursor:pointer">✕</button>' +
-      '</div>';
+      '</div>' + _custLastLine(p);
     }).join('');
   }
 
@@ -2132,6 +2213,10 @@ function el(id){return document.getElementById(id);}
       products: _custEditProducts.filter(function(p) { return p.supplier && p.product; }),
       updated_at: new Date().toISOString()
     };
+    var dup = _custDup(payload.name, _custEditId);
+    if (dup && !confirm('A customer called "' + dup.name + '" already exists (' + (dup.products||[]).length + ' products).\n\nOK = save this as a separate customer anyway\nCancel = go back and open the existing one instead')) return;
+    var low = payload.products.filter(function(p) { return p.mgn != null && p.mgn < 2.5; });
+    if (low.length && !confirm('\u26A0 ' + low.length + ' product(s) have an Oillio margin below 2.5%.\nMargins under 2.5% need management approval.\n\nOK = save anyway    Cancel = go back')) return;
     var noteEl = document.getElementById('custSaveNote');
     var req = _custEditId
       ? fetch(_SB_URL + '/rest/v1/customers?id=eq.' + _custEditId, { method: 'PATCH', headers: _SB_HEADERS, body: JSON.stringify(payload) })
@@ -4340,10 +4425,11 @@ function openSaveAsCustomer(){
   svSaveCartCustomer(nm,prods);
 }
 function svSaveCartCustomer(nm,prods){
-  var ex=(_custCache||[]).filter(function(c){return (c.name||'').trim().toLowerCase()===nm.toLowerCase();})[0];
+  var ex=_custFind(nm);
   var pt=(SV_FR.mode==='port'&&SV_FR.port)?SV_FR.port:null;
   var payload={name:nm,products:prods,updated_at:new Date().toISOString()};
   if(pt){payload.country=pt.country||'';payload.port=pt.port||'';}else if(ex){payload.country=ex.country||'';payload.port=ex.port||'';payload.notes=ex.notes||'';}
+  if(ex)prods.forEach(function(p){var o=(ex.products||[]).filter(function(x){return x.supplier===p.supplier&&x.product===p.product;})[0];if(o){['hist','lastFob','lastQuoted'].forEach(function(k){if(o[k]!=null)p[k]=o[k];});}});
   var go=function(){
     var req=ex?fetch(_SB_URL+'/rest/v1/customers?id=eq.'+ex.id,{method:'PATCH',headers:_SB_HEADERS,body:JSON.stringify(payload)})
              :fetch(_SB_URL+'/rest/v1/customers',{method:'POST',headers:Object.assign({},_SB_HEADERS,{'Prefer':'return=representation'}),body:JSON.stringify(payload)});
@@ -9266,6 +9352,12 @@ function setSupplierUser(s){
         else if(ag>30)outd.push('<b>Freight</b> to '+esc(fp.port)+' ('+esc(fp.country)+') was last updated '+ag+' days ago &mdash; <b>outdated</b>. Check the latest rate before quoting.');}
     }catch(e){}
     window._cfmOutdated=outd;
+    try{
+      var _cc=_custFind(((document.getElementById('qCust')||{}).value||'')),info=[];
+      if(_cc){QITEMS.forEach(function(it,i){if(!it.supplier)return;var lab=_custProdLabel(it),p=(_cc.products||[]).filter(function(x){return x.supplier===it.supplier&&x.product===lab;})[0];
+        if(p&&p.lastFob){var df=it.oilPrice-p.lastFob;info.push('Item '+(i+1)+': last quoted to '+esc(_cc.name)+' on '+esc((p.lastQuoted||'').slice(0,10))+' at FOB '+fmt(p.lastFob,2)+(p.mgn!=null?' / '+p.mgn+'%':'')+' &mdash; now '+fmt(it.oilPrice,2)+' ('+(df>=0?'+':'')+fmt(df,2)+', '+(p.lastFob?(df/p.lastFob*100).toFixed(1):'0')+'%)');}});
+        if(info.length)h='<div style="background:#e8f1fb;border:1px solid #8fb4de;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.78rem;color:#1d3f66"><b>&#8505; Compared with this customer\'s last quote</b><ul style="margin:5px 0 0 18px;padding:0">'+info.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>'+h;}
+    }catch(e){}
     if(outd.length)h='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;color:#7a1f14"><b>&#9888; PLEASE TAKE NOTE &mdash; OUTDATED / UNCONFIRMED PRICE ('+outd.length+')</b><ul style="margin:5px 0 0 18px;padding:0">'+outd.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul><div style="margin-top:6px"><b>Confirm with management before you quote these items.</b> If unsure, press &ldquo;No, go back&rdquo; and remove them from the quote.</div></div>'+h;
     if(miss.length)h='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;color:#922"><b>&#9888; Missing / incomplete ('+miss.length+'):</b><ul style="margin:5px 0 0 18px;padding:0">'+miss.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul></div>'+h;
     return h;
@@ -9281,8 +9373,8 @@ function setSupplierUser(s){
     document.getElementById('cfmBack').onclick=function(){ov.remove();};
     document.getElementById('cfmOk').onclick=function(){ov.remove();go();};
   }
-  window.copyReport=function(){if(_svBlockSim('copying the WhatsApp message'))return;ask('copy',function(){_copyOrig();});};
-  window.doPrint=function(){if(_svBlockSim('the PDF report'))return;ask('pdf',function(){_printOrig();});};
+  window.copyReport=function(){if(_svBlockSim('copying the WhatsApp message'))return;ask('copy',function(){_copyOrig();try{svRecordQuote();}catch(e){}});};
+  window.doPrint=function(){if(_svBlockSim('the PDF report'))return;ask('pdf',function(){_printOrig();try{svRecordQuote();}catch(e){}});};
 })();
 </script>
 

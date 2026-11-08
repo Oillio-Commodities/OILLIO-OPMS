@@ -5,6 +5,17 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026U — Customer tab improvements (8 Nov 2026)
+- Every time a quote is copied (WhatsApp) or saved as PDF for a saved customer, the price, margin, FCL and port are logged per product (last 10 quotes kept) - no database change needed.
+- Confirm dialog shows "compared with this customer's last quote" (old FOB, new FOB, % change).
+- Customer editor: per-product margin (red + warning if below 2.5%) and usual FCL; each product shows last-quoted date, price and today's difference.
+- Customer list sorted by most recently quoted, shows "last quoted X days ago", filter "Not quoted in 60+ days".
+- Typing a saved customer's name on an empty quote offers to load their usual products at today's prices.
+- Duplicate guard ignores Sdn Bhd / Ltd / Co etc. ("ABC Trading" vs "ABC Trading Sdn Bhd").
+- CSV backup button for all customers.
+
+---
+
 ## V07NOV2026T — Customers tab fixed + stale price / outdated freight warnings (8 Nov 2026)
 - "Load into Quote" on a saved customer crashed for IOI and Able products (undefined variable, Able not looked up). Now works for all five suppliers and restores each product's FCL and margin.
 - Customer's saved country/port now sets the freight automatically on load, with the rate date and an OUTDATED flag if older than 30 days.
