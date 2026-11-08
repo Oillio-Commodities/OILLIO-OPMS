@@ -5,6 +5,16 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V07NOV2026T — Customers tab fixed + stale price / outdated freight warnings (8 Nov 2026)
+- "Load into Quote" on a saved customer crashed for IOI and Able products (undefined variable, Able not looked up). Now works for all five suppliers and restores each product's FCL and margin.
+- Customer's saved country/port now sets the freight automatically on load, with the rate date and an OUTDATED flag if older than 30 days.
+- Cart prices are now compared with the latest supplier prices: an amber banner lists every item whose price changed (old -> new) with an "Update to latest prices" button; a red banner shows if the freight is older than 30 days or undated.
+- The Copy message / Save PDF confirmation dialog now also warns of changed prices, items no longer listed, and outdated freight (orange "Proceed anyway").
+- "Update Prices" in the cart now reprices each item from its own supplier (previously used the old oil-price lookup).
+- "Save Profile" in the cart now saves to the shared customer database (visible on all devices, under the Customers tab) instead of a browser-only list; asks before overwriting an existing name.
+
+---
+
 ## V07NOV2026S — Total freight is now exactly rate x FCL (7 Nov 2026)
 - Total freight in the on-screen report, WhatsApp copy and PDF was built from the rounded per-unit freight (e.g. 3,800.02 for a USD 3,800 FCL). It is now the exact freight rate x number of FCL (3,800.00), and Total FOB+Freight = Total FOB + that freight. Per-unit figures unchanged.
 

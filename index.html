@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V07NOV2026S';
+  var _v='V07NOV2026T';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -2153,8 +2153,8 @@ function el(id){return document.getElementById(id);}
     c.products.forEach(function(pr) {
       var parts = (pr.product || '').split(' — ');
       var pname = parts[0], ppacking = parts.slice(1).join(' — ');
-      var dataArr = pr.supplier === 'apical' ? APICAL_DATA : pr.supplier === 'klk' ? KLK_DATA : pr.supplier === 'wingagro' ? WA_DATA : supplier==='ioi' ? IOI_DATA :  [];
-      var row = dataArr.find(function(x) { return x.name === pname && x.packing === ppacking; });
+      var dataArr = []; try { dataArr = _svListData(pr.supplier) || []; } catch(e) {}
+      var row = dataArr.find(function(x) { return x.name === pname && (x.packing || '') === ppacking; });
       if (!row) { skipped++; return; }
       var fob = getLiveFob(row, pr.supplier);
       if (!fob) { skipped++; return; }
@@ -2164,17 +2164,29 @@ function el(id){return document.getElementById(id);}
       QITEMS.push({
         id: ++QID, supplier: pr.supplier, oilName: row.name, oilPrice: fob, cp10: fob,
         sku: { name: skuName, type: row.packing || '', net_wt: nw, sku_fcl: lc, pkg: 0, units: 1 },
-        fcl: 1, add: 0, additiveType: '', mgn: SV_CFG.margin || 2.5,
+        fcl: pr.fcl || 1, add: 0, additiveType: '', mgn: pr.mgn || SV_CFG.margin || 2.5,
         mode: SV_FR.mode === 'fob' ? 'FOB' : 'CIF', port: SV_FR.port || null
       });
       added++;
     });
+    var frMsg = '';
+    try {
+      if (c.port && c.country && typeof ALL_PORTS !== 'undefined') {
+        var pp = ALL_PORTS.filter(function(p){ return p.port === c.port && p.country === c.country; })[0];
+        if (pp) {
+          svSetFreight('port');svSelectPort(pp.country,pp);
+          QITEMS.forEach(function(it){ if (it.supplier) it.port = SV_FR.port || it.port; });
+          var age = Math.floor((Date.now() - new Date(pp.updated).getTime()) / 86400000);
+          frMsg = ' Freight set to ' + pp.port + ' (' + pp.country + ')' + (isNaN(age) ? '' : ', rate dated ' + age + ' day' + (age===1?'':'s') + ' ago' + (age > 30 ? ' \u26A0 OUTDATED' : '')) + '.';
+        } else frMsg = ' \u26A0 Saved port "' + c.port + '" not found in the freight table \u2014 choose the port.';
+      }
+    } catch (e) {}
     var qc = document.getElementById('qCust');
     if (qc) qc.value = c.name;
     if (typeof rQuote === 'function') rQuote();
     if (typeof rReport === 'function') rReport();
-    if (added && !skipped) showToast('✓ Loaded ' + added + ' product' + (added>1?'s':'') + ' for ' + c.name + ' at today\'s prices — scroll down to Quotation Cart');
-    else if (added && skipped) showToast('✓ Loaded ' + added + ', ' + skipped + ' skipped (product no longer available)');
+    if (added && !skipped) showToast('✓ Loaded ' + added + ' product' + (added>1?'s':'') + ' for ' + c.name + ' at today\'s supplier prices.' + frMsg);
+    else if (added && skipped) showToast('✓ Loaded ' + added + ', ' + skipped + ' skipped (product no longer available).' + frMsg);
     else showToast('⚠ No matching products found — they may have been renamed or removed');
   }
 
@@ -2540,6 +2552,15 @@ function rQuote(){
   var _frName=SV_FR.mode==='port'&&SV_FR.port?(SV_FR.port.port+(SV_FR.port.country?', '+SV_FR.port.country:'')):(SV_FR.mode==='manual'?(SV_FR.portName||'Manual'):'');
   var hasCif=_fr>0;
   var cards=el('qCards');cards.innerHTML='';
+  try{
+    var _dr=_cartDrift(),_wb='';
+    if(_dr.length){_wb+='<div style="background:#fff3cd;border:2px solid #e0a800;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#7a5200"><b>&#9888; '+_dr.length+' item'+(_dr.length>1?'s have':' has')+' a different price from the latest supplier list.</b> '+_dr.slice(0,5).map(function(d){return '#'+(d.i+1)+(d.live==null?' (no longer listed)':' '+fmt(d.old,2)+' &rarr; <b>'+fmt(d.live,2)+'</b>');}).join('; ')+' <button onclick="updateCartPrices()" style="margin-left:6px;background:#b45309;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-weight:700;cursor:pointer">&#x1F504; Update to latest prices</button></div>';}
+    var _fp=(SV_FR.mode==='port'&&SV_FR.port)?SV_FR.port:null;
+    if(_fp&&QITEMS.some(function(x){return x.supplier;})){var _ag=Math.floor((Date.now()-Date.parse(_fp.updated))/86400000);
+      if(isNaN(_ag)||_ag>30)_wb+='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:.78rem;color:#7a1f14"><b>&#9888; Freight to '+escHtml(_fp.port)+' is '+(isNaN(_ag)?'undated':'outdated ('+_ag+' days old)')+'.</b> Verify the rate before sending to the client.</div>';}
+    var _wbEl=el('qWarn');if(!_wbEl){_wbEl=document.createElement('div');_wbEl.id='qWarn';cards.parentNode.insertBefore(_wbEl,cards);}
+    _wbEl.innerHTML=_wb;
+  }catch(e){}
   var gFob=0,gCif=0,gMt=0,gFcl=0;
   for(var i=0;i<QITEMS.length;i++){
     (function(item,idx){
@@ -4310,23 +4331,64 @@ function loadCustProfile(id){
 
 // ---- Save current cart as a new / updated profile ----
 function openSaveAsCustomer(){
-  if(!QITEMS.length){showCustToast('⚠ Add items to the cart first');return;}
-  openCustModal();
-  // Small delay for modal to open
-  setTimeout(function(){showNewCustForm(null);},80);
+  if(!QITEMS.length){showToast('\u26A0 Add items to the cart first');return;}
+  var cur=((el('qCust')||{}).value||'').trim();
+  var nm=prompt('Save this cart as a customer profile (shared across all devices).\nCustomer name:',cur);
+  if(nm==null)return;nm=nm.trim();if(!nm){showToast('\u26A0 Enter a customer name');return;}
+  var prods=[];QITEMS.forEach(function(it){if(!it.supplier)return;prods.push({supplier:it.supplier,product:it.oilName+' \u2014 '+((it.sku&&it.sku.type)||''),fcl:it.fcl||1,mgn:it.mgn});});
+  if(!prods.length){showToast('\u26A0 Only supplier items can be saved to a customer');return;}
+  svSaveCartCustomer(nm,prods);
+}
+function svSaveCartCustomer(nm,prods){
+  var ex=(_custCache||[]).filter(function(c){return (c.name||'').trim().toLowerCase()===nm.toLowerCase();})[0];
+  var pt=(SV_FR.mode==='port'&&SV_FR.port)?SV_FR.port:null;
+  var payload={name:nm,products:prods,updated_at:new Date().toISOString()};
+  if(pt){payload.country=pt.country||'';payload.port=pt.port||'';}else if(ex){payload.country=ex.country||'';payload.port=ex.port||'';payload.notes=ex.notes||'';}
+  var go=function(){
+    var req=ex?fetch(_SB_URL+'/rest/v1/customers?id=eq.'+ex.id,{method:'PATCH',headers:_SB_HEADERS,body:JSON.stringify(payload)})
+             :fetch(_SB_URL+'/rest/v1/customers',{method:'POST',headers:Object.assign({},_SB_HEADERS,{'Prefer':'return=representation'}),body:JSON.stringify(payload)});
+    req.then(function(r){if(!r.ok)return Promise.reject(r.status);showToast('\u2713 '+nm+' saved ('+prods.length+' product'+(prods.length>1?'s':'')+') \u2014 find it under the Customers tab');_loadAllCustomers(function(){_populateCustList();svRenderCustList();});})
+       .catch(function(){showToast('\u26A0 Save failed \u2014 check the connection');});
+  };
+  if(ex&&!confirm('"'+ex.name+'" already exists with '+((ex.products||[]).length)+' saved product(s).\n\nOK = replace its saved products with this cart\nCancel = keep the old profile'))return;
+  go();
 }
 
-// ---- Update all cart items to current oil prices ----
+// ---- Live price lookup for a cart item (linked to the supplier tabs) ----
+function _cartRow(it){
+  if(!it||!it.supplier)return null;
+  var d=[];try{d=_svListData(it.supplier)||[];}catch(e){}
+  var nm=it.oilName,pk=(it.sku&&it.sku.type)||'';
+  for(var i=0;i<d.length;i++){if(d[i].name===nm&&(d[i].packing||'')===pk)return d[i];}
+  return null;
+}
+function _cartLive(it){var r=_cartRow(it);if(!r)return null;var f=getLiveFob(r,it.supplier);return(f&&f>0)?f:null;}
+function _cartDrift(){ // cart items whose price differs from today's live supplier price
+  var out=[];QITEMS.forEach(function(it,i){if(!it.supplier)return;var live=_cartLive(it);
+    if(live==null){out.push({i:i,it:it,old:it.oilPrice,live:null});return;}
+    if(Math.abs(live-it.oilPrice)>0.004)out.push({i:i,it:it,old:it.oilPrice,live:live});});
+  return out;
+}
+// ---- Update all cart items to the latest live price of their own supplier ----
 function updateCartPrices(){
   if(!QITEMS.length)return;
-  var updated=0;
-  QITEMS.forEach(function(it){
+  var updated=0,gone=0,det=[];
+  QITEMS.forEach(function(it,i){
+    if(it.supplier){var live=_cartLive(it);if(live==null){gone++;return;}
+      if(Math.abs(live-it.oilPrice)>0.004){det.push('#'+(i+1)+' '+fmt(it.oilPrice,2)+' \u2192 '+fmt(live,2));it.oilPrice=live;it.cp10=live;updated++;}
+      return;}
     var newPrice=getOilPrice(it.oilName,S.cp10);
     if(it.oilPrice!==newPrice){it.oilPrice=newPrice;it.cp10=S.cp10;updated++;}
   });
   rQuote();rSum();
-  showCustToast(updated>0?'🔄 '+updated+' item'+(updated!==1?'s':'')+' updated to current oil prices (CP10: USD '+fmt(S.cp10,0)+')':'✅ Prices already at current rates');
+  var msg=updated>0?('\uD83D\uDD04 '+updated+' item'+(updated!==1?'s':'')+' updated to the latest supplier price'+(det.length?' ('+det.slice(0,4).join('; ')+(det.length>4?' ...':'')+')':'')):'\u2705 All prices already match the latest supplier prices';
+  if(gone)msg+=' \u00b7 \u26A0 '+gone+' item'+(gone!==1?'s':'')+' no longer on the supplier list \u2014 check';
+  showToast(msg,6000);
 }
+// keep the cart warnings (stale price / outdated freight) live whenever supplier tables or freight change
+(function(){var o=window.svRenderTable,busy=false;if(typeof o!=='function')return;
+  window.svRenderTable=function(){var r=o.apply(this,arguments);if(!busy){busy=true;try{if(window.QITEMS&&QITEMS.length)rQuote();}catch(e){}busy=false;}return r;};
+  svRenderTable=window.svRenderTable;})();
 
 function closePrintModal(){
   el('printModal').style.display='none';
@@ -9194,6 +9256,15 @@ function setSupplierUser(s){
       if(L&&!L.partial&&!_svListOn(sp,nm,pk))outd.push('Item '+(i+1)+' &mdash; <b>'+esc(disp)+'</b> ('+esc(pk)+'): NOT on the '+esc(L.name)+' list of '+esc(L.label)+'. The price shown is the last price on record and is <b>outdated</b>.');
       else if(cf)outd.push('Item '+(i+1)+' &mdash; <b>'+esc(disp)+'</b> ('+esc(pk)+'): '+esc(cf));
     });
+    try{
+      _cartDrift().forEach(function(d){var it=d.it,disp=String(itemDisplayName(it)||it.oilName||'');
+        if(d.live==null)outd.push('Item '+(d.i+1)+' &mdash; <b>'+esc(disp)+'</b> ('+esc((it.sku&&it.sku.type)||'')+'): no longer on the supplier list &mdash; price cannot be verified.');
+        else outd.push('Item '+(d.i+1)+' &mdash; <b>'+esc(disp)+'</b> ('+esc((it.sku&&it.sku.type)||'')+'): PRICE CHANGED since added &mdash; cart has FOB '+fmt(d.old,2)+', latest supplier price is <b>'+fmt(d.live,2)+'</b>. Close this and press <b>Update to latest prices</b>.');});
+      var fp=(typeof SV_FR!=='undefined'&&SV_FR.mode==='port'&&SV_FR.port)?SV_FR.port:null;
+      if(fp&&QITEMS.some(function(x){return x.supplier;})){var ag=Math.floor((Date.now()-new Date(fp.updated).getTime())/86400000);
+        if(isNaN(ag))outd.push('<b>Freight</b> to '+esc(fp.port)+' has no date &mdash; confirm the rate is current.');
+        else if(ag>30)outd.push('<b>Freight</b> to '+esc(fp.port)+' ('+esc(fp.country)+') was last updated '+ag+' days ago &mdash; <b>outdated</b>. Check the latest rate before quoting.');}
+    }catch(e){}
     window._cfmOutdated=outd;
     if(outd.length)h='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;color:#7a1f14"><b>&#9888; PLEASE TAKE NOTE &mdash; OUTDATED / UNCONFIRMED PRICE ('+outd.length+')</b><ul style="margin:5px 0 0 18px;padding:0">'+outd.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul><div style="margin-top:6px"><b>Confirm with management before you quote these items.</b> If unsure, press &ldquo;No, go back&rdquo; and remove them from the quote.</div></div>'+h;
     if(miss.length)h='<div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;color:#922"><b>&#9888; Missing / incomplete ('+miss.length+'):</b><ul style="margin:5px 0 0 18px;padding:0">'+miss.map(function(m){return '<li>'+esc(m)+'</li>';}).join('')+'</ul></div>'+h;
