@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V10NOV2026A — Apical list 10 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
+- Apical supplier list of 10 Nov 2026 loaded (price validity: EOD 10 Nov; supplier's own terms ignored — Oillio terms apply).
+- Changes vs the last list held in the app (6 Nov) (USD/MT): Shortening 36/39 DOWN 5 (1,155 -> 1,150). Everything else unchanged: Shortening 38/40 & 40/42 1,150, 43/47 1,150, 46/48 1,145, 48/52 1,140; Spread Fat 1,280; RCNO 2,120; HCNO 2,185; HPS Flakes 20ft 1,225, 40ft 1,240; Jerry Can CP10 1,300, CP8 1,310.
+- Port Klang: all unchanged — HPKS 2,500; HPKO 38/40 2,160; HPKO 40/42 2,165; HPL 41/43 2,030; CBR 1,935; Low GE & 3MCPD Shortening 36/39 1,175, 38/42 1,180, 43/48 1,190 (also used for 46/48), 48/52 1,195.
+- Tested: list applied at the saved base oil — all 22 rows match the supplier list (0 differences). New list id 10NOV26 (Save & Log Reference needed so the up / down is logged).
+
+---
+
 ## V07NOV2026U — Customer tab improvements (8 Nov 2026)
 - Every time a quote is copied (WhatsApp) or saved as PDF for a saved customer, the price, margin, FCL and port are logged per product (last 10 quotes kept) - no database change needed.
 - Confirm dialog shows "compared with this customer's last quote" (old FOB, new FOB, % change).
