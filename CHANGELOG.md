@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V11NOV2026B — IOI list 11 Nov 2026 loaded (10 Nov recorded) (11 Nov 2026)
+- IOI list of 11 Nov 2026 (FOB, USD) is now the current list (list id 11NOV26). Flexibag CP10 w/o heating pad 1,120 /MT (with heating pad 1,125); CP8 = +10, CP6 = +90. Packed SKUs per unit (CP10 / CP8 / CP6): 20L White Jerry Can 21.85 / 22.05 / 23.50; 5L x 4 White Jerry Can 22.85 / 23.00 / 24.45; 25L Yellow Jerry Can 26.70 / 26.95 / 28.75; 20L Yellow Jerry Can 21.45 / 21.60 / 23.05; 20L Green Jerry Can 21.65 / 21.85; 18L Yellow Jerry Can 19.50 / 19.65; 5L x 4 PET 22.15 / 22.35 / 23.75; 20kg BIB 22.95 / 23.15.
+- CP8 and CP6 jerry can / carton prices are now the exact IOI per-unit quotes (before: CP10 + a flat 10 / 90 per MT, which differed by a few cents per unit). Flexibag still follows the +10 / +90 rule (matches the quote).
+- 10 Nov 2026 IOI list (recorded for reference, USD per unit CP10 / CP8 / CP6; Flexibag 1,092.50 / 1,102.50 / 1,182.50, heating pad +5): 20L White 21.35 / 21.55 / 23.00; 5L White 22.35 / 22.50 / 23.95; 25L Yellow 26.10 / 26.30 / 28.10; 20L Yellow 20.95 / 21.10 / 22.55; 20L Green 21.15 / 21.35; 18L Yellow 19.05 / 19.20; 5L x 4 PET 21.65 / 21.85 / 23.30; 20kg BIB 22.40 / 22.60.
+- CP10 movement in USD/MT: 6 Nov -> 10 Nov -> 11 Nov: Flexibag 1,100 -> 1,092.50 (DOWN 7.50) -> 1,120 (UP 27.50); 25L Yellow 1,166.67 -> 1,160.00 (DOWN 6.67) -> 1,186.67 (UP 26.67); 20L Yellow 1,169.44 -> 1,163.89 (DOWN 5.56) -> 1,191.67 (UP 27.78); 20L White 1,194.44 -> 1,186.11 -> 1,213.89; 5L x 4 White 1,247.22 -> 1,241.67 -> 1,269.44; 20L Green 1,183.33 -> 1,175.00 -> 1,202.78; 18L Yellow 1,182.10 -> 1,175.93 -> 1,203.70; 5L x 4 PET 1,211.11 -> 1,202.78 -> 1,230.56; 20kg BIB 1,127.50 -> 1,120.00 -> 1,147.50.
+- Tested: list applied at the saved base oil — all 27 rows match the supplier list (0 differences). Press Save & Log Reference so the gap goes into the premium/discount and the Up / Down log.
+
+---
+
 ## V11NOV2026A — Apical list 11 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
 - Apical supplier list of 11 Nov 2026 loaded (price validity: EOD 11 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount as usual (green up / red down on the product list and in View Log > Supplier Price Up / Down after Save & Log Reference).
 - Changes vs 10 Nov (USD/MT): Shortening 36/39 and 38/40 & 40/42 unchanged (1,150); 43/47 DOWN 10 (1,140); 46/48 DOWN 10 (1,135); 48/52 DOWN 30 (1,110); Spread Fat DOWN 15 (1,265); RCNO DOWN 40 (2,080); HCNO DOWN 40 (2,145); HPS Flakes 20ft DOWN 30 (1,195), 40ft DOWN 30 (1,210); Jerry Can CP10 DOWN 15 (1,285), CP8 DOWN 15 (1,295).
