@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V12NOV2026A — Apical list 12 Nov 2026 (FOB Jakarta / Port Klang, ETD Jan 2027)
+- Apical supplier list of 12 Nov 2026 loaded (price validity: EOD 12 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records premium, packaging and FOB per product, and View Log > Supplier Price Up / Down compares each day with the previous saved day (green up / red down).
+- Changes vs 11 Nov (USD/MT): Shortening 36/39 DOWN 15 (1,135); 38/40 & 40/42 DOWN 15 (1,135); 43/47 unchanged (1,140); 46/48 unchanged (1,135); 48/52 UP 25 (1,135); Spread Fat unchanged (1,265); RCNO unchanged (2,080); HCNO unchanged (2,145); HPS Flakes 20ft UP 25 (1,220), 40ft UP 25 (1,235); Jerry Can CP10 / CP8 unchanged (1,285 / 1,295).
+- Port Klang: HPKS unchanged (2,430); HPKO 38/40 (2,095) and 40/42 (2,100) unchanged; HPL 41/43 unchanged (1,970); CBR UP 10 (1,895); Low GE & 3MCPD Shortening 36/39 DOWN 15 (1,160), 38/42 unchanged (1,170), 43/48 unchanged (1,175, also used for 46/48), 48/52 UP 25 (1,190).
+- Tested: list applied at the saved base oil — all 22 rows match the supplier list (0 differences). New list id 12NOV26 (Save & Log Reference needed).
+
+---
+
 ## V11NOV2026B — IOI list 11 Nov 2026 loaded (10 Nov recorded) (11 Nov 2026)
 - IOI list of 11 Nov 2026 (FOB, USD) is now the current list (list id 11NOV26). Flexibag CP10 w/o heating pad 1,120 /MT (with heating pad 1,125); CP8 = +10, CP6 = +90. Packed SKUs per unit (CP10 / CP8 / CP6): 20L White Jerry Can 21.85 / 22.05 / 23.50; 5L x 4 White Jerry Can 22.85 / 23.00 / 24.45; 25L Yellow Jerry Can 26.70 / 26.95 / 28.75; 20L Yellow Jerry Can 21.45 / 21.60 / 23.05; 20L Green Jerry Can 21.65 / 21.85; 18L Yellow Jerry Can 19.50 / 19.65; 5L x 4 PET 22.15 / 22.35 / 23.75; 20kg BIB 22.95 / 23.15.
 - CP8 and CP6 jerry can / carton prices are now the exact IOI per-unit quotes (before: CP10 + a flat 10 / 90 per MT, which differed by a few cents per unit). Flexibag still follows the +10 / +90 rule (matches the quote).
