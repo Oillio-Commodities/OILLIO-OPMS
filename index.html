@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V12NOV2026B';
+  var _v='V12NOV2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7490,7 +7490,7 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
 // Wing Agro quotes CP10 only (20L and 25L the same); the other prices follow by rule:
 //   CP8 = CP10 + 15 | Low MCPD & GE CP10 = CP10 + 40 | Low MCPD & GE CP8 = CP8 + 40 = CP10 + 55.
 // On each new Wing Agro list: set WA_CP10_LIST to their CP10 quote. The list then loads the premiums into the Packaging / Premium table (as for Apical and KLK) and all prices float with the daily base oil.
-var WA_CP10_LIST=1190,WA_CP8_ADD=15,WA_LOW_ADD=40;
+var WA_CP10_LIST=1200,WA_CP8_ADD=15,WA_LOW_ADD=40;
 function waRows(){
   var c=WA_CP10_LIST,k=c+WA_CP8_ADD,N='\u2013',out=[];
   [['20L','20L Jerry Can'],['25L','25L Jerry Can']].forEach(function(z){
@@ -7520,7 +7520,7 @@ var SUP_LISTS={
   apical:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:APC_LIST_12NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
   ioi:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
-  wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
+  wingagro:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
 
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};

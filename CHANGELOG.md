@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V12NOV2026C — Wing Agro list 12 Nov 2026 (12 Nov 2026)
+- Wing Agro 20L Yellow Jerry Can CP10 quoted USD 1,200/MT (FOB) today; the 25L follows the same price and all other Wing Agro SKUs follow the usual rules: CP8 = CP10 + 15 = 1,215; Low MCPD & GE CP10 = CP10 + 40 = 1,240; Low MCPD & GE CP8 = CP10 + 55 = 1,255 (20L and 25L).
+- Movement vs the last Wing Agro list held in the app (6 Nov, CP10 1,190): UP 10 on every SKU. (If Wing Agro quoted a different CP10 in between, e.g. 1,205, the move vs that quote is DOWN 5.)
+- Tested: list applied at the saved base oil — all 8 rows match (0 differences). List id 12NOV26. Press Save & Log Reference so the premium/discount gap is logged.
+
+---
+
 ## V12NOV2026B — IOI list 12 Nov 2026 (12 Nov 2026)
 - IOI list of 12 Nov 2026 (FOB, USD) loaded as the current list (list id 12NOV26). Flexibag CP10 w/o heating pad 1,125 /MT (with heating pad 1,130); CP8 = +10 (1,135), CP6 = +90 (1,215). Packed SKUs per unit (CP10 / CP8 / CP6): 20L White Jerry Can 21.95 / 22.15 / 23.55; 5L x 4 White Jerry Can 22.90 / 23.10 / 24.55; 25L Yellow Jerry Can 26.85 / 27.05 / 28.85; 20L Yellow Jerry Can 21.50 / 21.70 / 23.15; 20L Green Jerry Can 21.75 / 21.90; 18L Yellow Jerry Can 19.55 / 19.75; 5L x 4 PET 22.25 / 22.40 / 23.85; 20kg BIB 23.05 / 23.25.
 - Movement vs 11 Nov, CP10 USD/MT: all UP. Flexibag 1,120 -> 1,125 (UP 5); 25L Yellow 1,186.67 -> 1,193.33 (UP 6.67); 20L Yellow 1,191.67 -> 1,194.44 (UP 2.78); 20L White 1,213.89 -> 1,219.44 (UP 5.56); 5L x 4 White 1,269.44 -> 1,272.22 (UP 2.78); 20L Green 1,202.78 -> 1,208.33 (UP 5.56); 18L Yellow 1,203.70 -> 1,206.79 (UP 3.09); 5L x 4 PET 1,230.56 -> 1,236.11 (UP 5.56); 20kg BIB 1,147.50 -> 1,152.50 (UP 5.00).
