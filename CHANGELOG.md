@@ -7,7 +7,7 @@ All changes to the GitHub Pages app are recorded here.
 
 ## V12NOV2026C — Wing Agro list 12 Nov 2026 (12 Nov 2026)
 - Wing Agro 20L Yellow Jerry Can CP10 quoted USD 1,200/MT (FOB) today; the 25L follows the same price and all other Wing Agro SKUs follow the usual rules: CP8 = CP10 + 15 = 1,215; Low MCPD & GE CP10 = CP10 + 40 = 1,240; Low MCPD & GE CP8 = CP10 + 55 = 1,255 (20L and 25L).
-- Movement vs the last Wing Agro list held in the app (6 Nov, CP10 1,190): UP 10 on every SKU. (If Wing Agro quoted a different CP10 in between, e.g. 1,205, the move vs that quote is DOWN 5.)
+- Movement: list-to-list vs 6 Nov (CP10 1,190) is +10, but the app price floats with the base oil: the projected 20L price was 1,205, so today's 1,200 is DOWN 5 vs projection on every Wing Agro SKU (premium/discount down 5, logged on Save & Log Reference).
 - Tested: list applied at the saved base oil — all 8 rows match (0 differences). List id 12NOV26. Press Save & Log Reference so the premium/discount gap is logged.
 
 ---
