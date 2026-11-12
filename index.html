@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V12NOV2026A';
+  var _v='V12NOV2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7503,8 +7503,8 @@ function waRows(){
 // IOI quotes: Flexibag in USD/MT (CP10 w/o heating pad 1,100, 21.5 MT per container; with heating pad +5) and every packed SKU in USD PER UNIT (jerry can / carton / BIB).
 // Unit price -> USD/MT = unit price / net kg per unit x 1000 (e.g. 20L yellow jerry can 21.05 / 18 kg x 1000 = 1,169.44/MT). CP8 = CP10 + 10/MT and CP6 = CP10 + 90/MT for every SKU.
 // On each new IOI list: update IOI_CP10_LIST (Flexibag, USD/MT) and the CP10 unit prices in IOI_UNIT.
-var IOI_CP10_LIST=1120,IOI_CP8_ADD=10,IOI_CP6_ADD=90,IOI_HEAT_ADD=5;
-var IOI_UNIT={'20L WHITE JERRY CAN':[21.85,18.0,22.05,23.50],'5L X 4 WHITE JERRY CANS PER CARTON':[22.85,18.0,23.00,24.45],'25L YELLOW JERRY CAN':[26.70,22.5,26.95,28.75],'20L YELLOW JERRY CAN':[21.45,18.0,21.60,23.05],'20L GREEN JERRY CAN':[21.65,18.0,21.85,null],'18L YELLOW JERRY CAN':[19.50,16.2,19.65,null],'5L X 4 PET BOTTLES PER CARTON':[22.15,18.0,22.35,23.75],'20KG BIB':[22.95,20.0,23.15,null]}; // [CP10, net kg, CP8, CP6] USD per unit - IOI list 11 Nov 2026 (10 Nov in CHANGELOG)
+var IOI_CP10_LIST=1125,IOI_CP8_ADD=10,IOI_CP6_ADD=90,IOI_HEAT_ADD=5;
+var IOI_UNIT={'20L WHITE JERRY CAN':[21.95,18.0,22.15,23.55],'5L X 4 WHITE JERRY CANS PER CARTON':[22.90,18.0,23.10,24.55],'25L YELLOW JERRY CAN':[26.85,22.5,27.05,28.85],'20L YELLOW JERRY CAN':[21.50,18.0,21.70,23.15],'20L GREEN JERRY CAN':[21.75,18.0,21.90,null],'18L YELLOW JERRY CAN':[19.55,16.2,19.75,null],'5L X 4 PET BOTTLES PER CARTON':[22.25,18.0,22.40,23.85],'20KG BIB':[23.05,20.0,23.25,null]}; // [CP10, net kg, CP8, CP6] USD per unit - IOI list 12 Nov 2026 (earlier lists in CHANGELOG)
 var IOI_NO_CP6={'20L GREEN JERRY CAN':1,'18L YELLOW JERRY CAN':1,'20KG BIB':1};
 function ioiRows(){
   var IOI_CP10=IOI_CP10_LIST,out=[],oils=[['CP10',0],['CP8',IOI_CP8_ADD],['CP6',IOI_CP6_ADD]],r2=function(v){return Math.round(v*100)/100;};
@@ -7519,7 +7519,7 @@ var SUP_LISTS={
   klk:{id:'05NOV26',day:'2026-11-05',label:'5 Nov 2026',uplift:0,rows:KLK_LIST_05NOV26,name:'KLK'},
   apical:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:APC_LIST_12NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
-  ioi:{id:'11NOV26',day:'2026-11-11',label:'11 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
+  ioi:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
   wingagro:{id:'06NOV26B',day:'2026-11-06',label:'6 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
 
