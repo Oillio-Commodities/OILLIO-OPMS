@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V12NOV2026C';
+  var _v='V12NOV2026D';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -8703,7 +8703,7 @@ function _l90PriceHtml(S,cut){
   });
   if(!changes.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No premium / discount or packaging changes in this period.</div>';
   changes.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
-  var CAP=400,shown=changes.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI'};
+  var CAP=400,shown=changes.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI',abp:'ABLE PERFECT'};
   var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:680px"><thead><tr>';
   ['Supplier','Product','Packing'].forEach(function(t){h+='<th style="'+_l90Th(1).replace('position:sticky;top:0;left:0','position:sticky;top:0')+'">'+t+'</th>';});
   h+='<th style="'+_l90Th()+'">Premium / Discount</th><th style="'+_l90Th()+'">Packaging</th></tr></thead><tbody>';
@@ -8754,7 +8754,7 @@ function _l90FobHtml(S,cut){
   });
   if(!rows.length)return '<div style="padding:20px;text-align:center;color:var(--mut)">No supplier price changes in this period.</div>';
   rows.sort(function(a,b){return a.day<b.day?1:a.day>b.day?-1:(a.sup+a.name+a.packing).localeCompare(b.sup+b.name+b.packing);});
-  var CAP=500,shown=rows.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI'};
+  var CAP=500,shown=rows.slice(0,CAP),supLbl={apical:'APICAL',klk:'KLK',wingagro:'WING AGRO',ioi:'IOI',abp:'ABLE PERFECT'};
   function chg(v){if(Math.abs(v)<0.005)return '<span style="color:#999">&ndash; no change</span>';var up=v>0;return '<b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(v))+'</b>';}
   var h='<div style="color:var(--mut);margin-bottom:6px"><b>vs yesterday</b> = change in supplier FOB from the previous saved day. <b>vs projection</b> = the real up / down after the base oil move (yesterday&rsquo;s price moved by the day&rsquo;s base oil is the projection).</div>';
   h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:700px"><thead><tr>';

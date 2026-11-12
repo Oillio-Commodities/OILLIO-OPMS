@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V12NOV2026D — Up / Down log: same day-to-day logic checked for all suppliers (12 Nov 2026)
+- Checked and tested the day-to-day Up / Down recording for every supplier (Apical, KLK, Wing Agro, IOI, Able Perfect): one code path. Each Save & Log Reference stores premium/discount, packaging and FOB per product; the tab compares each day's last save with the previous saved day: "vs yesterday" = FOB change, "vs projection" = premium/discount + packaging change = the real move after the base oil (green up / red down).
+- Test: Wing Agro 20L CP10 saved at base oil 1,090 (FOB 1,190), then base oil +15 and list 1,200: log shows FOB 1,190 -> 1,200 (+10 vs yesterday) and DOWN 5 vs projection (projection 1,205), as expected.
+- Able Perfect lines now labelled "ABLE PERFECT" in the Up / Down and change tables (was "ABP").
+- Note: the movement tables quoted in chat for Apical / IOI list updates were list-to-list (same base oil); the app's log shows the base-oil-adjusted figure.
+
+---
+
 ## V12NOV2026C — Wing Agro list 12 Nov 2026 (12 Nov 2026)
 - Wing Agro 20L Yellow Jerry Can CP10 quoted USD 1,200/MT (FOB) today; the 25L follows the same price and all other Wing Agro SKUs follow the usual rules: CP8 = CP10 + 15 = 1,215; Low MCPD & GE CP10 = CP10 + 40 = 1,240; Low MCPD & GE CP8 = CP10 + 55 = 1,255 (20L and 25L).
 - Movement: list-to-list vs 6 Nov (CP10 1,190) is +10, but the app price floats with the base oil: the projected 20L price was 1,205, so today's 1,200 is DOWN 5 vs projection on every Wing Agro SKU (premium/discount down 5, logged on Save & Log Reference).
