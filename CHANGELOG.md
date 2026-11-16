@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V16NOV2026A — Apical list 16 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
+- Apical supplier list of 16 Nov 2026 loaded (price validity: EOD 16 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records premium, packaging and FOB per product and the Up / Down tab shows the real move vs projection (green up / red down).
+- Changes vs the last Apical list held in the app (12 Nov), list-to-list at the same base oil (USD/MT): Shortening 36/39 UP 35 (1,170); 38/40 & 40/42 UP 35 (1,170); 43/47 UP 30 (1,170); 46/48 UP 30 (1,165); 48/52 UP 25 (1,160); Spread Fat UP 45 (1,310); RCNO UP 40 (2,120); HCNO UP 40 (2,185); HPS Flakes 20ft UP 20 (1,240), 40ft UP 20 (1,255); Jerry Can CP10 UP 65 (1,350), CP8 UP 65 (1,360).
+- Port Klang: HPKS UP 140 (2,570); HPKO 38/40 UP 110 (2,205); HPKO 40/42 UP 110 (2,210); HPL 41/43 UP 100 (2,070); CBR UP 75 (1,970); Low GE & 3MCPD Shortening 36/39 UP 35 (1,195), 38/42 UP 30 (1,200), 43/48 UP 30 (1,205, also used for 46/48), 48/52 UP 20 (1,210).
+- Tested: list applied at the saved base oil — all 22 rows match the supplier list (0 differences). New list id 16NOV26 (Save & Log Reference needed).
+
+---
+
 ## V12NOV2026D — Up / Down log: same day-to-day logic checked for all suppliers (12 Nov 2026)
 - Checked and tested the day-to-day Up / Down recording for every supplier (Apical, KLK, Wing Agro, IOI, Able Perfect): one code path. Each Save & Log Reference stores premium/discount, packaging and FOB per product; the tab compares each day's last save with the previous saved day: "vs yesterday" = FOB change, "vs projection" = premium/discount + packaging change = the real move after the base oil (green up / red down).
 - Test: Wing Agro 20L CP10 saved at base oil 1,090 (FOB 1,190), then base oil +15 and list 1,200: log shows FOB 1,190 -> 1,200 (+10 vs yesterday) and DOWN 5 vs projection (projection 1,205), as expected.
