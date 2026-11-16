@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V16NOV2026B — KLK list 16 Nov 2026 (FOB Port Klang, shipment Dec 2026)
+- KLK supplier list of 16 Nov 2026 loaded: all 92 SKUs (RBD Palm Olein CP6 / CP10, RBD Palm Oil 36-39, Stearin, PFAD, Shortening, Margarine, Butter Oil Substitute, Vegetable Ghee). Prices are KLK's FOB per MT; every price was cross-checked against KLK's own price per unit and loading. The gap vs the saved price goes into the premium/discount; Save & Log Reference records it for the Up / Down tab (green up / red down).
+- Changes vs the last KLK list held in the app (5 Nov), list-to-list at the same base oil (USD/MT): Olein CP6 UP 8.10 to 9.00; Olein CP10 UP 7.98 to 9.32 (e.g. 20L Yellow Jerry Can 1,228.70 -> 1,237.13, 25L 1,223.71 -> 1,232.14, 20kg BIB 1,200.12 -> 1,208.93, Flexibag 1,143.56 -> 1,152.88); RBD Palm Oil 36-39 UP 8.99 to 9.32; Stearin DOWN 15.68 to 16.78; PFAD DOWN 38.18 to 39.28; Shortening 52-56 DOWN 16.38, 48-52 UP 3.62, 46-48 DOWN 6.38, 42-46 DOWN 1.38, 40-42 UP 3.62, 36-39 UP 7.37, 33-36 UP 8.62; Margarine All Purpose UP 4.06, Margarine Pastry UP 0.23; Butter Oil Substitute UP 8.52; Vegetable Ghee UP 5.06 to 8.78.
+- Tested: list applied at the saved base oil — all 92 rows match the supplier list (0 differences). New list id 16NOV26 (Save & Log Reference needed).
+
+---
+
 ## V16NOV2026A — Apical list 16 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
 - Apical supplier list of 16 Nov 2026 loaded (price validity: EOD 16 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records premium, packaging and FOB per product and the Up / Down tab shows the real move vs projection (green up / red down).
 - Changes vs the last Apical list held in the app (12 Nov), list-to-list at the same base oil (USD/MT): Shortening 36/39 UP 35 (1,170); 38/40 & 40/42 UP 35 (1,170); 43/47 UP 30 (1,170); 46/48 UP 30 (1,165); 48/52 UP 25 (1,160); Spread Fat UP 45 (1,310); RCNO UP 40 (2,120); HCNO UP 40 (2,185); HPS Flakes 20ft UP 20 (1,240), 40ft UP 20 (1,255); Jerry Can CP10 UP 65 (1,350), CP8 UP 65 (1,360).
