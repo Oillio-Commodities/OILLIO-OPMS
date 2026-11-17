@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V17NOV2026A — Apical list 17 Nov 2026 + Wing Agro CP10 1,215 (17 Nov 2026)
+- Apical supplier list of 17 Nov 2026 loaded (FOB Jakarta / Port Klang, ETD Feb 2027, validity EOD 17 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records it and the Up / Down tab shows the real move vs projection (green up / red down).
+- Changes vs the previous Apical list (16 Nov), list-to-list at the same base oil (USD/MT): Shortening 36/39, 38/40 & 40/42, 43/47, 46/48, 48/52 all DOWN 25 (1,145 / 1,145 / 1,145 / 1,140 / 1,135); Spread Fat DOWN 20 (1,290); RCNO DOWN 70 (2,050); HCNO DOWN 70 (2,115); HPS Flakes 20ft DOWN 20 (1,220), 40ft DOWN 20 (1,235); Jerry Can CP10 DOWN 20 (1,330), CP8 DOWN 20 (1,340).
+- Port Klang: HPKS UP 60 (2,630); HPKO 38/40 DOWN 80 (2,125); HPKO 40/42 DOWN 80 (2,130); HPL 41/43 DOWN 70 (2,000); CBR DOWN 55 (1,915); Low GE & 3MCPD Shortening 36/39 DOWN 25 (1,170), 38/42 DOWN 25 (1,175), 43/48 DOWN 20 (1,185, also used for 46/48), 48/52 DOWN 20 (1,190).
+- Wing Agro: CP10 20L Yellow Jerry Can quoted USD 1,215/MT (FOB Surabaya) on 17 Nov (list-to-list +15 vs 1,200 on 12 Nov; the move vs the base-oil projection shows in the Up / Down tab). 25L follows the same price; CP8 = 1,230; Low MCPD & GE CP10 = 1,255; Low MCPD & GE CP8 = 1,270.
+- Tested: both lists applied at the saved base oil — Apical 22/22 rows and Wing Agro 8/8 rows match (0 differences). New list ids 17NOV26 (Save & Log Reference needed).
+
+---
+
 ## V16NOV2026B — KLK list 16 Nov 2026 (FOB Port Klang, shipment Dec 2026)
 - KLK supplier list of 16 Nov 2026 loaded: all 92 SKUs (RBD Palm Olein CP6 / CP10, RBD Palm Oil 36-39, Stearin, PFAD, Shortening, Margarine, Butter Oil Substitute, Vegetable Ghee). Prices are KLK's FOB per MT; every price was cross-checked against KLK's own price per unit and loading. The gap vs the saved price goes into the premium/discount; Save & Log Reference records it for the Up / Down tab (green up / red down).
 - Changes vs the last KLK list held in the app (5 Nov), list-to-list at the same base oil (USD/MT): Olein CP6 UP 8.10 to 9.00; Olein CP10 UP 7.98 to 9.32 (e.g. 20L Yellow Jerry Can 1,228.70 -> 1,237.13, 25L 1,223.71 -> 1,232.14, 20kg BIB 1,200.12 -> 1,208.93, Flexibag 1,143.56 -> 1,152.88); RBD Palm Oil 36-39 UP 8.99 to 9.32; Stearin DOWN 15.68 to 16.78; PFAD DOWN 38.18 to 39.28; Shortening 52-56 DOWN 16.38, 48-52 UP 3.62, 46-48 DOWN 6.38, 42-46 DOWN 1.38, 40-42 UP 3.62, 36-39 UP 7.37, 33-36 UP 8.62; Margarine All Purpose UP 4.06, Margarine Pastry UP 0.23; Butter Oil Substitute UP 8.52; Vegetable Ghee UP 5.06 to 8.78.

@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V16NOV2026B';
+  var _v='V17NOV2026A';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7430,29 +7430,29 @@ var KLK_LIST_16NOV26=[
 // THE DRILL: the supplier's FOB list is added here; on load the app sets every listed SKU's premium/discount =
 // supplier FOB - base oil (as saved) - packaging, until it has been SAVED once (the save stores the list id).
 // While unsaved, editing a base oil price re-balances it live. SKUs not on the list are tagged orange.
-var APC_LIST_16NOV26=[
-  ['20kg Shortening 36/39','20kg carton',1170],
-  ['20kg Shortening 38/40 & 40/42','20kg carton',1170],
-  ['20kg Shortening 43/47','20kg carton',1170],
-  ['20kg Shortening 46/48','20kg carton',1165],
-  ['20kg Shortening 48/52','20kg carton',1160],
-  ['18kg BIB Spread Fat','18kg BIB',1310],
-  ['18kg RCNO','18kg BIB',2120],
-  ['20kg HCNO','20kg carton',2185],
-  ['HPS Flakes','25kg polywoven bag',1240], // 20ft FCL (640 bags)
-  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1255], // 40ft FCL (960 bags)
-  ['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',1350],
-  ['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',1360],
-  ['20kg Hpks 33.5/35.5','20kg carton',2570],
-  ['20kg Hpko 38/40','20kg carton',2205],
-  ['20kg Hpko 40/42','20kg carton',2210],
-  ['20kg Hpkl 41/43','20kg carton',2070],
-  ['20kg CBR 37/40','20kg carton',1970],
-  ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1195],
-  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1200],
-  ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1205],
-  ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1205], // supplier's 43/48 line covers 46/48
-  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1210]
+var APC_LIST_17NOV26=[
+  ['20kg Shortening 36/39','20kg carton',1145],
+  ['20kg Shortening 38/40 & 40/42','20kg carton',1145],
+  ['20kg Shortening 43/47','20kg carton',1145],
+  ['20kg Shortening 46/48','20kg carton',1140],
+  ['20kg Shortening 48/52','20kg carton',1135],
+  ['18kg BIB Spread Fat','18kg BIB',1290],
+  ['18kg RCNO','18kg BIB',2050],
+  ['20kg HCNO','20kg carton',2115],
+  ['HPS Flakes','25kg polywoven bag',1220], // 20ft FCL (640 bags)
+  ['HPS Flakes','25kg polywoven bag - 40ft FCL (960 bags)',1235], // 40ft FCL (960 bags)
+  ['20L Yellow Jerry Can \u2013 CP10','20L Jerry Can',1330],
+  ['20L Yellow Jerry Can \u2013 CP8','20L Jerry Can',1340],
+  ['20kg Hpks 33.5/35.5','20kg carton',2630],
+  ['20kg Hpko 38/40','20kg carton',2125],
+  ['20kg Hpko 40/42','20kg carton',2130],
+  ['20kg Hpkl 41/43','20kg carton',2000],
+  ['20kg CBR 37/40','20kg carton',1915],
+  ['LOW GE & MCPDE 20kg Shortening 36/39','20kg carton',1170],
+  ['LOW GE & MCPDE 20kg Shortening 38/40 & 40/42','20kg carton',1175],
+  ['LOW GE & MCPDE 20kg Shortening 43/48','20kg carton',1185],
+  ['LOW GE & MCPDE 20kg Shortening 46/48','20kg carton',1185], // supplier's 43/48 line covers 46/48
+  ['LOW GE & MCPDE 20kg Shortening 48/52','20kg carton',1190]
 ];
 
 
@@ -7490,7 +7490,7 @@ function dispN(name,packing,sup){ // display name = name + (quality) for Apical;
 // Wing Agro quotes CP10 only (20L and 25L the same); the other prices follow by rule:
 //   CP8 = CP10 + 15 | Low MCPD & GE CP10 = CP10 + 40 | Low MCPD & GE CP8 = CP8 + 40 = CP10 + 55.
 // On each new Wing Agro list: set WA_CP10_LIST to their CP10 quote. The list then loads the premiums into the Packaging / Premium table (as for Apical and KLK) and all prices float with the daily base oil.
-var WA_CP10_LIST=1200,WA_CP8_ADD=15,WA_LOW_ADD=40;
+var WA_CP10_LIST=1215,WA_CP8_ADD=15,WA_LOW_ADD=40;
 function waRows(){
   var c=WA_CP10_LIST,k=c+WA_CP8_ADD,N='\u2013',out=[];
   [['20L','20L Jerry Can'],['25L','25L Jerry Can']].forEach(function(z){
@@ -7517,10 +7517,10 @@ function ioiRows(){
 }
 var SUP_LISTS={
   klk:{id:'16NOV26',day:'2026-11-16',label:'16 Nov 2026',uplift:0,rows:KLK_LIST_16NOV26,name:'KLK'},
-  apical:{id:'16NOV26',day:'2026-11-16',label:'16 Nov 2026',uplift:0,rows:APC_LIST_16NOV26,name:'Apical'},
+  apical:{id:'17NOV26',day:'2026-11-17',label:'17 Nov 2026',uplift:0,rows:APC_LIST_17NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
   ioi:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},
-  wingagro:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
+  wingagro:{id:'17NOV26',day:'2026-11-17',label:'17 Nov 2026',uplift:0,partial:true,rows:waRows(),name:'Wing Agro'}
 };
 
 window._listPending=window._listPending||{};window._listInfo=window._listInfo||{};window._listBase=window._listBase||{};
