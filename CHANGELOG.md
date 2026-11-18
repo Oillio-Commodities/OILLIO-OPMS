@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V18NOV2026A — Apical list 18 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
+- Apical supplier list of 18 Nov 2026 loaded (price validity: EOD 18 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records it and the Up / Down tab shows the real move vs projection (green up / red down).
+- Changes vs 17 Nov, list-to-list at the same base oil (USD/MT): Shortening 36/39, 38/40 & 40/42, 43/47 DOWN 5 (1,140); 46/48 DOWN 5 (1,135); 48/52 DOWN 10 (1,125); Spread Fat DOWN 5 (1,285); RCNO UP 20 (2,070); HCNO UP 20 (2,135); HPS Flakes 20ft DOWN 10 (1,210), 40ft DOWN 10 (1,225); Jerry Can CP10 DOWN 10 (1,320), CP8 DOWN 10 (1,330).
+- Port Klang: HPKS (2,630), HPKO 38/40 (2,125), HPKO 40/42 (2,130) and HPL 41/43 (2,000) unchanged; CBR DOWN 5 (1,910); Low GE & 3MCPD Shortening 36/39 DOWN 5 (1,165), 38/42 DOWN 5 (1,170), 43/48 DOWN 10 (1,175, also used for 46/48), 48/52 DOWN 10 (1,180).
+- Tested: list applied at the saved base oil — all 22 rows match the supplier list (0 differences). New list id 18NOV26 (Save & Log Reference needed).
+
+---
+
 ## V17NOV2026A — Apical list 17 Nov 2026 + Wing Agro CP10 1,215 (17 Nov 2026)
 - Apical supplier list of 17 Nov 2026 loaded (FOB Jakarta / Port Klang, ETD Feb 2027, validity EOD 17 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records it and the Up / Down tab shows the real move vs projection (green up / red down).
 - Changes vs the previous Apical list (16 Nov), list-to-list at the same base oil (USD/MT): Shortening 36/39, 38/40 & 40/42, 43/47, 46/48, 48/52 all DOWN 25 (1,145 / 1,145 / 1,145 / 1,140 / 1,135); Spread Fat DOWN 20 (1,290); RCNO DOWN 70 (2,050); HCNO DOWN 70 (2,115); HPS Flakes 20ft DOWN 20 (1,220), 40ft DOWN 20 (1,235); Jerry Can CP10 DOWN 20 (1,330), CP8 DOWN 20 (1,340).
