@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V19NOV2026F — KLK Low 3MCPD & GE CP6: CP10 + 40, premium 85 (19 Nov 2026)
+- Per Joel: KLK Low 3MCPD & GE CP6 is CP10 + 40 (not the usual CP6 base of CP10 + 60), so the premium stays 85 like CP10 and CP8. Formula now: CP10 base oil of the day + 40 + premium 85 + packaging 50 = 1,220 on the plain flexibag (heating variants add +6.31 / +8.03 / +12.62). Replaces the premium-65 workaround in V19NOV2026E. CP10 1,180 and CP8 1,190 unchanged.
+- Tested: all 12 new SKUs match the quote at base oil 1,045; 92 existing KLK rows unchanged.
+
+---
+
 ## V19NOV2026E — KLK Low 3MCPD & GE RBD Palm Olein (CP10 / CP8 / CP6) flexibag, FOB PASIR GUDANG, MOQ 5 FCL (19 Nov 2026)
 - 12 new KLK SKUs (3 oils x 4 flexibag types: plain, heating pad, heating rail, double heating pad; 21.4 MT per flexibag, same as the existing KLK flexibag): RBD PALM OLEIN CP10 / CP8 / CP6 LOW 3MCPD & GE. KLK quote 19 Nov (USD/MT, plain flexibag): CP10 1,180; CP8 1,190; CP6 1,220. Heating pad +6.31, heating rail +8.03, double heating pad +12.62 over the plain flexibag (same increments as KLK's own CP10 flexibag list) — derived by us, not quoted.
 - Formulation (same model as every supplier: FOB = base oil of the day + premium + packaging): packaging 50 (heating variants add their increment), premium set so the quote holds at the saved base oil. Reference values worked back from the quote: premium 85 + packaging 50 over CP10 (matches the 85 + 50 recalled). CP8 = CP10 base + 10 (premium 85). CP6 = CP6 base (CP10 + 60, auto) with premium 65, because the quote's CP6 is only CP10 + 40, not + 60. Prices move with the base oil of the day automatically.
