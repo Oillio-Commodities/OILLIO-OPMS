@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V19NOV2026D — KLK list 19 Nov 2026 (FOB Port Klang / Malaysia, 20ft, Dec 2026 shipment)
+- KLK supplier list of 19 Nov 2026 loaded (92 SKUs; price validity: 6pm 19 Nov Malaysia time; MOQ 4 FCL; supplier's own terms ignored — Oillio terms apply). Replaces the 16 Nov list. Examples (USD/MT): CP10 20L yellow jerry can 1,184.25; CP10 flexibag 1,100.33 (heating pad 1,106.64); CP6 1L x 12 PET 1,335.81; RBD PO 36-39 20kg carton 1,131.87; Stearin 20kg carton 1,096.87; PFAD 200L recon drum 1,070.44; Shortening 36-39 1,178.27; Margarine AP 1,157.52; Vegetable Ghee 20L tin 1,263.17.
+- Reporting rule (as agreed): the move is supplier actual vs system projection, shown in the app under "Gap vs projection" and View Log > Supplier Price Up / Down once the 19 Nov base oil is saved. List-to-list change vs 16 Nov (supplier's own move, for reference): most RBD Olein / RBD PO / Ghee / Shortening SKUs DOWN 52 to 56 (CP10 20L yellow jerry can DOWN 52.88; CP10 flexibag DOWN 52.55; Shortening 36-39 DOWN 53.33); Stearin DOWN 57.5 to 59.2; PFAD DOWN 70.1 to 71.7; Margarine All Purpose DOWN 43.22 and Margarine Pastry DOWN 45.94 (smaller drop than the rest).
+- Tested: list applied at the saved base oil — all 92 KLK rows match the supplier list (0 differences). New list id 19NOV26 (Save & Log Reference needed).
+
+---
+
 ## V19NOV2026C — Apical list 19 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
 - Apical supplier list of 19 Nov 2026 loaded (price validity: EOD 19 Nov; supplier's own terms ignored — Oillio terms apply; Note: RSPO MB Shortening). Prices: Shortening 36/39 1,145; 38/40 & 40/42 1,145; 43/47 1,140; 46/48 1,135; 48/52 1,115; Spread Fat 1,295; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,200, 40ft 1,215; Jerry Can CP10 1,335, CP8 1,345. Port Klang: HPKS 2,625; HPKO 38/40 2,155, 40/42 2,160; HPL 2,025; CBR 1,925; Low GE & 3MCPD Shortening 36/39 1,170, 38/42 1,170, 43/48 1,175 (also 46/48), 48/52 1,170.
 - Reporting rule (as agreed): the move is the gap between the system's projected price (previous saved price moved by the base oil) and the supplier's actual quote, shown in the app under "Gap vs projection" and View Log > Supplier Price Up / Down. List-to-list change vs 18 Nov, for reference (USD/MT, same base oil): Shortening 36/39 UP 5, 38/40 & 40/42 UP 5, 43/47 0, 46/48 0, 48/52 DOWN 10; Spread Fat UP 10; RCNO 0; HCNO 0; HPS Flakes 20ft DOWN 10, 40ft DOWN 10; Jerry Can CP10 UP 15, CP8 UP 15; HPKS DOWN 5; HPKO 38/40 UP 30, 40/42 UP 30; HPL UP 25; CBR UP 15; Low GE & 3MCPD 36/39 UP 5, 38/42 0, 43/48 0, 48/52 DOWN 10.
