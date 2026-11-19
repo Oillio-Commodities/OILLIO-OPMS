@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V19NOV2026A — Wing Agro list 19 Nov 2026 (19 Nov 2026)
+- Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,170/MT (FOB Surabaya) on 19 Nov. 25L follows the same price; CP8 = 1,185; Low MCPD & GE CP10 = 1,210; Low MCPD & GE CP8 = 1,225 (20L and 25L).
+- Movement vs the previous Wing Agro list (17 Nov, CP10 1,215), list-to-list at the same base oil: DOWN 45 on every SKU. The real move after the base oil shows in the Up / Down tab (vs projection) once Save & Log Reference is pressed.
+- Tested: list applied at the saved base oil — all 8 rows match (0 differences). List id 19NOV26.
+
+---
+
 ## V18NOV2026A — Apical list 18 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
 - Apical supplier list of 18 Nov 2026 loaded (price validity: EOD 18 Nov; supplier's own terms ignored — Oillio terms apply). The gap vs the saved price goes into the premium/discount; Save & Log Reference records it and the Up / Down tab shows the real move vs projection (green up / red down).
 - Changes vs 17 Nov, list-to-list at the same base oil (USD/MT): Shortening 36/39, 38/40 & 40/42, 43/47 DOWN 5 (1,140); 46/48 DOWN 5 (1,135); 48/52 DOWN 10 (1,125); Spread Fat DOWN 5 (1,285); RCNO UP 20 (2,070); HCNO UP 20 (2,135); HPS Flakes 20ft DOWN 10 (1,210), 40ft DOWN 10 (1,225); Jerry Can CP10 DOWN 10 (1,320), CP8 DOWN 10 (1,330).
