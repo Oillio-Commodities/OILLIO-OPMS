@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V19NOV2026C — Apical list 19 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
+- Apical supplier list of 19 Nov 2026 loaded (price validity: EOD 19 Nov; supplier's own terms ignored — Oillio terms apply; Note: RSPO MB Shortening). Prices: Shortening 36/39 1,145; 38/40 & 40/42 1,145; 43/47 1,140; 46/48 1,135; 48/52 1,115; Spread Fat 1,295; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,200, 40ft 1,215; Jerry Can CP10 1,335, CP8 1,345. Port Klang: HPKS 2,625; HPKO 38/40 2,155, 40/42 2,160; HPL 2,025; CBR 1,925; Low GE & 3MCPD Shortening 36/39 1,170, 38/42 1,170, 43/48 1,175 (also 46/48), 48/52 1,170.
+- Reporting rule (as agreed): the move is the gap between the system's projected price (previous saved price moved by the base oil) and the supplier's actual quote, shown in the app under "Gap vs projection" and View Log > Supplier Price Up / Down. List-to-list change vs 18 Nov, for reference (USD/MT, same base oil): Shortening 36/39 UP 5, 38/40 & 40/42 UP 5, 43/47 0, 46/48 0, 48/52 DOWN 10; Spread Fat UP 10; RCNO 0; HCNO 0; HPS Flakes 20ft DOWN 10, 40ft DOWN 10; Jerry Can CP10 UP 15, CP8 UP 15; HPKS DOWN 5; HPKO 38/40 UP 30, 40/42 UP 30; HPL UP 25; CBR UP 15; Low GE & 3MCPD 36/39 UP 5, 38/42 0, 43/48 0, 48/52 DOWN 10.
+- Wing Agro 19 Nov (recorded per Joel): system price before update 1,165, supplier quote CP10 20L 1,170 -> gap UP 5 on every Wing Agro SKU (CP8 1,185; Low MCPD & GE CP10 1,210, CP8 1,225).
+- Tested: list applied at the saved base oil — all 22 Apical rows match the supplier list (0 differences). New list id 19NOV26 (Save & Log Reference needed).
+
+---
+
 ## V19NOV2026B — Supplier list gap vs system projection (all suppliers) (19 Nov 2026)
 - When a supplier list is loaded (Apical, KLK, Wing Agro, IOI), the app now records, per SKU: system projection (yesterday's saved price moved by the base oil change), supplier actual, and the gap (supplier actual - projection). Example: system 1,165 -> supplier quote 1,170 = gap +5 (green up), not the list-to-list change.
 - New "Gap vs projection" button on the Supplier list monitor of each supplier tab: table per SKU (projection, supplier actual, gap, green up / red down) plus average gap, average size of gap (accuracy, USD/MT) and how many SKUs are within +/-5 of the supplier.
