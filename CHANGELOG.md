@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V19NOV2026B — Supplier list gap vs system projection (all suppliers) (19 Nov 2026)
+- When a supplier list is loaded (Apical, KLK, Wing Agro, IOI), the app now records, per SKU: system projection (yesterday's saved price moved by the base oil change), supplier actual, and the gap (supplier actual - projection). Example: system 1,165 -> supplier quote 1,170 = gap +5 (green up), not the list-to-list change.
+- New "Gap vs projection" button on the Supplier list monitor of each supplier tab: table per SKU (projection, supplier actual, gap, green up / red down) plus average gap, average size of gap (accuracy, USD/MT) and how many SKUs are within +/-5 of the supplier.
+- The "New prices loaded" note now shows each supplier's average gap before you press Save & Log Reference.
+- View Log > Supplier Price Up / Down: each day header now shows the projection gap per supplier (average gap, average size, SKU count), so accuracy can be followed day by day. The "vs projection" column is the same gap per SKU.
+- Tested (Wing Agro): saved 1,215 at base oil 1,105; next day base oil 1,070 and quote 1,170 -> projection 1,180, actual 1,170, gap -10 (Up / Down tab shows vs yesterday -45, vs projection -10). Same code for all four list suppliers.
+
+---
+
 ## V19NOV2026A — Wing Agro list 19 Nov 2026 (19 Nov 2026)
 - Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,170/MT (FOB Surabaya) on 19 Nov. 25L follows the same price; CP8 = 1,185; Low MCPD & GE CP10 = 1,210; Low MCPD & GE CP8 = 1,225 (20L and 25L).
 - Movement vs the previous Wing Agro list (17 Nov, CP10 1,215), list-to-list at the same base oil: DOWN 45 on every SKU. The real move after the base oil shows in the Up / Down tab (vs projection) once Save & Log Reference is pressed.

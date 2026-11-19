@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V19NOV2026A';
+  var _v='V19NOV2026B';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -6580,7 +6580,7 @@ function _migrateModelV2(oldRefs){
 function _svModelBanner(){
   // No more big banner: just a small note next to the Save button while updates are waiting to be saved
   var el=document.getElementById('modelBanner');if(el){el.style.display='none';el.innerHTML='';}
-  var li=null;Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k]&&window._listInfo[k]){li=li||{changed:0,parts:[]};li.changed+=window._listInfo[k].changed;li.parts.push(SUP_LISTS[k].name+' '+window._listInfo[k].changed);}});var pend=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
+  var li=null;Object.keys(window._listPending||{}).forEach(function(k){if(window._listPending[k]&&window._listInfo[k]){li=li||{changed:0,parts:[]};li.changed+=window._listInfo[k].changed;li.parts.push(SUP_LISTS[k].name+' '+window._listInfo[k].changed+(window._listInfo[k].rows?' (avg gap '+(window._listInfo[k].avg>=0?'+':'-')+Math.abs(window._listInfo[k].avg).toFixed(2)+')':''));}});var pend=(!!window._modelPending||!!li)&&(window.USER_LEVEL===0);
   var n=document.getElementById('svOilNote');
   if(n&&pend&&!window._refDirty){n.textContent='New prices loaded'+(li?' ('+li.changed+' premium changes: '+li.parts.join(', ')+')':'')+' \u2014 press Save & Log Reference to store them';n.style.color='#b45309';}
 }
@@ -7560,7 +7560,7 @@ function _svApplyListAuto(sup,rebase,listedOnly){
   if(rebase||!window._listBase[sup]){window._listBase[sup]={};arr.forEach(function(r){window._listBase[sup][r.id]=r.premium;});}
   var base=window._listBase[sup],prod={};
   _svListData(sup).forEach(function(p){prod[p.name+'|'+p.packing]=p;});
-  var changed=0,found=0,up=0,down=0;
+  var changed=0,found=0,up=0,down=0,det=[];
   arr.forEach(function(row){
     var p=prod[row.name+'|'+row.packing];if(!p)return;
     var t=_svListTarget(sup,row.name,row.packing),b0=base[row.id];if(b0==null)b0=row.premium;
@@ -7571,9 +7571,11 @@ function _svApplyListAuto(sup,rebase,listedOnly){
     found++;
     var np=Math.round((t-_modelBase(R,p.fcpo_ref,p.fcpo_delta,p.fcpo_default)-row.pkg_cost-(p.fob_delta||0))*100)/100;
     if(Math.abs(np-b0)>=0.005){changed++;if(np>b0)up++;else down++;}
+    var gp=Math.round((np-b0)*100)/100;det.push({name:row.name,packing:row.packing,proj:Math.round((t-gp)*100)/100,act:t,gap:gp});
     row.premium=np;
   });
-  window._listInfo[sup]={changed:changed,found:found,up:up,down:down};
+  var sg=0,sa=0;det.forEach(function(d){sg+=d.gap;sa+=Math.abs(d.gap);});
+  window._listInfo[sup]={changed:changed,found:found,up:up,down:down,rows:det,avg:det.length?sg/det.length:0,mad:det.length?sa/det.length:0};
   return window._listInfo[sup];
 }
 function _svListMonitor(sup){
@@ -7588,8 +7590,26 @@ function _svListMonitor(sup){
   var ok=!diffs.length,nol=getPkgArr(sup).filter(function(r){return !_svListOn(sup,r.name,r.packing);}).length;
   return _svConfirmBanner(sup)+(nol?'<div style="margin-bottom:6px;padding:6px 10px;border-radius:7px;font-size:.7rem;font-weight:700;background:#fff4e0;color:#b45309;border:1.5px solid #f6c77a">&#9888; '+nol+' SKU(s) were NOT on the '+L.name+' '+L.label+' supplier list &mdash; marked orange below; '+(L.uplift?'no supplier quote, so they only got the +USD '+L.uplift+'/MT uplift.':'no supplier quote, so their price is unchanged.')+'</div>':'')
     +'<div style="margin-bottom:8px;padding:7px 10px;border-radius:7px;font-size:.72rem;font-weight:700;background:'+(ok?'#e8f6ee':'#fdecea')+';color:'+(ok?'#1a7a4a':'#c0392b')+';border:1.5px solid '+(ok?'#b5dcc0':'#f1b0a8')+'">'
+    +((window._listInfo&&window._listInfo[sup]&&window._listInfo[sup].rows)?'<span style="float:right"><button onclick="svShowGapReport(\''+sup+'\')" style="background:#0a3d62;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:.66rem;font-weight:800;cursor:pointer">Gap vs projection</button></span>':'')
     +'&#x1F50D; Supplier list monitor ('+L.label+', '+n+' SKUs): '+(ok?'&#10003; system FOB matches the supplier list on every SKU':diffs.length+' SKU(s) differ from the supplier list (largest '+_l90Num(max)+') &mdash; base oil or premium moved since the list was applied')
     +(ok?'':' <button onclick="svLoadList()" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:2px 9px;font-size:.66rem;font-weight:800;cursor:pointer;margin-left:6px">Review &amp; re-balance</button>')+'</div>';
+}
+function svShowGapReport(sup){
+  var L=SUP_LISTS[sup],I=(window._listInfo||{})[sup],modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
+  if(!L||!I||!I.rows||!modal||!body||!title)return;
+  title.textContent=L.name+' \u2014 gap vs system projection ('+L.label+')';
+  var rows=I.rows.slice().sort(function(a,b){return Math.abs(b.gap)-Math.abs(a.gap);});
+  var w5=rows.filter(function(r){return Math.abs(r.gap)<=5.005;}).length,upn=rows.filter(function(r){return r.gap>=0.005;}).length,dn=rows.filter(function(r){return r.gap<=-0.005;}).length;
+  function chg(v){if(Math.abs(v)<0.005)return '<span style="color:#999">&ndash; on target</span>';var up=v>0;return '<b style="color:'+(up?'#1a7a4a':'#c0392b')+'">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(v))+'</b>';}
+  var h='<div style="color:var(--mut);margin-bottom:8px"><b>System projection</b> = yesterday&rsquo;s saved price moved by the base oil change. <b>Gap</b> = supplier actual &minus; projection, which is what goes into the premium/discount. Green &#9650; = supplier is dearer than the system expected, red &#9660; = cheaper.</div>';
+  h+='<div style="background:#eef4fb;border:1.5px solid #b8d0f0;border-radius:8px;padding:8px 10px;margin-bottom:10px"><b>'+rows.length+'</b> SKUs on the list &middot; average gap <b>'+(I.avg>=0?'+':'&minus;')+_l90Num(Math.abs(I.avg))+'</b> &middot; average size of gap (accuracy) <b>'+_l90Num(I.mad)+'</b> /MT &middot; within &plusmn;5: <b>'+w5+'/'+rows.length+'</b> &middot; up '+upn+' / down '+dn+'</div>';
+  h+='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:640px"><thead><tr>';
+  ['Product','Packing','System projection','Supplier actual','Gap'].forEach(function(t,i){h+='<th style="padding:6px 8px;background:#0a3d62;color:#fff;font-size:.64rem;text-align:'+(i<2?'left':'right')+'">'+t+'</th>';});
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(r,i){var td='padding:5px 8px;border-bottom:1px solid #eee;'+(i%2?'background:#fafafa;':'');
+    h+='<tr><td style="'+td+'font-weight:600">'+r.name+'</td><td style="'+td+'color:#555">'+r.packing+'</td><td style="'+td+'text-align:right">'+_l90Num(r.proj)+'</td><td style="'+td+'text-align:right"><b>'+_l90Num(r.act)+'</b></td><td style="'+td+'text-align:right;white-space:nowrap">'+chg(r.gap)+'</td></tr>';});
+  h+='</tbody></table></div><div style="color:var(--mut);margin-top:8px">Saved with Save &amp; Log Reference: View Log &rarr; Supplier Price Up / Down shows the same gap as <b>vs projection</b>, day by day.</div>';
+  body.innerHTML=h;modal.className='open';
 }
 function svLoadList(){
   if(_svBlockSim('loading a price list'))return;
@@ -8764,8 +8784,10 @@ function _l90FobHtml(S,cut){
   shown.forEach(function(r){
     if(r.day!==curDay){
       curDay=r.day;n=0;
-      var cnt=shown.filter(function(x){return x.day===curDay;}).length;
-      h+='<tr><td colspan="6" style="padding:7px 8px;background:#e8f0fa;color:#0a3d62;font-weight:800;border-top:2px solid #b8d0f0">'+_l90Date(curDay)+' <span style="font-weight:400;color:var(--mut)">&middot; '+cnt+' line'+(cnt>1?'s':'')+'</span></td></tr>';
+      var cnt=shown.filter(function(x){return x.day===curDay;}).length,acc={};
+      shown.forEach(function(x){if(x.day!==curDay||x.isNew)return;var a=acc[x.sup]||(acc[x.sup]={n:0,s:0,m:0});a.n++;a.s+=x.dP;a.m+=Math.abs(x.dP);});
+      var accTxt=Object.keys(acc).map(function(k){var a=acc[k];return (supLbl[k]||k.toUpperCase())+' avg gap '+(a.s>=0?'+':'&minus;')+_l90Num(Math.abs(a.s/a.n))+' (size '+_l90Num(a.m/a.n)+', '+a.n+' SKUs)';}).join(' &middot; ');
+      h+='<tr><td colspan="6" style="padding:7px 8px;background:#e8f0fa;color:#0a3d62;font-weight:800;border-top:2px solid #b8d0f0">'+_l90Date(curDay)+' <span style="font-weight:400;color:var(--mut)">&middot; '+cnt+' line'+(cnt>1?'s':'')+'</span>'+(accTxt?'<span style="font-weight:600;color:#555;font-size:.62rem;display:block;margin-top:2px">Projection gap: '+accTxt+'</span>':'')+'</td></tr>';
     }
     var tdl='padding:5px 8px;border-bottom:1px solid #eee;'+(n++%2?'background:#fafafa;':'');
     h+='<tr><td style="'+tdl+'font-size:.62rem;font-weight:700;color:#555;white-space:nowrap">'+(supLbl[r.sup]||String(r.sup||'').toUpperCase())+'</td>';
