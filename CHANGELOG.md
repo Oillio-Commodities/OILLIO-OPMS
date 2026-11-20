@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V20NOV2026C — Apical list 20 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
+- Apical supplier list of 20 Nov 2026 loaded (price validity: EOD 20 Nov; supplier's own terms ignored — Oillio terms apply; Note: RSPO MB Shortening). Prices (USD/MT): Jakarta: Shortening 36/39 1,135; 38/40 & 40/42 1,135; 43/47 1,130; 46/48 1,125; 48/52 1,110; Spread Fat 1,280; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can CP10 1,320, CP8 1,330. Port Klang: HPKS 2,575; HPKO 38/40 2,110, 40/42 2,115; HPL 1,985; CBR 1,895; Low GE & 3MCPD 36/39 1,160, 38/42 1,160, 43/48 1,165 (also 46/48), 48/52 1,165.
+- Reporting rule (as agreed): move = supplier actual vs system projection (yesterday's saved price moved by the base oil), shown in the app under "Gap vs projection" and View Log > Supplier Price Up / Down.
+- Gap vs projection for the base-oil-linked SKUs, base oil CP10 1,045 (19 Nov) to 1,050 (20 Nov) = +5 (base derived from KLK check; confirm): Jerry Can CP10 projection 1,340 vs 1,320 = DOWN 20; CP8 1,350 vs 1,330 = DOWN 20; Shortening 36/39, 38/40 & 40/42, 43/47, 46/48 DOWN 15; Shortening 48/52 DOWN 10; Low GE & 3MCPD 36/39, 38/42, 43/48, 46/48 DOWN 15; 48/52 DOWN 10.
+- SKUs linked to other base oils (Stearin, PK oil / olein / stearin, coconut): the app uses the base oils saved on the Oil Base tab; the gap is exact once saved. List-to-list change vs 19 Nov for reference: Spread Fat DOWN 15; HPS Flakes 20ft / 40ft DOWN 5; RCNO 0; HCNO 0; HPKS DOWN 50; HPKO 38/40 and 40/42 DOWN 45; HPL DOWN 40; CBR DOWN 30. If those base oils did not move, the gap equals the list-to-list change.
+- Tested: list applied at the saved base oil — all 22 Apical rows match the supplier list (0 differences). New list id 20NOV26 (Save & Log Reference needed).
+
+---
+
 ## V20NOV2026B — KLK Low 3MCPD & GE flexibag: packaging standardised to the 7 Nov rule, balance in premium (20 Nov 2026)
 - Per Joel: packaging cost standardised, any balancing figure goes to the discount / premium column. Standard now on all 12 new KLK Low 3MCPD & GE flexibag SKUs (CP10 / CP8 / CP6): plain flexibag packaging 35; heating pad, heating rail and double heating pad packaging 40. (7 Nov rule already gave 35 / 40 for plain / heating pad on every supplier; rail and double heating pad were left out of it, and are now included for these 12 SKUs only. Other suppliers' rail / double rows are untouched.)
 - Premium balances to the quote (FOB unchanged): plain 100 (135 - 35); heating pad 101.31; heating rail 103.03; double heating pad 107.62. The rule runs on every load, so old saved values are corrected too.
