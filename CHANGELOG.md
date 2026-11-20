@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V20NOV2026B — KLK Low 3MCPD & GE flexibag: packaging standardised to the 7 Nov rule, balance in premium (20 Nov 2026)
+- Per Joel: packaging cost standardised, any balancing figure goes to the discount / premium column. Standard now on all 12 new KLK Low 3MCPD & GE flexibag SKUs (CP10 / CP8 / CP6): plain flexibag packaging 35; heating pad, heating rail and double heating pad packaging 40. (7 Nov rule already gave 35 / 40 for plain / heating pad on every supplier; rail and double heating pad were left out of it, and are now included for these 12 SKUs only. Other suppliers' rail / double rows are untouched.)
+- Premium balances to the quote (FOB unchanged): plain 100 (135 - 35); heating pad 101.31; heating rail 103.03; double heating pad 107.62. The rule runs on every load, so old saved values are corrected too.
+- Check at base oil 1,045: CP10 1,180 / 1,186.31 / 1,188.03 / 1,192.62; CP8 1,190 / 1,196.31 / 1,198.03 / 1,202.62; CP6 (CP10 + 40) 1,220 / 1,226.31 / 1,228.03 / 1,232.62 (plain / pad / rail / double). 92 existing KLK rows unchanged.
+
+---
+
 ## V20NOV2026A — KLK Low 3MCPD & GE CP6 corrected (1,205 shown vs 1,225 expected) (20 Nov 2026)
 - Problem: CP6 Low 3MCPD & GE showed 1,205 (premium 80, packaging 35) instead of 1,225. Cause (two things stacking): (1) the standing flexibag rule of 7 Nov (packaging 35 normal / 40 heating pad for every supplier, difference moved into the premium) turned my 50 packaging into 35 and the premium up by 15, as designed; (2) V19NOV2026E saved CP6 with the CP6 base (CP10 + 60) and premium 65 (-> 80 after the rule); V19NOV2026F then changed CP6 to CP10 + 40, but the already-saved premium 80 stayed, so the 20 that the +40 link removed was never put back into the premium. Result: base 1,050 + 40 + 80 + 35 = 1,205.
 - Fix: CP6 premium re-set for the CP10 + 40 link: plain flexibag packaging 35 + premium 100 (the same 135 conversion as CP10 and CP8: 50 + 85 in the original quote, shown as 35 + 100 because of the 7 Nov flexibag rule). Heating pad: packaging 40 + premium 101.31; heating rail and double heating pad: packaging 58.03 / 62.62 + premium 85. The 4 CP6 rows moved to new internal ids (200 to 203) so the old saved premium 80 is dropped. CP10 and CP8 rows were already right and are unchanged.
