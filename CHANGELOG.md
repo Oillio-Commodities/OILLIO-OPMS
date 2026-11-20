@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V20NOV2026A — KLK Low 3MCPD & GE CP6 corrected (1,205 shown vs 1,225 expected) (20 Nov 2026)
+- Problem: CP6 Low 3MCPD & GE showed 1,205 (premium 80, packaging 35) instead of 1,225. Cause (two things stacking): (1) the standing flexibag rule of 7 Nov (packaging 35 normal / 40 heating pad for every supplier, difference moved into the premium) turned my 50 packaging into 35 and the premium up by 15, as designed; (2) V19NOV2026E saved CP6 with the CP6 base (CP10 + 60) and premium 65 (-> 80 after the rule); V19NOV2026F then changed CP6 to CP10 + 40, but the already-saved premium 80 stayed, so the 20 that the +40 link removed was never put back into the premium. Result: base 1,050 + 40 + 80 + 35 = 1,205.
+- Fix: CP6 premium re-set for the CP10 + 40 link: plain flexibag packaging 35 + premium 100 (the same 135 conversion as CP10 and CP8: 50 + 85 in the original quote, shown as 35 + 100 because of the 7 Nov flexibag rule). Heating pad: packaging 40 + premium 101.31; heating rail and double heating pad: packaging 58.03 / 62.62 + premium 85. The 4 CP6 rows moved to new internal ids (200 to 203) so the old saved premium 80 is dropped. CP10 and CP8 rows were already right and are unchanged.
+- Check at base oil 1,045 (19 Nov): CP10 1,180, CP8 1,190, CP6 1,220 (= KLK quote). At base oil 1,050 (20 Nov): CP10 1,185, CP8 1,195, CP6 1,225.
+- Note for the Up / Down log today: CP6 "vs yesterday" is +5 (base oil move, correct). Its premium + packaging column may show +20 because the base was re-linked from CP6 to CP10 + 40; the real gap vs projection on CP6 is 0.
+
+---
+
 ## V19NOV2026F — KLK Low 3MCPD & GE CP6: CP10 + 40, premium 85 (19 Nov 2026)
 - Per Joel: KLK Low 3MCPD & GE CP6 is CP10 + 40 (not the usual CP6 base of CP10 + 60), so the premium stays 85 like CP10 and CP8. Formula now: CP10 base oil of the day + 40 + premium 85 + packaging 50 = 1,220 on the plain flexibag (heating variants add +6.31 / +8.03 / +12.62). Replaces the premium-65 workaround in V19NOV2026E. CP10 1,180 and CP8 1,190 unchanged.
 - Tested: all 12 new SKUs match the quote at base oil 1,045; 92 existing KLK rows unchanged.
