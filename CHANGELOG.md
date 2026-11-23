@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026K — KLK new FOB Pasir Gudang (December 2026) flexibag: CP10, RBD Palm Stearin, RBD Palm Oil
+- Three new KLK SKUs, all FLEXIBAG, FOB Pasir Gudang, December '26: RBD PALM OLEIN CP10 (FOB PG DEC 26) USD 1,087/MT; RBD PALM STEARIN (FOB PG DEC 26) USD 1,040/MT; RBD PALM OIL (FOB PG DEC 26) USD 1,080/MT. Each in the same four packings as the other flexibags (plain, heating pad, heating rail, double heating pad). The quote is the plain flexibag; the other three follow with the usual increments (+6.31 / +8.03 / +12.62), packaging standardised to 35 (40 with pad/rail/double) and the balance in the premium.
+- Formulation: CP10 = CP10 base oil of the day + premium + packaging; RBD Palm Oil = RBD (Malaysia) base (CP10 - 10) + premium + packaging; RBD Palm Stearin = the stearin base from the Oil Base tab + premium + packaging. Premium is worked out from the saved base oils when the list loads, then all three float with the daily base oil like every other SKU.
+- This KLK list (23 Nov) is partial: only these new SKUs were quoted, so every other KLK price is untouched (checked: all 111 existing KLK prices identical before/after). New SKUs have no earlier price, so no gap vs projection is shown for them.
+- Note under the SKU (WhatsApp text, table, PDF table, quote card): "FOB Pasir Gudang. Price is inclusive of Health and Phytosanitary Certificates. Any additional documentation required shall be provided at the buyer's expense." Quote validity (6:00 PM MYT, subject to final confirmation) is the supplier's term and is not printed on the customer quote.
+- Pasir Gudang rules carry over: FOB only, no freight option, red warning. No MOQ was given for these, so none is set.
+- Fix: loading a customer profile now keeps the Pasir Gudang flag, MOQ and the note (before, a Pasir Gudang item loaded from a profile could have taken freight).
+
 ## V23NOV2026J — Wing Agro list 23 Nov 2026
 - Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,150/MT (FOB Surabaya); 25L follows; CP8 = 1,165; Low MCPD & GE CP10 = 1,190; Low MCPD & GE CP8 = 1,205 (20L and 25L). All rows follow the base oil daily from here.
 - Gap vs projection (per Joel): supplier 1,150 vs system projection 1,155 = DOWN 5 on every Wing Agro SKU. Cross-check: 19 Nov quote 1,170 at base oil 1,045; 23 Nov base about 1,030 (-15) gives projection 1,155, so the gap is -5. (List-to-list for reference: 1,170 to 1,150 = -20.)
