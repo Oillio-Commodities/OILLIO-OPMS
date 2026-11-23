@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026B';
+  var _v='V23NOV2026C';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -705,7 +705,7 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
   <button class="sup-btn" id="supKlk" onclick="setSupplier('klk')">&#x1F3E2; KLK</button>
   <button class="sup-btn" id="supWing" onclick="setSupplier('wingagro')">&#x1F33F; Wing Agro</button>
   <button class="sup-btn" id="supIoi" onclick="setSupplier('ioi')">&#x1F3ED; IOI</button>
-  <button class="sup-btn" id="supFgv" onclick="setSupplier(\'fgv\')">&#x1F3ED; FGV</button>
+  <button class="sup-btn" id="supFgv" onclick="setSupplier('fgv')">&#x1F3ED; FGV</button>
   <button class="sup-btn" id="supAbp" onclick="setSupplier('abp')">&#x1F3E2; Able Perfect</button>
   <button class="sup-btn" id="supCompare" onclick="setSupplier('compare')">&#x1F4CA; Compare</button>
   <button class="sup-btn" id="supCustomers" onclick="setSupplier('customers')">&#x1F465; Customers</button>
