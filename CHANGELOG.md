@@ -5,6 +5,18 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026A — New supplier FGV (new tab): jerry cans CP10 / CP8, FOB Pasir Gudang (23 Nov 2026)
+- New "FGV" tab (same structure as every supplier: base oil + premium/discount + packaging, Oillio margin, freight / quote, Gap vs projection, View Log, Save & Log Reference). FGV list dated 19 Nov 2026, FOB Pasir Gudang (PGU), Dec 2026 shipment, validity 11pm 19 Nov, small-mouth jerry cans: CP10 per unit 25L (22.5 kg) 26.64, 20L (18 kg) 21.47, 18L (16.2 kg) 19.48, 10L (9 kg) 11.03; CP8 26.86, 21.64, 19.64, 11.12. Per MT: CP10 1,184.00 / 1,192.78 / 1,202.47 / 1,225.56; CP8 1,193.78 / 1,202.22 / 1,212.35 / 1,235.56.
+- Formulation (same as the other suppliers): FOB = CP10 base oil of the day + premium + packaging; CP8 = CP10 base + 10 (FGV's own CP8 is 9.4 to 10.0 above CP10, so +10 fits). Packaging = KLK's cost for the same jerry can (25L 98.82, 20L 103.566, 18L 112.845, 10L 135.325); the balancing figure sits in the premium: CP10 40.18 / 44.214 / 44.625 / 45.235; CP8 39.96 / 43.654 / 44.505 / 45.235.
+- Tracked back to the list day: the premium is worked out at the 19 Nov base oil (Malaysia CP10 1,045 — derived from the KLK Low 3MCPD & GE check, confirm against the Oil Base history), not at today's base. So today's FGV price = FGV's 19 Nov quote moved by the base oil since (the system projection), e.g. at base 1,050 CP10 25L = 1,189.00. New list option "base" added to the list engine for lists dated on an earlier day.
+- FOB Pasir Gudang flag (red badge on the list, warning in the SKU detail and on the quote screen: confirm Pasir Gudang freight before sending CIF; customer text shows "FOB Pasir Gudang, Malaysia"). No MOQ was stated by FGV, so none is set.
+- Assumption: loading per 20ft container = KLK's figure for the same jerry can (25L 1,098; 20L 1,342; 18L 1,440; 10L 2,590) since FGV did not state it. Confirm with FGV.
+- Saving: FGV is stored in a new column of ref_prices ("fgv", jsonb). SQL to run once in Supabase: alter table ref_prices add column if not exists fgv jsonb; Until then Save & Log Reference still saves everything else and shows "FGV prices NOT stored in the database yet (SQL needed)". FGV prices are also written to the price log (Up / Down) per save.
+- New SKUs today, so FGV is left out of the average gap on its first list day; from the next FGV list the gap vs projection works as for every supplier. Not added to the Compare tab yet (FGV jerry cans are small-mouth; ask if wanted).
+- Tested: 8 SKUs match the FGV quote at base 1,045 and move with the base oil (1,050 => +5); list applied at list base gives the same; tab opens, SKU detail, add to quote carries FGV + Pasir Gudang warning; snapshot/restore; all other supplier tabs and lists unchanged (Apical 22/22, KLK 104/104 rows).
+
+---
+
 ## V20NOV2026C — Apical list 20 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
 - Apical supplier list of 20 Nov 2026 loaded (price validity: EOD 20 Nov; supplier's own terms ignored — Oillio terms apply; Note: RSPO MB Shortening). Prices (USD/MT): Jakarta: Shortening 36/39 1,135; 38/40 & 40/42 1,135; 43/47 1,130; 46/48 1,125; 48/52 1,110; Spread Fat 1,280; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can CP10 1,320, CP8 1,330. Port Klang: HPKS 2,575; HPKO 38/40 2,110, 40/42 2,115; HPL 1,985; CBR 1,895; Low GE & 3MCPD 36/39 1,160, 38/42 1,160, 43/48 1,165 (also 46/48), 48/52 1,165.
 - Reporting rule (as agreed): move = supplier actual vs system projection (yesterday's saved price moved by the base oil), shown in the app under "Gap vs projection" and View Log > Supplier Price Up / Down.
