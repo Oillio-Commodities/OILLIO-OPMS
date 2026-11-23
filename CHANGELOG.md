@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026J — Wing Agro list 23 Nov 2026
+- Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,150/MT (FOB Surabaya); 25L follows; CP8 = 1,165; Low MCPD & GE CP10 = 1,190; Low MCPD & GE CP8 = 1,205 (20L and 25L). All rows follow the base oil daily from here.
+- Gap vs projection (per Joel): supplier 1,150 vs system projection 1,155 = DOWN 5 on every Wing Agro SKU. Cross-check: 19 Nov quote 1,170 at base oil 1,045; 23 Nov base about 1,030 (-15) gives projection 1,155, so the gap is -5. (List-to-list for reference: 1,170 to 1,150 = -20.)
+- Tested: all 8 rows reproduce the list at the base oil; no page errors. Press Save & Log Reference after a hard refresh so the Up / Down log records the gap.
+
 ## V23NOV2026I — Staff view tightened; 2.5% margin floor for everyone
 - Staff (User 2/3/4) no longer see the "Est: USD …/MT" line on supplier list rows (it was the supplier FOB × 0.95 internal estimate). Checked by logging in as staff: no Est, Profit, Premium or FCPO text on any supplier tab, the SKU detail or Compare. Staff see supplier final FOB, margin, Oillio price, and optional freight (port search list or manual) with the before/after lines.
 - Minimum Oillio margin is now 2.5% for every user, not only staff: supplier-tab margin box (enforced while typing and on leaving the box), price calculation, add-to-quote, customer-profile load, and each combined-quote line.
