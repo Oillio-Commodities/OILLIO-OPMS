@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026G — Combined quote from several suppliers (Compare tab)
+- Compare tab: every row (and the Best price banner / summary row) has "+ Combined". Items from any supplier go into one cart on the Compare tab, priced as usual: supplier FOB + Oillio margin = price to buyer. Same quote cards, WhatsApp text, table, PDF and confirm page; customer-facing output still shows Oillio Commodities Sdn Bhd only.
+- Each line has its OWN margin (staff cannot go below 2.5%, auto-corrected; admin gets a warning below 2.5%) and its OWN destination freight: type a port (list suggestions fill rate and date) or overtype the USD/FCL rate (manual overrides the list, the port name stays); rate date, 30-day OUTDATED flag as before. New lines start FOB only. Pasir Gudang lines stay FOB only with the warning.
+- Staff view of Compare: supplier FOB/MT, best price banner and the Oillio price; Est, profit, Able Perfect row/column and vs-Able gaps are hidden (Able Perfect is also left out of staff best-price).
+- Fix: visiting the Compare tab no longer overwrites Apical's saved freight with the previous tab's freight; Compare now loads its own cart instead of showing the last supplier's.
+- Customer-profile route unchanged.
+
 ## V23NOV2026F — Freight: manual overrides port list; Pasir Gudang items take no freight; prompts
 - Manual freight overrides the port-list rate (same calculation, USD/FCL ÷ cartons). The destination name stays: switching to Manual pre-fills the port that was picked, and any name can be typed even if it is not in the port list.
 - Items that load at Pasir Gudang (KLK flexibag Low 3MCPD & GE, all FGV) no longer take freight from either supplier: priced FOB only. The SKU screen, list row, quote cart (red warning), add-to-quote toast and confirm page all say so, and tell the marketer to get the freight from logistics.
