@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026R';
+  var _v='V23NOV2026S';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7405,7 +7405,7 @@ function svRenderPkgFields(){
   if(!activeCat || !byCat[activeCat]) activeCat=catOrder[0];
   _pkgActiveCat[s]=activeCat;
 
-  var tabsHtml=(SUP_LISTS[s]?_svListMonitor(s)+'<div style="margin-bottom:8px"><button onclick="svLoadList()" style="background:#1a7a4a;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:800;cursor:pointer">&#x1F4E5; Review '+SUP_LISTS[s].name+' supplier list ('+SUP_LISTS[s].label+')</button> <span style="font-size:.62rem;color:#999">shows system FOB vs supplier FOB for every SKU</span></div>':'')+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
+  var tabsHtml=''+'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">';
   catOrder.forEach(function(c){
     var isActive=(c===activeCat);
     tabsHtml+='<button onclick="svSetPkgCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:4px 9px;border-radius:12px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;'
@@ -7420,7 +7420,7 @@ function svRenderPkgFields(){
     var _tv=window._tgtFob[s+'|'+r.id];
     listHtml+='<div style="border-bottom:1px dashed #f0dca0;padding:3px 0">';
     listHtml+='<div style="display:flex;align-items:center;gap:6px">';
-    listHtml+='<div style="flex:1;font-size:.68rem;color:#555;line-height:1.3">'+dispN(r.name||'',r.packing,s)+(SUP_LISTS[s]?_svListTag(s,r.name,r.packing):'')+'<br><span style="color:#999">'+(r.packing||'')+'</span></div>';
+    listHtml+='<div style="flex:1;font-size:.68rem;color:#555;line-height:1.3">'+dispN(r.name||'',r.packing,s)+''+'<br><span style="color:#999">'+(r.packing||'')+'</span></div>';
     listHtml+='<div style="width:88px"><label style="display:block;font-size:.58rem;color:#1a5276;font-weight:700">SUPPLIER FOB</label>';
     listHtml+='<input type="number" step="0.01" placeholder="key in" value="'+(_tv!=null?_tv:'')+'" data-pkgid="'+r.id+'" data-field="tgt" oninput="svOnTargetFob(this)" onkeydown="if(event.key===\'Enter\')svApplyTgt('+r.id+')" style="width:100%;padding:3px 4px;border:1.5px solid #2980b9;background:#eaf4fd;border-radius:4px;font-size:.72rem;text-align:right"></div>';
     listHtml+='<div style="width:74px"><label style="display:block;font-size:.58rem;color:#b45309;font-weight:700">PREM/DISC</label>';
@@ -8306,7 +8306,7 @@ function _showLogPicker(rows){
   var html='<div style="font-size:.78rem">';
 
   // Section 0: NEW quick view — last 90 days, line by line, with green/red day-on-day changes
-  html+='<div style="margin-bottom:14px"><button onclick="svViewLast90()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:8px;padding:11px 14px;font-size:.8rem;font-weight:800;cursor:pointer;text-align:left">&#x1F4C5; Last 90 Days &mdash; line by line <span style="font-weight:400;font-size:.68rem;opacity:.9">&nbsp;base oil, premium/discount &amp; packaging &middot; <b>&#9650; green</b> up / <b>&#9660; red</b> down vs previous update</span></button></div>';
+  html+='<div style="margin-bottom:14px"><button onclick="svViewLast90()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:8px;padding:11px 14px;font-size:.8rem;font-weight:800;cursor:pointer;text-align:left">&#x1F50E; Price Tracker &mdash; compare suppliers &amp; track changes <span style="font-weight:400;font-size:.68rem;opacity:.9">&nbsp;every supplier product side by side &middot; <b>&#9650; green</b> up / <b>&#9660; red</b> down vs previous update &middot; best price</span></button></div>';
 
   // Section 1: click any single date to browse everything saved then
   html+='<div style="font-weight:700;color:var(--brand);margin-bottom:6px">Browse a single date</div>';
@@ -8982,14 +8982,14 @@ function _l90Delta(cur,prev){
 function svViewLast90(){
   var modal=document.getElementById('fullModal'),body=document.getElementById('fmBody'),title=document.getElementById('fmTitle');
   if(!modal||!body||!title) return;
-  title.textContent='Last 90 Days — Changes';
+  title.textContent='Price Tracker — changes & supplier comparison';
   body.innerHTML='<div style="padding:14px;color:var(--mut)">Loading...</div>';
   modal.className='open';
   Promise.all([
     fetch(_SB_URL+'/rest/v1/oil_base_log?select=*&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}),
     fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,fob,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();}).then(function(j){return Array.isArray(j)?j:fetch(_SB_URL+'/rest/v1/price_log?select=supplier,product_name,packing,premium,pkg_cost,saved_at&order=saved_at.desc&limit=20000',{headers:_SB_HEADERS,cache:'no-store'}).then(function(r){return r.json();});})
   ]).then(function(res){
-    window._l90={oil:Array.isArray(res[0])?res[0]:[],price:Array.isArray(res[1])?res[1]:[],tab:'oil',days:90,sup:'all',q:''};
+    window._l90={oil:Array.isArray(res[0])?res[0]:[],price:Array.isArray(res[1])?res[1]:[],tab:'track',days:90,sup:'all',q:'',sort:'moves',only:'all',cap:40,open:{}};
     _l90Shell();
   }).catch(function(){ body.innerHTML='<div style="padding:14px;color:#c0392b">Failed to load. Check your connection and try again.</div>'; });
 }
@@ -8997,12 +8997,17 @@ function _l90Shell(){
   var S=window._l90,body=document.getElementById('fmBody');
   var h='<div style="font-size:.72rem">';
   h+='<div style="display:flex;gap:8px;align-items:end;margin-bottom:10px;flex-wrap:wrap;padding:10px;background:#f8f8f8;border-radius:8px">';
+  h+='<button onclick="_l90Set(\'tab\',\'track\')" style="'+_l90TabCss(S.tab==='track')+'">&#x1F50E; Compare &amp; Track</button>';
   h+='<button onclick="_l90Set(\'tab\',\'oil\')" style="'+_l90TabCss(S.tab==='oil')+'">&#x1F6E2; Base Oil</button>';
   h+='<button onclick="_l90Set(\'tab\',\'fob\')" style="'+_l90TabCss(S.tab==='fob')+'">&#x1F4C8; Supplier Price Up / Down</button>';
   h+='<button onclick="_l90Set(\'tab\',\'price\')" style="'+_l90TabCss(S.tab==='price')+'">&#x1F4E6; Premium / Discount &amp; Packaging</button>';
   h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">PERIOD</label><select onchange="_l90Set(\'days\',parseInt(this.value))" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
   [30,60,90,180,365].forEach(function(d){h+='<option value="'+d+'"'+(d===S.days?' selected':'')+'>Last '+d+' days</option>';});
   h+='</select></div>';
+  if(S.tab==='track'){
+    h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SORT</label><select onchange="_l90Set(\'sort\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"><option value="moves"'+(S.sort==='moves'?' selected':'')+'>Biggest price moves</option><option value="spread"'+(S.sort==='spread'?' selected':'')+'>Widest supplier gap</option><option value="name"'+(S.sort==='name'?' selected':'')+'>Product A-Z</option></select></div>';
+    h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SHOW</label><select onchange="_l90Set(\'only\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem"><option value="all"'+(S.only==='all'?' selected':'')+'>All products</option><option value="multi"'+(S.only==='multi'?' selected':'')+'>2+ suppliers only</option><option value="changed"'+(S.only==='changed'?' selected':'')+'>Changed only</option></select></div>';
+  }
   if(S.tab!=='oil'){
     h+='<div><label style="font-size:.62rem;font-weight:700;color:var(--mut);display:block">SUPPLIER</label><select onchange="_l90Set(\'sup\',this.value)" style="padding:5px;border:1.5px solid var(--bdr);border-radius:5px;font-size:.72rem">';
     [['all','All'],['apical','Apical'],['klk','KLK Alami'],['wingagro','Wing Agro'],['ioi','IOI'],['fgv','FGV'],['klkpg','KLK'],['abp','Able Perfect']].forEach(function(o){h+='<option value="'+o[0]+'"'+(o[0]===S.sup?' selected':'')+'>'+o[1]+'</option>';});
@@ -9011,17 +9016,104 @@ function _l90Shell(){
   }
   h+='<button onclick="svViewLog()" style="background:#fff;color:var(--mut);border:1.5px solid var(--bdr);border-radius:5px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer">&#x2190; Back</button>';
   h+='</div>';
-  h+='<div style="color:var(--mut);margin-bottom:6px">Newest first. If saved more than once in a day, the last save of that day is shown. <span style="color:#1a7a4a;font-weight:700">&#9650; green = up</span> and <span style="color:#c0392b;font-weight:700">&#9660; red = down</span> versus the previous update, shown next to that day\'s figure.</div>';
+  if(S.tab!=='track')h+='<div style="color:var(--mut);margin-bottom:6px">Newest first. If saved more than once in a day, the last save of that day is shown. <span style="color:#1a7a4a;font-weight:700">&#9650; green = up</span> and <span style="color:#c0392b;font-weight:700">&#9660; red = down</span> versus the previous update, shown next to that day\'s figure.</div>';
   h+='<div id="l90Out"></div></div>';
   body.innerHTML=h;
   _l90Out();
+}
+/* ===== PRICE TRACKER (Log Reference): every supplier product matched across suppliers, today's FOB, day-on-day change, gap vs projection, best price - one interactive page ===== */
+var _TRK_SC={apical:'#e8f4ff',klk:'#fff8e1',klkpg:'#fff1d6',wingagro:'#e8f5ec',ioi:'#f3e8ff',fgv:'#e0f5f1',abp:'#fdeef1'},_TRK_TC={apical:'#0a3d8a',klk:'#6a3800',klkpg:'#8a4b00',wingagro:'#0a5c2a',ioi:'#5b2c83',fgv:'#0f6b5c',abp:'#8a0a2a'};
+function _trkD(d){return d==='now'?'now (unsaved)':new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',timeZone:'UTC'});}
+function _trkHist(S){
+  if(S._h)return S._h;var tmp={};
+  S.price.forEach(function(r){if(r.fob==null)return;var k=r.supplier+'|'+r.product_name+'|'+r.packing,d=_myDay(r.saved_at),g=tmp[k]||(tmp[k]={}),x=g[d];
+    if(!x||r.saved_at>=x.ts)g[d]={d:d,ts:r.saved_at,f:Number(r.fob),p:r.premium!=null?Number(r.premium):null,k:r.pkg_cost!=null?Number(r.pkg_cost):null};});
+  var H={};Object.keys(tmp).forEach(function(k){H[k]=Object.keys(tmp[k]).sort().map(function(d){return tmp[k][d];});});
+  S._h=H;return H;}
+function _trkChip(v,small){if(v==null)return '<span style="color:#aaa">&ndash;</span>';if(Math.abs(v)<0.005)return '<span style="color:#888;font-weight:700">= no change</span>';var up=v>0;
+  return '<b style="color:'+(up?'#1a7a4a':'#c0392b')+';white-space:nowrap">'+(up?'&#9650; +':'&#9660; &minus;')+_l90Num(Math.abs(v))+'</b>';}
+function _trkBuild(S){
+  var H=_trkHist(S),B=_cmpBuild(),out=[];
+  B.groups.forEach(function(g){
+    var items=g.items.slice();var ai=_abpIdx(g.id);if(ai>=0)items.push({sup:'abp',p:ABP_DATA[ai],idx:ai,role:'cmp'});
+    var rows=[];
+    items.forEach(function(it){
+      var p=it.p,sup=it.sup,today=getLiveFob(p,sup);if(!(today>0))return;
+      var key=sup+'|'+p.name+'|'+p.packing,h=H[key]||[],ser=h.slice();
+      if(!ser.length||Math.abs(ser[ser.length-1].f-today)>=0.005)ser.push({d:'now',f:today,p:null,k:null,unsaved:ser.length>0});
+      var cur=ser[ser.length-1],prev=ser.length>1?ser[ser.length-2]:null;
+      var chg=prev?cur.f-prev.f:null,gap=(prev&&cur.p!=null&&prev.p!=null&&cur.k!=null&&prev.k!=null)?(cur.p-prev.p)+(cur.k-prev.k):null;
+      var on=true;try{on=(sup==='abp')?true:_svListOn(sup,p.name,p.packing);}catch(e){}
+      var note=null;try{note=_svConfirmFor(sup,p.name,p.packing);}catch(e){}
+      rows.push({key:key,sup:sup,idx:it.idx,role:it.role||'cmp',name:p.name,packing:p.packing,port:p.fob_port||'',today:today,ser:ser,cur:cur,prev:prev,chg:chg,gap:gap,notOn:!on,note:note,hasHist:h.length>0});
+    });
+    if(!rows.length)return;
+    var best=null;rows.forEach(function(r){if(r.role==='cmp'&&(best==null||r.today<best))best=r.today;});
+    var sups={};rows.forEach(function(r){sups[r.sup]=1;});
+    var maxMove=0,hi=0,lo=1e9;rows.forEach(function(r){if(r.chg!=null&&Math.abs(r.chg)>maxMove)maxMove=Math.abs(r.chg);if(r.role==='cmp'){if(r.today>hi)hi=r.today;if(r.today<lo)lo=r.today;}});
+    out.push({id:g.id,title:g.title,rows:rows,best:best,n:Object.keys(sups).length,maxMove:maxMove,spread:(rows.length>1&&best!=null)?hi-lo:0});
+  });
+  return out;}
+function _trkTog(i){var k=(window._trkKeys||[])[i];if(k==null)return;var o=window._l90.open;if(o[k])delete o[k];else o[k]=1;_l90Out();}
+function _trkMore(){window._l90.cap+=40;_l90Out();}
+function _trkFocus(s){window._l90.sup=(window._l90.sup===s?'all':s);_l90Shell();}
+function _l90TrackHtml(S,cut){
+  var q=(S.q||'').toLowerCase().trim(),focus=S.sup,all=_trkBuild(S),keys=[];window._trkKeys=keys;
+  var sumSup={};
+  all.forEach(function(g){g.rows.forEach(function(r){var a=sumSup[r.sup]||(sumSup[r.sup]={up:0,dn:0,eq:0,n:0});a.n++;if(r.chg==null)return;if(r.chg>0.005)a.up++;else if(r.chg<-0.005)a.dn++;else a.eq++;});});
+  var h='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">';
+  ['apical','klk','klkpg','wingagro','ioi','fgv','abp'].forEach(function(s){var a=sumSup[s];if(!a)return;
+    h+='<div onclick="_trkFocus(\''+s+'\')" style="cursor:pointer;background:'+_TRK_SC[s]+';color:'+_TRK_TC[s]+';border:2px solid '+(focus===s?_TRK_TC[s]:'transparent')+';border-radius:9px;padding:6px 10px;font-size:.68rem;line-height:1.35"><b style="font-size:.74rem">'+_SN[s]+'</b><br><span style="color:#1a7a4a;font-weight:800">&#9650; '+a.up+'</span> &nbsp;<span style="color:#c0392b;font-weight:800">&#9660; '+a.dn+'</span> &nbsp;<span style="color:#777">= '+a.eq+'</span> <span style="color:#999">/ '+a.n+'</span></div>';});
+  h+='</div><div style="color:var(--mut);margin:-4px 0 10px;font-size:.66rem">Tap a supplier to focus on it (its products and the other suppliers they compete with). &#9650;/&#9660; = SKUs up / down vs the previous saved day.</div>';
+  var list=all.filter(function(g){
+    if(focus!=='all'&&!g.rows.some(function(r){return r.sup===focus;}))return false;
+    if(q&&((g.title+' '+g.rows.map(function(r){return r.name+' '+r.packing+' '+_SN[r.sup];}).join(' ')).toLowerCase().indexOf(q)<0))return false;
+    if(S.only==='multi'&&g.n<2)return false;
+    if(S.only==='changed'&&!g.rows.some(function(r){return r.chg!=null&&Math.abs(r.chg)>=0.005;}))return false;
+    return true;});
+  list.sort(function(a,b){
+    if(S.sort==='name')return a.title<b.title?-1:1;
+    if(S.sort==='spread')return (b.spread-a.spread)||(a.title<b.title?-1:1);
+    return (b.maxMove-a.maxMove)||(b.n-a.n)||(a.title<b.title?-1:1);});
+  if(!list.length)return h+'<div style="padding:20px;text-align:center;color:var(--mut)">Nothing matches. Clear the search or filters.</div>';
+  var shown=list.slice(0,S.cap),ri=0;
+  shown.forEach(function(g){
+    h+='<div style="border:1.5px solid #d6dff0;border-radius:10px;margin-bottom:10px;background:#fff;overflow:hidden"><div style="padding:8px 10px;background:#eef3fb;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="color:#0a3d62;font-size:.78rem">'+g.title+'</b><span style="color:var(--mut);font-size:.64rem">'+g.n+' supplier'+(g.n>1?'s':'')+(g.spread>0.005?' &middot; spread USD '+_l90Num(g.spread)+' /MT':'')+'</span></div>';
+    g.rows.slice().sort(function(a,b){return a.today-b.today;}).forEach(function(r){
+      var i=keys.length;keys.push(r.key);var open=!!S.open[r.key],isBest=(r.role==='cmp'&&g.n>1&&Math.abs(r.today-g.best)<0.005),dim=(focus!=='all'&&r.sup!==focus);
+      var vsBest=(r.role==='cmp'&&g.best!=null&&r.today-g.best>=0.005)?'<span style="color:#b45309;font-weight:700;white-space:nowrap">+'+_l90Num(r.today-g.best)+' vs best</span>':'';
+      h+='<div onclick="_trkTog('+i+')" style="cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:7px 10px;border-top:1px solid #eee;'+(isBest?'background:#edfaf1;':'')+(dim?'opacity:.6;':'')+'">'
+       +'<span style="background:'+_TRK_SC[r.sup]+';color:'+_TRK_TC[r.sup]+';padding:2px 8px;border-radius:10px;font-size:.66rem;font-weight:800;white-space:nowrap">'+_SN[r.sup]+'</span>'
+       +'<span style="flex:1 1 150px;min-width:130px;font-size:.7rem;font-weight:600;color:#333">'+r.name+' <span style="color:#888;font-weight:400">'+r.packing+'</span>'+(r.port?' <span style="background:#fff3cd;color:#7a4b00;font-size:.56rem;font-weight:800;padding:1px 5px;border-radius:8px">'+r.port+'</span>':'')+(r.role==='var'?' <span style="background:#fff3e0;color:#b45309;font-size:.56rem;font-weight:800;padding:1px 5px;border-radius:8px">variant</span>':'')+(r.notOn?' <span style="background:#f39c12;color:#fff;font-size:.56rem;font-weight:800;padding:1px 5px;border-radius:8px">not on latest list</span>':'')+(r.note?' <span style="background:#c0392b;color:#fff;font-size:.56rem;font-weight:800;padding:1px 5px;border-radius:8px">to confirm</span>':'')+'</span>'
+       +'<span style="font-size:.82rem;font-weight:800;white-space:nowrap">USD '+_l90Num(r.today)+'</span>'
+       +'<span style="font-size:.68rem;min-width:92px">'+(r.chg==null?'<span style="color:#2980b9;font-weight:700">first price</span>':_trkChip(r.chg))+'</span>'
+       +'<span style="font-size:.66rem;min-width:70px">'+(isBest?'<b style="color:#1a7a4a">&#11088; BEST</b>':vsBest)+'</span>'
+       +'<span style="color:#999;font-size:.7rem">'+(open?'&#9662;':'&#9656;')+'</span></div>';
+      if(open){
+        var hist=r.ser.filter(function(x){return x.d==='now'||x.d>=cut;}).slice().reverse();
+        h+='<div style="padding:6px 10px 10px;background:#fafcff;border-top:1px dashed #c9d6ea;font-size:.68rem">';
+        h+='<div style="color:#555;margin-bottom:4px"><b>'+_SN[r.sup]+'</b> &mdash; '+r.name+' '+r.packing+(r.chg!=null&&r.prev?' &middot; vs '+_trkD(r.prev.d)+': '+_trkChip(r.chg):'')+(IS_ADMIN&&r.gap!=null?' &middot; <b>vs projection</b> (after base-oil move): '+_trkChip(r.gap):'')+'</div>';
+        if(r.notOn)h+='<div style="color:#b45309;margin-bottom:3px">&#9888; Not on the supplier\'s latest list &mdash; no new quote, last price kept (moves with the base oil).</div>';
+        if(r.note)h+='<div style="color:#c0392b;margin-bottom:3px">&#9888; To confirm: '+r.note+'</div>';
+        if(!r.hasHist)h+='<div style="color:var(--mut)">No saved history yet for this SKU (it appears after Save &amp; Log Reference).</div>';
+        else{h+='<table style="border-collapse:collapse;width:100%;max-width:520px"><thead><tr><th style="text-align:left;padding:3px 6px;background:#e8f0fa">Date</th><th style="text-align:right;padding:3px 6px;background:#e8f0fa">FOB</th><th style="text-align:right;padding:3px 6px;background:#e8f0fa">vs previous</th>'+(IS_ADMIN?'<th style="text-align:right;padding:3px 6px;background:#e8f0fa">vs projection</th>':'')+'</tr></thead><tbody>';
+          hist.forEach(function(x){var pi=r.ser.indexOf(x),pv=pi>0?r.ser[pi-1]:null,dF=pv?x.f-pv.f:null,dP=(pv&&x.p!=null&&pv.p!=null&&x.k!=null&&pv.k!=null)?(x.p-pv.p)+(x.k-pv.k):null;
+            h+='<tr><td style="padding:3px 6px;border-bottom:1px solid #eee">'+_trkD(x.d)+'</td><td style="padding:3px 6px;border-bottom:1px solid #eee;text-align:right"><b>'+_l90Num(x.f)+'</b></td><td style="padding:3px 6px;border-bottom:1px solid #eee;text-align:right">'+(dF==null?'<span style="color:#2980b9">first</span>':_trkChip(dF))+'</td>'+(IS_ADMIN?'<td style="padding:3px 6px;border-bottom:1px solid #eee;text-align:right">'+_trkChip(dP)+'</td>':'')+'</tr>';});
+          h+='</tbody></table>';}
+        h+='<div style="margin-top:6px"><button onclick="event.stopPropagation();document.getElementById(\'fullModal\').className=\'\';cmpQuote(\''+r.sup+'\','+r.idx+')" style="background:#4a1a7a;color:#fff;border:0;border-radius:6px;padding:4px 10px;font-size:.68rem;font-weight:700;cursor:pointer">Quote at '+_SN[r.sup]+' &rarr;</button></div></div>';
+      }
+    });
+    h+='</div>';
+  });
+  if(list.length>shown.length)h+='<div style="text-align:center;margin:8px 0"><button onclick="_trkMore()" style="background:#0a3d62;color:#fff;border:0;border-radius:7px;padding:8px 18px;font-size:.74rem;font-weight:800;cursor:pointer">Show more ('+(list.length-shown.length)+' more products)</button></div>';
+  return h+'<div style="color:var(--mut);margin-top:6px;font-size:.66rem">'+list.length+' product group(s). FOB = what the system shows today (supplier FOB per MT).'+(IS_ADMIN?' <b>vs projection</b> = the move beyond the base oil (premium / discount + packaging change between saves).':'')+'</div>';
 }
 function _l90TabCss(on){return 'border:none;border-radius:6px;padding:8px 12px;font-size:.72rem;font-weight:700;cursor:pointer;'+(on?'background:#0a3d62;color:#fff':'background:#fff;color:#0a3d62;border:1.5px solid #b8d0f0');}
 function _l90Set(k,v){window._l90[k]=v;_l90Shell();}
 function _l90Out(){
   var S=window._l90,out=document.getElementById('l90Out');if(!out)return;
   var cut=_myDay(new Date(Date.now()-S.days*86400000));
-  out.innerHTML=(S.tab==='oil')?_l90OilHtml(S,cut):(S.tab==='fob')?_l90FobHtml(S,cut):_l90PriceHtml(S,cut);
+  out.innerHTML=(S.tab==='track')?_l90TrackHtml(S,cut):(S.tab==='oil')?_l90OilHtml(S,cut):(S.tab==='fob')?_l90FobHtml(S,cut):_l90PriceHtml(S,cut);
 }
 function _l90OilHtml(S,cut){
   var cols=OIL_TABLE_COLS,byDay={};

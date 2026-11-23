@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026S (23 Nov 2026)
+- **Supplier "review" panels removed** from every supplier tab (supplier list monitor, "Review ... supplier list" button, "to follow up" banner, per-SKU "not on list" / "to confirm" tags). The "new prices loaded" banner is unchanged.
+- **New Price Tracker in Log Reference** (opens first): every supplier product matched across suppliers (KLK Alami and KLK treated separately), today's FOB, change vs the previous saved day (green up / red down), best price flagged with the gap of the others vs best, and the spread between suppliers. Tap a supplier chip to focus; search, period, sort (biggest moves / widest supplier gap / A-Z), "2+ suppliers only", "changed only". Tap a line for its dated history and a Quote button. The "not on latest list" and "to confirm with supplier" notes now live here. Responsive cards for phone and desktop.
+- Admin also sees "vs projection" (the move beyond the base oil); staff do not. Staff see no Est / profit / formula.
+
 ## V23NOV2026R — Low 3MCPD & GE flexibags moved to KLK (Pasir Gudang)
 - The 12 Low 3MCPD & GE flexibag SKUs (CP10 / CP8 / CP6; plain, heating pad, heating rail, double heating pad; MOQ 5 FCL; FOB Pasir Gudang) are moved from KLK ALAMI to the KLK (Pasir Gudang) tab. KLK ALAMI is now 99 SKUs (Port Klang only), KLK (Pasir Gudang) is 18 SKUs.
 - Prices unchanged by the move: the premium / packaging saved under the old KLK tab carries over to the same SKU under KLK (Pasir Gudang) until the next Save & Log Reference stores it under the new tab. At CP10 1,030 the CP10 plain Low 3MCPD & GE flexibag is 1,165.
