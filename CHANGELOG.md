@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026E — Freight: per-unit before/after lines, dated freight, each supplier independent
+- SKU screen now shows a separate freight block: FOB price per unit (before) + freight per unit (USD/FCL ÷ cartons) = price per unit after freight (CIF), with the same per MT, plus the per-FCL total. The "Oillio Price / Unit" card is labelled FOB — before freight. The list row "WITH FREIGHT" box shows the same three lines.
+- Freight is dated. Port freight uses its table date; Manual freight has a new Rate date box (set to today automatically when a new amount is typed, editable). Older than 30 days, or no date = OUTDATED (red badge on the SKU screen, list rows, quote cards, and a warning on the quote and confirm pages).
+- Each supplier tab keeps its own freight (FOB / manual / port, date, destination) and it is saved in the browser, so it survives a refresh. The panel title shows which supplier it belongs to.
+- Quote, text/WhatsApp, PDF, table and confirm page now price every item on its OWN supplier's freight (before, they all used the freight of whichever tab was open). Mixed carts (e.g. from a customer's saved list) show each supplier's freight and date separately.
+- Not changed: freight rates themselves, margins, supplier prices.
+
 ## V23NOV2026D — Apical list 23 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
 - Apical supplier list of 23 Nov 2026 loaded (validity EOD 23 Nov; supplier's own terms ignored — Oillio terms apply). Prices (USD/MT): Jakarta: Shortening 36/39 1,115; 38/40 & 40/42 1,115; 43/47 1,115; 46/48 1,110; 48/52 1,095; Spread Fat 1,260; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,180, 40ft 1,195; Jerry Can CP10 1,300, CP8 1,310. Port Klang: HPKS 2,530; HPKO 38/40 2,075, 40/42 2,080; HPL 1,955; CBR 1,865; Low GE & 3MCPD 36/39 1,140, 38/42 1,145, 43/48 1,150 (also 46/48), 48/52 1,150.
 - Reporting rule (as agreed): move = Apical's quote vs system projection (20 Nov price moved by the base oil), in the app under "Gap vs projection" and View Log > Supplier Price Up / Down.
