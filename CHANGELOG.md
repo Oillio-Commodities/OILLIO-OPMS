@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026F — Freight: manual overrides port list; Pasir Gudang items take no freight; prompts
+- Manual freight overrides the port-list rate (same calculation, USD/FCL ÷ cartons). The destination name stays: switching to Manual pre-fills the port that was picked, and any name can be typed even if it is not in the port list.
+- Items that load at Pasir Gudang (KLK flexibag Low 3MCPD & GE, all FGV) no longer take freight from either supplier: priced FOB only. The SKU screen, list row, quote cart (red warning), add-to-quote toast and confirm page all say so, and tell the marketer to get the freight from logistics.
+- Confirm page (before the final quotation) now shows a blue "FREIGHT IS INCLUDED" prompt for everyone (destination, USD/FCL, manual or port list, per supplier), plus the red "freight not applied" prompt for Pasir Gudang items.
+
 ## V23NOV2026E — Freight: per-unit before/after lines, dated freight, each supplier independent
 - SKU screen now shows a separate freight block: FOB price per unit (before) + freight per unit (USD/FCL ÷ cartons) = price per unit after freight (CIF), with the same per MT, plus the per-FCL total. The "Oillio Price / Unit" card is labelled FOB — before freight. The list row "WITH FREIGHT" box shows the same three lines.
 - Freight is dated. Port freight uses its table date; Manual freight has a new Rate date box (set to today automatically when a new amount is typed, editable). Older than 30 days, or no date = OUTDATED (red badge on the SKU screen, list rows, quote cards, and a warning on the quote and confirm pages).
