@@ -5,6 +5,9 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026M — KLK Pasir Gudang Dec 26: heating rail and double heating pad removed
+- Per Joel, the three new SKUs (CP10, RBD Palm Stearin, RBD Palm Oil, FOB Pasir Gudang Dec 26) are offered only as FLEXIBAG (plain) and FLEXIBAG WITH HEATING PAD. The heating rail and double heating pad lines are removed (6 SKUs gone, 6 remain). Prices unchanged: plain 1,077 / 1,030 / 1,070; with heating pad 1,087 / 1,040 / 1,080 (the quotes).
+
 ## V23NOV2026L — KLK Pasir Gudang Dec 26: quote is the flexibag WITH heating pad (packaging +10/MT)
 - Per Joel: the three new SKUs' flexibag comes with a heating pad and the packaging conversion is +10/MT over plain. The quoted price (CP10 1,087 / RBD Palm Stearin 1,040 / RBD Palm Oil 1,080) now sits on the FLEXIBAG WITH HEATING PAD line, packaging 45 (plain 35).
 - Resulting prices (CP10 / Stearin / RBD Palm Oil): plain 1,077 / 1,030 / 1,070; with heating pad 1,087 / 1,040 / 1,080 (quoted); heating rail +1.72 = 1,088.72 / 1,041.72 / 1,081.72; double heating pad +6.31 = 1,093.31 / 1,046.31 / 1,086.31. Rail / double increments are KLK's own (+8.03 / +12.62 over plain, less the +6.31 heating pad step). Premium is the same on plain and heating pad; the balance sits in the premium as always.
