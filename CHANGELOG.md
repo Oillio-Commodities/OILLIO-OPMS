@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026I — Staff view tightened; 2.5% margin floor for everyone
+- Staff (User 2/3/4) no longer see the "Est: USD …/MT" line on supplier list rows (it was the supplier FOB × 0.95 internal estimate). Checked by logging in as staff: no Est, Profit, Premium or FCPO text on any supplier tab, the SKU detail or Compare. Staff see supplier final FOB, margin, Oillio price, and optional freight (port search list or manual) with the before/after lines.
+- Minimum Oillio margin is now 2.5% for every user, not only staff: supplier-tab margin box (enforced while typing and on leaving the box), price calculation, add-to-quote, customer-profile load, and each combined-quote line.
+
 ## V23NOV2026H — Combined quote: searchable freight destination; Able Perfect visible to staff
 - Combined-quote lines: destination is now a search box with a drop-down (type any keyword: port, country, region). Each match shows the rate and its age (red = older than 30 days). Picking one fills the rate and date; a name not in the list can be typed and the rate entered manually.
 - Staff see Able Perfect in Compare as a normal supplier (FOB per MT, Oillio price, eligible for best price, + Combined). Still hidden from staff: Est, profit, Able baseline row and the vs-Able gaps.
