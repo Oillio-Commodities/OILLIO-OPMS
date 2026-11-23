@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026Q';
+  var _v='V23NOV2026R';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1834,6 +1834,8 @@ function el(id){return document.getElementById(id);}
     _applyPkg(d.ioi_pkg, IOI_PKG, IOI_PKG_DEF);
     _applyPkg((d.fgv||{}).pkg, FGV_PKG, FGV_PKG_DEF);
     _applyPkg((d.klkpg||{}).pkg, KLKPG_PKG, KLKPG_PKG_DEF);
+    /* Low 3MCPD & GE flexibags moved from KLK Alami to KLK (Pasir Gudang): until KLK (PG) has its own saved row, take the premium / packaging saved under the old KLK tab (same id) */
+    (function(){var have={};((d.klkpg||{}).pkg||[]).forEach(function(x){have[x.id]=1;});(d.klk_pkg||[]).forEach(function(sv){if(have[sv.id])return;var row=KLKPG_PKG.filter(function(r){return r.id===sv.id&&/LOW 3MCPD/.test(r.name||'');})[0];if(row){if(sv.premium!=null)row.premium=sv.premium;if(sv.pkg_cost!=null)row.pkg_cost=sv.pkg_cost;}});})();
     _applyPkg(d.abp_pkg, ABP_PKG, ABP_PKG_DEF);
     _flexiNormalise();
     // One-time model conversion (see MODEL_V2_OLD): keeps every FOB the same while the bases are re-linked
@@ -6544,18 +6546,6 @@ var KLK_PKG_DEF=[
 {id:97,cat:"TIN",name:"VEGETABLE GHEE",packing:"4L X 4 PLASTIC PAIL",pkg_cost:313.1635,premium:13.9765},
 {id:98,cat:"TIN",name:"VEGETABLE GHEE",packing:"8L X 2 PLASTIC PAIL",pkg_cost:274.9575,premium:15.0625},
 {id:99,cat:"TIN",name:"VEGETABLE GHEE",packing:"10L X 2 PLASTIC PAIL",pkg_cost:219.7,premium:2.65},
-{id:100,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
-{id:101,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
-{id:102,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
-{id:103,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62},
-{id:104,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
-{id:105,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
-{id:106,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
-{id:107,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62},
-{id:200,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
-{id:201,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
-{id:202,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
-{id:203,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62},
 ];
 var IOI_PKG_DEF=[
 {id:0,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10",packing:"FLEXIBAG (W/O HEATING PAD)",pkg_cost:35,premium:-142.5},
@@ -6594,7 +6584,19 @@ var KLKPG_PKG_DEF=[
 {id:314,cat:"FLEXIBAG",name:"RBD PALM STEARIN (FOB PG DEC 26)",packing:"FLEXIBAG",pkg_cost:35.0,premium:-5},
 {id:315,cat:"FLEXIBAG",name:"RBD PALM STEARIN (FOB PG DEC 26)",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:45.0,premium:-5},
 {id:318,cat:"FLEXIBAG",name:"RBD PALM OIL (FOB PG DEC 26)",packing:"FLEXIBAG",pkg_cost:35.0,premium:15},
-{id:319,cat:"FLEXIBAG",name:"RBD PALM OIL (FOB PG DEC 26)",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:45.0,premium:15}
+{id:319,cat:"FLEXIBAG",name:"RBD PALM OIL (FOB PG DEC 26)",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:45.0,premium:15},
+{id:100,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
+{id:101,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
+{id:102,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
+{id:103,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP10 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62},
+{id:104,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
+{id:105,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
+{id:106,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
+{id:107,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP8 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62},
+{id:200,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG",pkg_cost:35.0,premium:100.0},
+{id:201,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING PAD",pkg_cost:40.0,premium:101.31},
+{id:202,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH HEATING RAIL",pkg_cost:40.0,premium:103.03},
+{id:203,cat:"FLEXIBAG",name:"RBD PALM OLEIN CP6 LOW 3MCPD & GE",packing:"FLEXIBAG WITH DOUBLE HEATING PAD",pkg_cost:40.0,premium:107.62}
 ];
 var KLKPG_PKG_KEY='oillio_klkpg_pkg';
 var KLKPG_REF_KEY='oillio_klkpg_ref';
@@ -6891,18 +6893,6 @@ var KLK_DATA=[
 {cat:'DRUM',name:'PFAD',packing:'200L RECON STEEL DRUM WITH RINGCLIP',load_ctn:98.0,net_wt:180.0,fob_mt:1220.86,fcpo_default:1110.0,premium:-14.14,pkg_cost:125.0,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 {cat:'DRUM',name:'PFAD',packing:'210L TIGHT HEAD STEEL DRUM - BLUE',load_ctn:98.0,net_wt:189.0,fob_mt:1328.04,fcpo_default:1110.0,premium:-16.96,pkg_cost:235.0,fcpo_ref:'pfad',fcpo_delta:0,fob_delta:0,upd:'20Aug26'},
 // KLK Low 3MCPD & GE RBD Palm Olein, flexibag, FOB PASIR GUDANG (not Port Klang), MOQ 5 FCL (added 19 Nov 2026). Model: base oil + premium + packaging 50; CP8 = CP10 + 10; CP6 = CP10 base + 40 (per Joel, premium stays 85).
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1180.0,fcpo_default:1045.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1186.31,fcpo_default:1045.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1188.03,fcpo_default:1045.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1192.62,fcpo_default:1045.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1190.0,fcpo_default:1055.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1196.31,fcpo_default:1055.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1198.03,fcpo_default:1055.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1202.62,fcpo_default:1055.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1220.0,fcpo_default:1085.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1226.31,fcpo_default:1085.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1228.03,fcpo_default:1085.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
-{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1232.62,fcpo_default:1085.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
 ];
 // IOI (new supplier 6 Nov 2026) - modelled on KLK: same loadability, packaging cost estimated from the matching KLK SKUs (Flexibag from the Able Perfect calculator)
 var IOI_DATA=[
@@ -6941,7 +6931,19 @@ var KLKPG_DATA=[
 {cat:'FLEXIBAG',name:'RBD PALM STEARIN (FOB PG DEC 26)',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1030,fcpo_default:1000.0,premium:-5,pkg_cost:35.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'23Nov26',fob_port:'Pasir Gudang',doc_note:true,new_on:'2026-11-23'},
 {cat:'FLEXIBAG',name:'RBD PALM STEARIN (FOB PG DEC 26)',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1040,fcpo_default:1000.0,premium:-5,pkg_cost:45.0,fcpo_ref:'stearin',fcpo_delta:0,fob_delta:0,upd:'23Nov26',fob_port:'Pasir Gudang',doc_note:true,new_on:'2026-11-23'},
 {cat:'FLEXIBAG',name:'RBD PALM OIL (FOB PG DEC 26)',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1070,fcpo_default:1020.0,premium:15,pkg_cost:35.0,fcpo_ref:'rbd_my',fcpo_delta:0,fob_delta:0,upd:'23Nov26',fob_port:'Pasir Gudang',doc_note:true,new_on:'2026-11-23'},
-{cat:'FLEXIBAG',name:'RBD PALM OIL (FOB PG DEC 26)',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1080,fcpo_default:1020.0,premium:15,pkg_cost:45.0,fcpo_ref:'rbd_my',fcpo_delta:0,fob_delta:0,upd:'23Nov26',fob_port:'Pasir Gudang',doc_note:true,new_on:'2026-11-23'}
+{cat:'FLEXIBAG',name:'RBD PALM OIL (FOB PG DEC 26)',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1080,fcpo_default:1020.0,premium:15,pkg_cost:45.0,fcpo_ref:'rbd_my',fcpo_delta:0,fob_delta:0,upd:'23Nov26',fob_port:'Pasir Gudang',doc_note:true,new_on:'2026-11-23'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1180.0,fcpo_default:1045.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1186.31,fcpo_default:1045.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1188.03,fcpo_default:1045.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP10 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1192.62,fcpo_default:1045.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1190.0,fcpo_default:1055.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1196.31,fcpo_default:1055.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1198.03,fcpo_default:1055.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP8 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1202.62,fcpo_default:1055.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:10,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG',load_ctn:1.0,net_wt:21.4,fob_mt:1220.0,fcpo_default:1085.0,premium:100.0,pkg_cost:35.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1226.31,fcpo_default:1085.0,premium:101.31,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH HEATING RAIL',load_ctn:1.0,net_wt:21.4,fob_mt:1228.03,fcpo_default:1085.0,premium:103.03,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'},
+{cat:'FLEXIBAG',name:'RBD PALM OLEIN CP6 LOW 3MCPD & GE',packing:'FLEXIBAG WITH DOUBLE HEATING PAD',load_ctn:1.0,net_wt:21.4,fob_mt:1232.62,fcpo_default:1085.0,premium:107.62,pkg_cost:40.0,fcpo_ref:'cp10',fcpo_delta:40,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',moq:5,new_on:'2026-11-19'}
 ];
 var FGV_DATA=[
 {cat:'JERRY CAN',name:'RBD PALM OLEIN CP10',packing:'25L JERRY CAN SMALL MOUTH',load_ctn:1098.0,net_wt:22.5,fob_mt:1184.0,fcpo_default:1045.0,premium:40.18,pkg_cost:98.82,fcpo_ref:'cp10',fcpo_delta:0,fob_delta:0,upd:'19Nov26',fob_port:'Pasir Gudang',new_on:'2026-11-19'},
@@ -7871,7 +7873,7 @@ var KLKPG_LIST_23NOV26=[
 ]; /* KLK (Pasir Gudang) 23 Nov 2026: FOB Pasir Gudang Dec flexibags - CP10 1,087 / RBD Palm Stearin 1,040 / RBD Palm Oil 1,080 with heating pad; plain = 10 less */
 var SUP_LISTS={
   klk:{id:'23NOV26',day:'2026-11-23',label:'23 Nov 2026',uplift:0,rows:KLK_LIST_23NOV26,name:'KLK Alami'},
-  klkpg:{id:'23NOV26',day:'2026-11-23',label:'23 Nov 2026 (Dec shipment, FOB Pasir Gudang)',uplift:0,rows:KLKPG_LIST_23NOV26,name:'KLK'},
+  klkpg:{id:'23NOV26',day:'2026-11-23',label:'23 Nov 2026 (Dec shipment, FOB Pasir Gudang)',uplift:0,partial:true,rows:KLKPG_LIST_23NOV26,name:'KLK'},
   apical:{id:'23NOV26',day:'2026-11-23',label:'23 Nov 2026',uplift:0,rows:APC_LIST_23NOV26,name:'Apical'},
   // Wing Agro quotes ad hoc (single SKUs): partial list, so unlisted SKUs are not tagged orange and simply keep their saved price
   ioi:{id:'12NOV26',day:'2026-11-12',label:'12 Nov 2026',uplift:0,rows:ioiRows(),name:'IOI'},

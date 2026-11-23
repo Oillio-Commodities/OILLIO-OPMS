@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026R — Low 3MCPD & GE flexibags moved to KLK (Pasir Gudang)
+- The 12 Low 3MCPD & GE flexibag SKUs (CP10 / CP8 / CP6; plain, heating pad, heating rail, double heating pad; MOQ 5 FCL; FOB Pasir Gudang) are moved from KLK ALAMI to the KLK (Pasir Gudang) tab. KLK ALAMI is now 99 SKUs (Port Klang only), KLK (Pasir Gudang) is 18 SKUs.
+- Prices unchanged by the move: the premium / packaging saved under the old KLK tab carries over to the same SKU under KLK (Pasir Gudang) until the next Save & Log Reference stores it under the new tab. At CP10 1,030 the CP10 plain Low 3MCPD & GE flexibag is 1,165.
+- KLK (Pasir Gudang) list is treated as partial (KLK's 23 Nov sheet only had the 6 Dec '26 flexibags for this tab), so unlisted Low 3MCPD & GE SKUs keep their last price moving with the base oil and are not flagged.
+
+---
+
 ## V23NOV2026Q — KLK split: KLK ALAMI (Port Klang) and KLK (Pasir Gudang) are now separate suppliers
 - The existing KLK tab is renamed KLK ALAMI (FOB Port Klang, 111 SKUs, same prices, same saved data). A new tab KLK (FOB Pasir Gudang) holds the 6 Dec '26 flexibag SKUs (CP10 / RBD Palm Stearin / RBD Palm Oil, plain and with heating pad) moved out of KLK Alami, with its own price list (id 23NOV26), base-oil link, packaging/premium, margin, freight setting, cart and customer-quote fields.
 - Pasir Gudang rules unchanged: FOB only, no freight, Health & Phytosanitary note on the quote, "FOB Pasir Gudang" on the quote.
