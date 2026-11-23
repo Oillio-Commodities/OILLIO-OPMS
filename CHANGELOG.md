@@ -5,7 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
-## V23NOV2026S (23 Nov 2026)
+## V23NOV2026T (23 Nov 2026)
+- **Log Reference now opens on "Date vs Date"** (replaces the Compare & Track tab from S, which duplicated the Compare button; all best-price / quote features removed from the log).
+- Pick any two logged dates (FROM X1 / TO X2) or use Last 2 saves / 7 / 30 / 90 / 365 days / Since start. For every supplier product it shows the supplier FOB on each date (the last save on or before that date), the supplier move, the move of that product's own base oil over the same dates, and the **gap vs oil** (0 = moving in tandem). Gaps at or above the flag threshold (default 5, adjustable) are flagged ABOVE / BELOW OIL MOVE; "Out of step with oil only" filter; supplier chips show how many SKUs are out of step.
+- Filters: supplier, product search, changed only, sort by gap / move / A-Z. Phone and desktop layouts.
+- **Full history:** the log is now loaded page by page from the very first save (previously capped at 20,000 rows). Old tabs also gained a "Since the start" period.
+- Staff see supplier FOB and moves only; the base oil box, oil move and gap columns are admin-only.
+- Per-supplier review panels remain removed (V23NOV2026S).
+
+## V23NOV2026S (23 Nov 2026) - superseded by T for the Log Reference tab
 - **Supplier "review" panels removed** from every supplier tab (supplier list monitor, "Review ... supplier list" button, "to follow up" banner, per-SKU "not on list" / "to confirm" tags). The "new prices loaded" banner is unchanged.
 - **New Price Tracker in Log Reference** (opens first): every supplier product matched across suppliers (KLK Alami and KLK treated separately), today's FOB, change vs the previous saved day (green up / red down), best price flagged with the gap of the others vs best, and the spread between suppliers. Tap a supplier chip to focus; search, period, sort (biggest moves / widest supplier gap / A-Z), "2+ suppliers only", "changed only". Tap a line for its dated history and a Quote button. The "not on latest list" and "to confirm with supplier" notes now live here. Responsive cards for phone and desktop.
 - Admin also sees "vs projection" (the move beyond the base oil); staff do not. Staff see no Est / profit / formula.
