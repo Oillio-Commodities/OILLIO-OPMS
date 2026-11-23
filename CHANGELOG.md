@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026H — Combined quote: searchable freight destination; Able Perfect visible to staff
+- Combined-quote lines: destination is now a search box with a drop-down (type any keyword: port, country, region). Each match shows the rate and its age (red = older than 30 days). Picking one fills the rate and date; a name not in the list can be typed and the rate entered manually.
+- Staff see Able Perfect in Compare as a normal supplier (FOB per MT, Oillio price, eligible for best price, + Combined). Still hidden from staff: Est, profit, Able baseline row and the vs-Able gaps.
+
 ## V23NOV2026G — Combined quote from several suppliers (Compare tab)
 - Compare tab: every row (and the Best price banner / summary row) has "+ Combined". Items from any supplier go into one cart on the Compare tab, priced as usual: supplier FOB + Oillio margin = price to buyer. Same quote cards, WhatsApp text, table, PDF and confirm page; customer-facing output still shows Oillio Commodities Sdn Bhd only.
 - Each line has its OWN margin (staff cannot go below 2.5%, auto-corrected; admin gets a warning below 2.5%) and its OWN destination freight: type a port (list suggestions fill rate and date) or overtype the USD/FCL rate (manual overrides the list, the port name stays); rate date, 30-day OUTDATED flag as before. New lines start FOB only. Pasir Gudang lines stay FOB only with the warning.
