@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026L — KLK Pasir Gudang Dec 26: quote is the flexibag WITH heating pad (packaging +10/MT)
+- Per Joel: the three new SKUs' flexibag comes with a heating pad and the packaging conversion is +10/MT over plain. The quoted price (CP10 1,087 / RBD Palm Stearin 1,040 / RBD Palm Oil 1,080) now sits on the FLEXIBAG WITH HEATING PAD line, packaging 45 (plain 35).
+- Resulting prices (CP10 / Stearin / RBD Palm Oil): plain 1,077 / 1,030 / 1,070; with heating pad 1,087 / 1,040 / 1,080 (quoted); heating rail +1.72 = 1,088.72 / 1,041.72 / 1,081.72; double heating pad +6.31 = 1,093.31 / 1,046.31 / 1,086.31. Rail / double increments are KLK's own (+8.03 / +12.62 over plain, less the +6.31 heating pad step). Premium is the same on plain and heating pad; the balance sits in the premium as always.
+- Packaging for these SKUs is protected from the 35 / 40 flexibag rule (45 with pad / rail / double). New ids 310-321 and list id 23NOV26B so the premiums re-balance on the next load.
+
 ## V23NOV2026K — KLK new FOB Pasir Gudang (December 2026) flexibag: CP10, RBD Palm Stearin, RBD Palm Oil
 - Three new KLK SKUs, all FLEXIBAG, FOB Pasir Gudang, December '26: RBD PALM OLEIN CP10 (FOB PG DEC 26) USD 1,087/MT; RBD PALM STEARIN (FOB PG DEC 26) USD 1,040/MT; RBD PALM OIL (FOB PG DEC 26) USD 1,080/MT. Each in the same four packings as the other flexibags (plain, heating pad, heating rail, double heating pad). The quote is the plain flexibag; the other three follow with the usual increments (+6.31 / +8.03 / +12.62), packaging standardised to 35 (40 with pad/rail/double) and the balance in the premium.
 - Formulation: CP10 = CP10 base oil of the day + premium + packaging; RBD Palm Oil = RBD (Malaysia) base (CP10 - 10) + premium + packaging; RBD Palm Stearin = the stearin base from the Oil Base tab + premium + packaging. Premium is worked out from the saved base oils when the list loads, then all three float with the daily base oil like every other SKU.
