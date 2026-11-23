@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026B — FGV added to the Compare tab (23 Nov 2026)
+- FGV jerry cans (25L / 20L / 18L / 10L, CP10 and CP8) now sit in the Compare tab next to Apical, KLK, Wing Agro, IOI and Able Perfect: own FGV column in the "who is cheapest" summary, best-price count, FGV rows (teal tag) in each product group and "Quote at FGV" button. FGV rows carry the tag "FOB Pasir Gudang - check freight" (same tag now shows for the KLK Low 3MCPD & GE flexibag, also Pasir Gudang).
+- Fix: "Low 3MCPD & GE" oils (KLK flexibag added 19 Nov) were not recognised as a variant by the Compare tab (only "Low GE" / "Low MCPD" were), so they could have been counted like-for-like with normal CP10 / CP8 / CP6 flexibag in the best-price comparison. They are now treated as variants, like the other Low GE / Low MCPD oils.
+- Tested: Compare summary and the 20L jerry can CP10 group show FGV (1,197.78 at base oil 1,050, +8.27 vs Able baseline); no errors; other tabs unchanged.
+
+---
+
 ## V23NOV2026A — New supplier FGV (new tab): jerry cans CP10 / CP8, FOB Pasir Gudang (23 Nov 2026)
 - New "FGV" tab (same structure as every supplier: base oil + premium/discount + packaging, Oillio margin, freight / quote, Gap vs projection, View Log, Save & Log Reference). FGV list dated 19 Nov 2026, FOB Pasir Gudang (PGU), Dec 2026 shipment, validity 11pm 19 Nov, small-mouth jerry cans: CP10 per unit 25L (22.5 kg) 26.64, 20L (18 kg) 21.47, 18L (16.2 kg) 19.48, 10L (9 kg) 11.03; CP8 26.86, 21.64, 19.64, 11.12. Per MT: CP10 1,184.00 / 1,192.78 / 1,202.47 / 1,225.56; CP8 1,193.78 / 1,202.22 / 1,212.35 / 1,235.56.
 - Formulation (same as the other suppliers): FOB = CP10 base oil of the day + premium + packaging; CP8 = CP10 base + 10 (FGV's own CP8 is 9.4 to 10.0 above CP10, so +10 fits). Packaging = KLK's cost for the same jerry can (25L 98.82, 20L 103.566, 18L 112.845, 10L 135.325); the balancing figure sits in the premium: CP10 40.18 / 44.214 / 44.625 / 45.235; CP8 39.96 / 43.654 / 44.505 / 45.235.
