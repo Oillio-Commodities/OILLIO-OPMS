@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026D — Apical list 23 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027)
+- Apical supplier list of 23 Nov 2026 loaded (validity EOD 23 Nov; supplier's own terms ignored — Oillio terms apply). Prices (USD/MT): Jakarta: Shortening 36/39 1,115; 38/40 & 40/42 1,115; 43/47 1,115; 46/48 1,110; 48/52 1,095; Spread Fat 1,260; RCNO 2,070; HCNO 2,135; HPS Flakes 20ft 1,180, 40ft 1,195; Jerry Can CP10 1,300, CP8 1,310. Port Klang: HPKS 2,530; HPKO 38/40 2,075, 40/42 2,080; HPL 1,955; CBR 1,865; Low GE & 3MCPD 36/39 1,140, 38/42 1,145, 43/48 1,150 (also 46/48), 48/52 1,150.
+- Reporting rule (as agreed): move = Apical's quote vs system projection (20 Nov price moved by the base oil), in the app under "Gap vs projection" and View Log > Supplier Price Up / Down.
+- Gap vs projection, base-oil-linked SKUs. Base oil CP10 1,050 (20 Nov) to about 1,030 (23 Nov, read from the Indonesia CP10 910 on the Oil Base screen; confirm) = -20: Jerry Can CP10 projection 1,300 vs 1,300 = 0 (on projection); CP8 1,310 vs 1,310 = 0; Shortening 36/39 and 38/40 & 40/42: 0; Shortening 43/47, 46/48, 48/52: UP 5 (Apical 5 above projection); Low GE & 3MCPD 36/39: 0; 38/42, 43/48, 46/48, 48/52: UP 5.
+- Other base oils (Stearin, PK oil / olein / stearin, coconut): the app uses the base oils saved on the Oil Base tab. List-to-list change vs 20 Nov for reference: Spread Fat DOWN 20; HPS Flakes 20ft / 40ft DOWN 15; RCNO 0; HCNO 0; HPKS DOWN 45; HPKO 38/40 and 40/42 DOWN 35; HPL DOWN 30; CBR DOWN 30. If those base oils did not move, the gap equals the list-to-list change.
+- Tested: list applied at the saved base oil — all 22 Apical rows match the supplier list (0 differences). New list id 23NOV26 (Save & Log Reference needed).
+
+---
+
 ## V23NOV2026C — Fix: FGV tab button gave "JS Error ... Line 708" (23 Nov 2026)
 - Clicking the FGV tab showed "Uncaught SyntaxError: Invalid or unexpected token, Line 708". Cause: the FGV button's click handler was written with stray backslashes (setSupplier(\'fgv\')) when it was added in V23NOV2026A. Handler corrected; nothing else touched.
 - Why testing missed it: the checks switched tabs through the code (setSupplier) instead of clicking the buttons. Now each supplier tab button (Apical, KLK, Wing Agro, IOI, FGV, Able Perfect) is clicked for real in the test, with page errors and pop-ups captured: no errors.
