@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026O — Compare tab: every supplier product listed, matched against each other (not only against Able)
+- Before: a product only appeared in Compare if it had an Able Perfect equivalent. Others (KLK shortening 52-56, margarine, butter oil substitute, Apical/Wing Agro Hpko/Hpks/CNO/PKO/HPS etc.) were hidden or in a "No Able equivalent" list.
+- Now every supplier product with a price is shown. Same product + same packing from several suppliers are grouped and compared (cheapest = BEST); where Able Perfect has the SKU it is just another supplier in the group. A product nobody else has stands on its own ("only supplier for this SKU"), with its own Quote and + Combined buttons.
+- The 3 KLK FOB Pasir Gudang Dec '26 flexibag items (CP10 / RBD Palm Stearin / RBD Palm Oil) sit in the Flexible bag groups, labelled "FOB Pasir Gudang - check freight".
+- Dropdown now says "(n - KLK only)" for stand-alone groups; "ALL comparable" renamed "ALL products".
+- Staff view unchanged: no Est, profit or Able baseline/vs-Able columns; best price visible; 2.5% margin floor.
+
+---
+
 ## V23NOV2026N — Compare tab: combined cart easier to find
 - The combined quote cart always sat under the Compare table, but there was no sign of it after pressing "+ Combined". Now a purple pill "Combined quote: N items - tap to view cart" appears at the bottom of the Compare tab as soon as the first item is added; tapping it scrolls to the cart. It disappears on other tabs and returns (with the items kept) when you come back to Compare.
 - Added the "+ Combined" button to the Able Perfect row (admin view); before, that row only had "Quote".

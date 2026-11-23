@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026N';
+  var _v='V23NOV2026O';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -7147,11 +7147,14 @@ function _cmpMap(sup,p){var N=(p.name||'').toUpperCase(),K=(p.packing||'').toUpp
   var tag=(prod==='cp6'&&/^1\.5L X 12/.test(K))?'= 2 x Able 6x1.5L (same kg per MT) \u2013 KLK list shows 10.8 kg / 1,830 ctn (same as 1L x12), please confirm':(role!=='ref'&&!isFlex(p.packing)&&p.net_wt&&Math.abs(p.net_wt-sk.net)>0.5)?('closest match (Able net '+sk.net+' kg)'):(sk.t==='PET'&&!/^4 x [45]ltr/.test(key)?'Able 1-pc cap pack - confirm cap type':'');
   var title=_ableDisp(key)+' \u2013 '+(prod==='short'?'Shortening '+ABLE_SHORT_LBL[deg]:ABLE_PROD_LBL[prod]);
   return {gid:key+'|'+prod+'|'+(deg||''),title:title,able:{key:key,prod:prod,deg:deg,pkg:pkg,net:sk.net},role:role,tag:tag};}
-function ableFob(a){var b=ableBase(a.prod,a.deg);return b==null?null:b+a.pkg;}
+function ableFob(a){if(!a)return null;var b=ableBase(a.prod,a.deg);return b==null?null:b+a.pkg;}
+/* products with no Able SKU (or an unrecognised name) are not dropped: same name + packing across suppliers are matched together, anything else stands alone */
+function _cmpSolo(sup,p){var nm=(p.name||'').trim(),pk=(p.packing||'').trim(),k='S|'+(nm+'|'+pk).toLowerCase().replace(/[^a-z0-9.\/]+/g,'');
+  return {gid:k,title:(pk&&nm.toLowerCase().indexOf(pk.toLowerCase())<0?nm+' \u2013 '+pk:nm),able:null,role:'cmp',tag:''};}
 function _cmpBuild(){var G={},order=[],none=[];
-  ['apical','wingagro','klk','ioi','fgv'].forEach(function(sup){_cmpData(sup).forEach(function(p,pi){var mp=_cmpMap(sup,p);if(!mp)return;
-    var fob=getLiveFob(p,sup);if(!fob)return;
-    if(mp.none){none.push({sup:sup,p:p,idx:pi});return;}
+  ['apical','wingagro','klk','ioi','fgv'].forEach(function(sup){_cmpData(sup).forEach(function(p,pi){var mp=_cmpMap(sup,p);
+    var fob=getLiveFob(p,sup);if(!fob)return;if(!mp)mp=_cmpSolo(sup,p);
+    if(mp.none){mp=_cmpSolo(sup,p);}
     var g=G[mp.gid];if(!g){g=G[mp.gid]={id:mp.gid,title:mp.title,able:mp.able,items:[]};order.push(g);}
     g.items.push({sup:sup,p:p,idx:pi,role:mp.role,tag:mp.tag||(p.fob_port?'FOB '+p.fob_port+' \u2013 check freight':'')});});});
   order.sort(function(a,b){return a.title<b.title?-1:a.title>b.title?1:0;});
@@ -7167,7 +7170,7 @@ function ableAllRows(){var out=[];Object.keys(ABLE_SKUS).forEach(function(key){v
 /* ===== ABLE PERFECT as a real supplier: one ABP_DATA row per compare group (only Able SKUs matching a SKU held by Apical/KLK/Wing Agro/IOI; full catalogue stays in ABLE_SKUS) ===== */
 var ABLE_CAT={'SM JERRYCANS':'JERRY CAN','JERRYCAN':'JERRY CAN','BM JERRYCAN':'JERRY CAN','SQ TINS':'TIN','RD DRUMS':'TIN','BIB':'BIB','FLEXIBAGS':'FLEXIBAG','METAL DRUMS':'DRUM','PLASTIC DRUMS':'DRUM','IBC':'DRUM','PET':'BOTTLE','SHORTENING':'CARTON BOX','GHEE TINS':'TIN','RECT TINS':'TIN'};
 var ABLE_PNAME={cp10:'RBD PALM OLEIN CP10',cp8:'RBD PALM OLEIN CP8',cp6:'RBD PALM OLEIN CP6',rbd:'RBD PALM OIL',stearin:'RBD PALM STEARIN',pfad:'PFAD',ghee:'VEGETABLE GHEE'};
-function _abpBuild(){var rows=[];try{_cmpBuild().groups.forEach(function(g){var a=g.able,sk=ABLE_SKUS[a.key];if(!sk)return;
+function _abpBuild(){var rows=[];try{_cmpBuild().groups.forEach(function(g){var a=g.able;if(!a)return;var sk=ABLE_SKUS[a.key];if(!sk)return;
   var ref=a.prod==='cp10'?['malaysia_cp10',0]:a.prod==='cp8'?['malaysia_cp10',ABLE_CP8_ADD]:a.prod==='cp6'?['malaysia_cp10',ABLE_CP6_ADD]:a.prod==='ghee'?['malaysia_cp10',ABLE_GHEE_ADD]:a.prod==='short'?['rbd_my',ABLE_SHORT_OFF[a.deg]||0]:[a.prod==='rbd'?'rbd_my':a.prod,0];
   rows.push({cat:ABLE_CAT[sk.t]||'OTHER',name:a.prod==='short'?'SHORTENING '+ABLE_SHORT_LBL[a.deg]:ABLE_PNAME[a.prod],packing:_ableDisp(a.key),load_ctn:sk.fcl,net_wt:sk.net,fcpo_default:0,premium:0,pkg_cost:a.pkg,fcpo_ref:ref[0],fcpo_delta:ref[1],fob_delta:0,upd:'06Nov26',gid:g.id});});}catch(e){console.log('abpBuild',e);}
   rows.sort(function(x,y){return x.cat<y.cat?-1:x.cat>y.cat?1:x.name<y.name?-1:x.name>y.name?1:x.packing<y.packing?-1:1;});return rows;}
@@ -7177,7 +7180,7 @@ ABP_PKG=(function(){var sv=[];try{sv=JSON.parse(localStorage.getItem(ABP_PKG_KEY
   return ABP_PKG_DEF.map(function(d){var o=sv.filter(function(x){return x.id===d.id;})[0]||{};return {id:d.id,cat:d.cat,name:d.name,packing:d.packing,premium:o.premium!=null?o.premium:d.premium,pkg_cost:o.pkg_cost!=null?o.pkg_cost:d.pkg_cost};});})();
 function _abpIdx(gid){for(var i=0;i<ABP_DATA.length;i++)if(ABP_DATA[i].gid===gid)return i;return -1;}
 function svPopulateCmp(){var sel=document.getElementById("cmpSel");if(!sel)return;var cur=sel.value;var B=_cmpBuild();
-  sel.innerHTML='<option value="">-- Select product group --</option><option value="__all">ALL comparable products</option>'+B.groups.map(function(g,i){return '<option value="'+i+'">'+g.title+' ('+g.items.length+')</option>';}).join("")+(B.none.length?'<option value="__none">No Able equivalent yet ('+B.none.length+')</option>':'');sel.value=cur;}
+  sel.innerHTML='<option value="">-- Select product group --</option><option value="__all">ALL products</option>'+B.groups.map(function(g,i){var ss={};g.items.forEach(function(x){ss[x.sup]=1;});if(_abpIdx(g.id)>=0)ss.abp=1;var sk=Object.keys(ss);return '<option value="'+i+'">'+g.title+' ('+g.items.length+(sk.length===1?' \u2013 '+_SN[sk[0]]+' only':'')+')</option>';}).join("")+(B.none.length?'<option value="__none">No Able equivalent yet ('+B.none.length+')</option>':'');sel.value=cur;}
 
 /* ===== COMBINED QUOTE (Compare tab): items from any supplier, own margin and own destination freight per line ===== */
 function cmpAdd(sup,idx){var p=_cmpData(sup)[idx];if(!p){showToast('Product not found');return;}
@@ -7257,10 +7260,10 @@ function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||""
  B.groups.forEach(function(g,gi){if(gid&&gid!=="__all"&&gid!=="__none"&&String(gi)!==gid)return;if(gid==="__none")return;
   if(q&&!gid&&((g.title+" "+g.items.map(function(x){return x.p.name+" "+x.p.packing;}).join(" ")).toLowerCase().indexOf(q)<0))return;
   var af=ableFob(g.able);var ab=null;if(af!=null){ab={fob:af,base:af*ABLE_MARKUP};ab.est=ab.base*ABLE_EST;}
-  var sups={};g.items.forEach(function(x){sups[x.sup]=1;});shown++;var BG=_cmpBest(g);
+  var sups={};g.items.forEach(function(x){sups[x.sup]=1;});if(_abpIdx(g.id)>=0)sups.abp=1;shown++;var BG=_cmpBest(g);
   html+='<div style="margin:0 0 18px"><div style="font-weight:800;color:var(--brand);font-size:.86rem;margin-bottom:6px">'+g.title+' <span style="font-weight:600;color:var(--mut);font-size:.72rem">('+Object.keys(sups).length+' supplier'+(Object.keys(sups).length>1?'s':'')+')</span></div>'+_cmpBanner(BG,ab)+hdr();
   if(ab&&window.IS_ADMIN)html+='<tr style="border-bottom:2px solid #8a0a2a;background:#fdeef1"><td style="padding:7px 10px"><span style="background:#8a0a2a;color:#fff;padding:3px 8px;border-radius:10px;font-size:.71rem;font-weight:700;white-space:nowrap">Able Perfect</span>'+(BG&&BG.best.it.sup==='abp'?' <span style="font-size:.66rem;font-weight:800;color:#1a7a4a">\u2B50 BEST</span>':'')+'</td><td style="padding:7px 10px;font-weight:700;color:#8a0a2a">'+_ableDisp(g.able.key)+' <span style="font-weight:600;font-size:.68rem;color:#8a0a2a">(Able FOB USD '+fmt(ab.fob,2)+' + '+fmt((ABLE_MARKUP-1)*100,1)+'%)</span></td><td style="padding:7px 10px;color:var(--mut);font-size:.71rem">'+(ABLE_PROD_LBL[g.able.prod]||('Shortening '+ABLE_SHORT_LBL[g.able.deg]))+'</td><td style="padding:7px 10px;text-align:right">'+fmt(g.able.net,1)+' kg</td><td style="padding:7px 10px;text-align:right;font-weight:800;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.base,2)+'</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.est,2)+'</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#aaa">\u2014</td>'+(IS_ADMIN?'<td></td>':'')+'<td style="padding:7px 10px;text-align:right">'+(_abpIdx(g.id)>=0?'<button onclick="cmpQuote(\'abp\','+_abpIdx(g.id)+')" style="background:#8a0a2a;color:#fff;border:0;border-radius:6px;padding:4px 9px;font-size:.7rem;font-weight:700;cursor:pointer">Quote</button> <button onclick="cmpAdd(\'abp\','+_abpIdx(g.id)+')" style="background:#fff;color:#8a0a2a;border:1.5px solid #8a0a2a;border-radius:6px;padding:3px 8px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap">+ Combined</button>':'')+'</td></tr>';
-  else if(window.IS_ADMIN)html+='<tr><td colspan="11" style="padding:7px 10px;color:#c0392b;font-size:.74rem">Able base oil for this product is not entered yet</td></tr>';
+  else if(window.IS_ADMIN&&g.able)html+='<tr><td colspan="11" style="padding:7px 10px;color:#c0392b;font-size:.74rem">Able base oil for this product is not entered yet</td></tr>';
   var _list=g.items.slice();if(!window.IS_ADMIN){var _ai=_abpIdx(g.id);if(_ai>=0)_list.push({sup:'abp',p:ABP_DATA[_ai],idx:_ai,role:'cmp',tag:''});}
   _list.sort(function(a,b){return getLiveFob(a.p,a.sup)-getLiveFob(b.p,b.sup);}).forEach(function(it){html+=supRow(it,ab,BG&&it.role==='cmp'&&it.sup===BG.best.it.sup&&it.p===BG.best.it.p);});
   html+='</tbody></table></div>';});
