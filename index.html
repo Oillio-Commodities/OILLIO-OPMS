@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026U';
+  var _v='V23NOV2026V';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -1805,8 +1805,9 @@ function el(id){return document.getElementById(id);}
     if (d.fgv) Object.keys(FGV_REF_DEF).forEach(function(k) {
       if (k in d.fgv) FGV_REF[k] = parseFloat(d.fgv[k]) || FGV_REF[k];
     });
-    if (d.klkpg) Object.keys(KLKPG_REF_DEF).forEach(function(k) {
-      if (k in d.klkpg) KLKPG_REF[k] = parseFloat(d.klkpg[k]) || KLKPG_REF[k];
+    var _kpSrc = d.klkpg || d.klk || d.apical; /* base oil is shared by every supplier: if the klkpg column is not in the database yet, follow KLK Alami's saved base oil instead of the old default */
+    if (_kpSrc) Object.keys(KLKPG_REF_DEF).forEach(function(k) {
+      if (k in _kpSrc) KLKPG_REF[k] = parseFloat(_kpSrc[k]) || KLKPG_REF[k];
     });
     if (d.wingagro) Object.keys(WA_REF_DEF).forEach(function(k) {
       if (k in d.wingagro) WA_REF[k] = parseFloat(d.wingagro[k]) || WA_REF[k];

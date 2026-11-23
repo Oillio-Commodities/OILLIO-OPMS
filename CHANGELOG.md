@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026V — KLK (Pasir Gudang) base oil fix (23 Nov 2026)
+- Fixed: the KLK tab (Pasir Gudang) was showing prices on an old base oil (CP10 1,207.5), e.g. Low 3MCPD & GE CP10 flexibag 1,342.50 instead of 1,165. Cause: the database column for KLK (klkpg) does not exist yet, so after a refresh the tab had no saved base oil and fell back to the old default. The KLK tab now follows the shared base oil saved for the other suppliers (KLK Alami / Apical) whenever its own column is missing.
+- Check at CP10 1,030: Low 3MCPD & GE CP10 flexibag = 1,180 (Thursday 19 Nov quote at 1,045) moved by the base oil -15 = 1,165; the 6 Dec '26 flexibags (1,077 / 1,030 / 1,070 plain) unchanged.
+- Still needed: run `alter table ref_prices add column if not exists klkpg jsonb;` so KLK-specific premiums are stored too.
+- The 23 Nov Low 3MCPD & GE Dec '26 quote (CP10 1,285 / RBDPS 1,541 / RBDPO 1,260) is NOT loaded yet, pending Joel's confirmation.
+
 ## V23NOV2026U — IOI list 23 Nov 2026 (23 Nov 2026)
 - IOI list of 23 Nov 2026 (FOB, USD; supplier's own terms ignored, Oillio terms apply) loaded as the current list (list id 23NOV26), applied at the saved base oil (CP10 1,030). Flexibag w/o heating pad CP10 1,060 /MT (with heating pad 1,065); CP8 = +10 (1,070 / 1,075), CP6 = +90 (1,150 / 1,155). Packed SKUs per unit (CP10 / CP8 / CP6): 20L White Jerry Can 20.80 / 20.95 / 22.40; 5L x 4 White Jerry Can 21.75 / 21.95 / 23.36; 25L Yellow Jerry Can 25.35 / 25.60 / 27.40; 20L Yellow Jerry Can 20.35 / 20.55 / 21.95; 20L Green Jerry Can 20.55 / 20.75; 18L Yellow Jerry Can 18.50 / 18.65; 5L x 4 PET 21.05 / 21.25 / 22.70; 20kg BIB 21.75 / 21.95.
 - Movement vs the 12 Nov list, list-to-list, CP10 USD/MT: all DOWN. Flexibag 1,125 -> 1,060 (DOWN 65); 20L White 1,219.44 -> 1,155.56 (DOWN 63.89); 5L x 4 White 1,272.22 -> 1,208.33 (DOWN 63.89); 25L Yellow 1,193.33 -> 1,126.67 (DOWN 66.67); 20L Yellow 1,194.44 -> 1,130.56 (DOWN 63.89); 20L Green 1,208.33 -> 1,141.67 (DOWN 66.67); 18L Yellow 1,206.79 -> 1,141.98 (DOWN 64.81); 5L x 4 PET 1,236.11 -> 1,169.44 (DOWN 66.67); 20kg BIB 1,152.50 -> 1,087.50 (DOWN 65.00).
