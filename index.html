@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V23NOV2026M';
+  var _v='V23NOV2026N';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -2693,7 +2693,7 @@ function updItemFcl(id,v){
 function rmItem(id){QITEMS=QITEMS.filter(function(x){return x.id!==id;});rQuote();rSum();}
 function clearQuote(){if(QITEMS.length>0&&!confirm('Clear all quote items?'))return;QITEMS=[];rQuote();rSum();}
 function rQuote(){
-  try{if(SV_SUP==='compare')_cmpPortsList();}catch(e){}
+  try{if(SV_SUP==='compare')_cmpPortsList();_cmpPill();}catch(e){}
   var sec=el('quoteSection');
   if(!QITEMS.length){sec.style.display='none';var ub=el('btnUpdatePrices');if(ub)ub.style.display='none';return;}
   sec.style.display='block';var _spb=el('savePdfBar');if(_spb)_spb.style.display=QITEMS.length>0?'':'none';
@@ -7214,6 +7214,10 @@ function _cmpItEditor(item){if(SV_SUP!=='compare'||!item.fr)return '';
   h+='<div><label style="font-size:.62rem;font-weight:700;color:#4a1a7a;display:block">Rate date</label><input type="date" value="'+(f.date||'')+'" onchange="cmpItDate('+item.id+',this.value)" style="'+I+'"></div>';
   h+='<div style="font-size:.7rem;padding-bottom:5px">'+(f.usd>0?L.html:'<span style="color:#888">FOB only &mdash; enter a port or rate for freight</span>')+'</div></div>';
   return h;}
+function _cmpPill(){var d=document.getElementById('cmpPill');var on=(SV_SUP==='compare'&&QITEMS.length>0);
+  if(!on){if(d)d.style.display='none';return;}
+  if(!d){d=document.createElement('div');d.id='cmpPill';d.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;z-index:9000;background:#4a1a7a;color:#fff;border-radius:24px;padding:10px 20px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)';d.onclick=function(){var q=document.getElementById('quoteSection');if(q)q.scrollIntoView({behavior:'smooth',block:'start'});};document.body.appendChild(d);}
+  d.style.display='';d.innerHTML='&#x1F6D2; Combined quote: '+QITEMS.length+' item'+(QITEMS.length>1?'s':'')+' &mdash; tap to view cart &darr;';}
 function _cmpPortsList(){var d=document.getElementById('cmpPorts');if(!d){d=document.createElement('datalist');d.id='cmpPorts';document.body.appendChild(d);}
   if(!d.options.length&&typeof ALL_PORTS!=='undefined')d.innerHTML=ALL_PORTS.map(function(x){return '<option value="'+escHtml(x.port+', '+x.country)+'">';}).join('');}
 function cmpQuote(sup,idx){setSupplier(sup);setTimeout(function(){try{svSelectProduct(idx);}catch(e){}try{window.scrollTo(0,0);}catch(e){}},120);}
@@ -7255,7 +7259,7 @@ function svRenderCmp(){var gid=(document.getElementById("cmpSel")||{}).value||""
   var af=ableFob(g.able);var ab=null;if(af!=null){ab={fob:af,base:af*ABLE_MARKUP};ab.est=ab.base*ABLE_EST;}
   var sups={};g.items.forEach(function(x){sups[x.sup]=1;});shown++;var BG=_cmpBest(g);
   html+='<div style="margin:0 0 18px"><div style="font-weight:800;color:var(--brand);font-size:.86rem;margin-bottom:6px">'+g.title+' <span style="font-weight:600;color:var(--mut);font-size:.72rem">('+Object.keys(sups).length+' supplier'+(Object.keys(sups).length>1?'s':'')+')</span></div>'+_cmpBanner(BG,ab)+hdr();
-  if(ab&&window.IS_ADMIN)html+='<tr style="border-bottom:2px solid #8a0a2a;background:#fdeef1"><td style="padding:7px 10px"><span style="background:#8a0a2a;color:#fff;padding:3px 8px;border-radius:10px;font-size:.71rem;font-weight:700;white-space:nowrap">Able Perfect</span>'+(BG&&BG.best.it.sup==='abp'?' <span style="font-size:.66rem;font-weight:800;color:#1a7a4a">\u2B50 BEST</span>':'')+'</td><td style="padding:7px 10px;font-weight:700;color:#8a0a2a">'+_ableDisp(g.able.key)+' <span style="font-weight:600;font-size:.68rem;color:#8a0a2a">(Able FOB USD '+fmt(ab.fob,2)+' + '+fmt((ABLE_MARKUP-1)*100,1)+'%)</span></td><td style="padding:7px 10px;color:var(--mut);font-size:.71rem">'+(ABLE_PROD_LBL[g.able.prod]||('Shortening '+ABLE_SHORT_LBL[g.able.deg]))+'</td><td style="padding:7px 10px;text-align:right">'+fmt(g.able.net,1)+' kg</td><td style="padding:7px 10px;text-align:right;font-weight:800;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.base,2)+'</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.est,2)+'</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#aaa">\u2014</td>'+(IS_ADMIN?'<td></td>':'')+'<td style="padding:7px 10px;text-align:right">'+(_abpIdx(g.id)>=0?'<button onclick="cmpQuote(\'abp\','+_abpIdx(g.id)+')" style="background:#8a0a2a;color:#fff;border:0;border-radius:6px;padding:4px 9px;font-size:.7rem;font-weight:700;cursor:pointer">Quote</button>':'')+'</td></tr>';
+  if(ab&&window.IS_ADMIN)html+='<tr style="border-bottom:2px solid #8a0a2a;background:#fdeef1"><td style="padding:7px 10px"><span style="background:#8a0a2a;color:#fff;padding:3px 8px;border-radius:10px;font-size:.71rem;font-weight:700;white-space:nowrap">Able Perfect</span>'+(BG&&BG.best.it.sup==='abp'?' <span style="font-size:.66rem;font-weight:800;color:#1a7a4a">\u2B50 BEST</span>':'')+'</td><td style="padding:7px 10px;font-weight:700;color:#8a0a2a">'+_ableDisp(g.able.key)+' <span style="font-weight:600;font-size:.68rem;color:#8a0a2a">(Able FOB USD '+fmt(ab.fob,2)+' + '+fmt((ABLE_MARKUP-1)*100,1)+'%)</span></td><td style="padding:7px 10px;color:var(--mut);font-size:.71rem">'+(ABLE_PROD_LBL[g.able.prod]||('Shortening '+ABLE_SHORT_LBL[g.able.deg]))+'</td><td style="padding:7px 10px;text-align:right">'+fmt(g.able.net,1)+' kg</td><td style="padding:7px 10px;text-align:right;font-weight:800;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.base,2)+'</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#8a0a2a;white-space:nowrap">USD '+fmt(ab.est,2)+'</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#8a0a2a;font-weight:700">BASELINE</td><td style="padding:7px 10px;text-align:right;color:#aaa">\u2014</td>'+(IS_ADMIN?'<td></td>':'')+'<td style="padding:7px 10px;text-align:right">'+(_abpIdx(g.id)>=0?'<button onclick="cmpQuote(\'abp\','+_abpIdx(g.id)+')" style="background:#8a0a2a;color:#fff;border:0;border-radius:6px;padding:4px 9px;font-size:.7rem;font-weight:700;cursor:pointer">Quote</button> <button onclick="cmpAdd(\'abp\','+_abpIdx(g.id)+')" style="background:#fff;color:#8a0a2a;border:1.5px solid #8a0a2a;border-radius:6px;padding:3px 8px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap">+ Combined</button>':'')+'</td></tr>';
   else if(window.IS_ADMIN)html+='<tr><td colspan="11" style="padding:7px 10px;color:#c0392b;font-size:.74rem">Able base oil for this product is not entered yet</td></tr>';
   var _list=g.items.slice();if(!window.IS_ADMIN){var _ai=_abpIdx(g.id);if(_ai>=0)_list.push({sup:'abp',p:ABP_DATA[_ai],idx:_ai,role:'cmp',tag:''});}
   _list.sort(function(a,b){return getLiveFob(a.p,a.sup)-getLiveFob(b.p,b.sup);}).forEach(function(it){html+=supRow(it,ab,BG&&it.role==='cmp'&&it.sup===BG.best.it.sup&&it.p===BG.best.it.p);});

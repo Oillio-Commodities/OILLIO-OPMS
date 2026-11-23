@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026N — Compare tab: combined cart easier to find
+- The combined quote cart always sat under the Compare table, but there was no sign of it after pressing "+ Combined". Now a purple pill "Combined quote: N items - tap to view cart" appears at the bottom of the Compare tab as soon as the first item is added; tapping it scrolls to the cart. It disappears on other tabs and returns (with the items kept) when you come back to Compare.
+- Added the "+ Combined" button to the Able Perfect row (admin view); before, that row only had "Quote".
+
 ## V23NOV2026M — KLK Pasir Gudang Dec 26: heating rail and double heating pad removed
 - Per Joel, the three new SKUs (CP10, RBD Palm Stearin, RBD Palm Oil, FOB Pasir Gudang Dec 26) are offered only as FLEXIBAG (plain) and FLEXIBAG WITH HEATING PAD. The heating rail and double heating pad lines are removed (6 SKUs gone, 6 remain). Prices unchanged: plain 1,077 / 1,030 / 1,070; with heating pad 1,087 / 1,040 / 1,080 (the quotes).
 
