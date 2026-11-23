@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026U — IOI list 23 Nov 2026 (23 Nov 2026)
+- IOI list of 23 Nov 2026 (FOB, USD; supplier's own terms ignored, Oillio terms apply) loaded as the current list (list id 23NOV26), applied at the saved base oil (CP10 1,030). Flexibag w/o heating pad CP10 1,060 /MT (with heating pad 1,065); CP8 = +10 (1,070 / 1,075), CP6 = +90 (1,150 / 1,155). Packed SKUs per unit (CP10 / CP8 / CP6): 20L White Jerry Can 20.80 / 20.95 / 22.40; 5L x 4 White Jerry Can 21.75 / 21.95 / 23.36; 25L Yellow Jerry Can 25.35 / 25.60 / 27.40; 20L Yellow Jerry Can 20.35 / 20.55 / 21.95; 20L Green Jerry Can 20.55 / 20.75; 18L Yellow Jerry Can 18.50 / 18.65; 5L x 4 PET 21.05 / 21.25 / 22.70; 20kg BIB 21.75 / 21.95.
+- Movement vs the 12 Nov list, list-to-list, CP10 USD/MT: all DOWN. Flexibag 1,125 -> 1,060 (DOWN 65); 20L White 1,219.44 -> 1,155.56 (DOWN 63.89); 5L x 4 White 1,272.22 -> 1,208.33 (DOWN 63.89); 25L Yellow 1,193.33 -> 1,126.67 (DOWN 66.67); 20L Yellow 1,194.44 -> 1,130.56 (DOWN 63.89); 20L Green 1,208.33 -> 1,141.67 (DOWN 66.67); 18L Yellow 1,206.79 -> 1,141.98 (DOWN 64.81); 5L x 4 PET 1,236.11 -> 1,169.44 (DOWN 66.67); 20kg BIB 1,152.50 -> 1,087.50 (DOWN 65.00).
+- The real move (gap vs the system projection = 12 Nov price moved by the base oil) shows in the app under Gap vs projection and in Log Reference > Date vs Date once Save & Log Reference is pressed; it needs the 12 Nov CP10 from the Oil Base log.
+- Tested: list applied at the saved base oil, all 27 rows match the supplier list (0 differences); admin and staff logins, no page errors. Press Save & Log Reference after a hard refresh.
+
 ## V23NOV2026T (23 Nov 2026)
 - **Log Reference now opens on "Date vs Date"** (replaces the Compare & Track tab from S, which duplicated the Compare button; all best-price / quote features removed from the log).
 - Pick any two logged dates (FROM X1 / TO X2) or use Last 2 saves / 7 / 30 / 90 / 365 days / Since start. For every supplier product it shows the supplier FOB on each date (the last save on or before that date), the supplier move, the move of that product's own base oil over the same dates, and the **gap vs oil** (0 = moving in tandem). Gaps at or above the flag threshold (default 5, adjustable) are flagged ABOVE / BELOW OIL MOVE; "Out of step with oil only" filter; supplier chips show how many SKUs are out of step.
