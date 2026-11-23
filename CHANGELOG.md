@@ -5,6 +5,16 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026Q — KLK split: KLK ALAMI (Port Klang) and KLK (Pasir Gudang) are now separate suppliers
+- The existing KLK tab is renamed KLK ALAMI (FOB Port Klang, 111 SKUs, same prices, same saved data). A new tab KLK (FOB Pasir Gudang) holds the 6 Dec '26 flexibag SKUs (CP10 / RBD Palm Stearin / RBD Palm Oil, plain and with heating pad) moved out of KLK Alami, with its own price list (id 23NOV26), base-oil link, packaging/premium, margin, freight setting, cart and customer-quote fields.
+- Pasir Gudang rules unchanged: FOB only, no freight, Health & Phytosanitary note on the quote, "FOB Pasir Gudang" on the quote.
+- Compare: KLK Alami and KLK are two different suppliers (own columns, own best-price check, own + Combined and Quote buttons). Staff view unchanged (no Est / profit / Able baseline).
+- Also named KLK Alami / KLK in the customer-profile supplier list, the Log View filter and the price log (supplier 'klkpg').
+- Saving: the KLK (Pasir Gudang) prices are stored in a new database column `klkpg` on ref_prices. Until that column exists the app still saves every other supplier and shows "KLK (Pasir Gudang) prices NOT stored in the database yet (SQL needed)"; on this device they are kept either way. SQL: alter table ref_prices add column klkpg jsonb;
+- Any customer profile line that points to the 6 flexibag SKUs under KLK needs to be re-picked under KLK (Pasir Gudang).
+
+---
+
 ## V23NOV2026P — KLK 23 Nov 2026 price list (Dec shipment) loaded
 - All 92 KLK SKUs on the 23 Nov list are loaded (CP6 PET, CP10 jerry cans / tins / BIB / drums / flexibags, RBD Palm Oil 36-39, Palm Stearin, PFAD, 7 shortenings, margarines, butter oil substitute, vegetable ghee), plus the 6 FOB Pasir Gudang Dec '26 flexibag items (CP10 1,087 / Stearin 1,040 / RBD PO 1,080 with heating pad; plain = -10), so they are no longer flagged "not on list". List id 23NOV26; premium/discount balances to the quote at the base oil saved in Oil Base (CP10 1,030, Stearin 985 for 23 Nov), packaging unchanged.
 - Base oils on the Oil Base screen for 23 Nov: CP10 1,030, RBD PO 1,020, CP6 1,090, Stearin 985, PFAD 925. Stearin and PFAD are priced well above their base oil (stearin flexibag 1,137.42 = base + about 152; PFAD flexibag 1,075.24 = base + about 150): that is the normal premium for those products, so the quotes are correct as loaded.
