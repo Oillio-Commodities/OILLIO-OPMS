@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026W — KLK (Pasir Gudang) 23 Nov evening list + Low 3MCPD & GE Dec '26 (23 Nov 2026)
+- KLK (Pasir Gudang) FOB Dec '26 flexibag, evening update, WITHOUT heating pad (heating pad +10): CP10 1,075 (was 1,077), RBD Palm Stearin 1,030 (unchanged), RBD Palm Oil 1,065 (was 1,070). Quoted price includes Health & Phytosanitary certificates; any other documents at the buyer's cost (note carried on the SKUs).
+- Low 3MCPD & GE, today (replaces the 19 Nov quote of CP10 1,180 / CP8 1,190 / CP6 1,220, MOQ 5 FCL, kept here only as a record): CP10 1,285 plain (heating pad / rail / double pad keep their previous increments); CP8 = +10 = 1,295 and CP6 = +40 = 1,325 by the usual rule (not quoted today, to be confirmed with KLK). Two new SKUs added: Low 3MCPD & GE RBD Palm Stearin 1,541 and RBD Palm Oil 1,260 (plain; heating pad +10 = 1,551 / 1,270), same Dec '26 structure as the other flexibags.
+- Gap vs projection (system projection = 19 Nov / afternoon price moved by the base oil, CP10 1,045 -> 1,030): Low 3MCPD & GE CP10 projection 1,165, actual 1,285 = UP 120 (same on CP8 / CP6 and the pad variants); regular Dec '26 CP10 DOWN 2, RBD Palm Oil DOWN 5, RBD Palm Stearin 0.
+- Anomaly flagged to Joel: Low 3MCPD & GE stearin 1,541 is about 256 above the Low CP10 (1,285), while regular stearin sits below the regular CP10; the UP 120 on Low CP10 is large.
+- Tested: list applied at the saved base oil (CP10 1,030, RBD PO 1,020, stearin 985): all 22 rows match the list (0 differences); admin and staff, no page errors. List id 23NOV26B (Save & Log Reference needed; run the klkpg SQL if not done).
+
 ## V23NOV2026V — KLK (Pasir Gudang) base oil fix (23 Nov 2026)
 - Fixed: the KLK tab (Pasir Gudang) was showing prices on an old base oil (CP10 1,207.5), e.g. Low 3MCPD & GE CP10 flexibag 1,342.50 instead of 1,165. Cause: the database column for KLK (klkpg) does not exist yet, so after a refresh the tab had no saved base oil and fell back to the old default. The KLK tab now follows the shared base oil saved for the other suppliers (KLK Alami / Apical) whenever its own column is missing.
 - Check at CP10 1,030: Low 3MCPD & GE CP10 flexibag = 1,180 (Thursday 19 Nov quote at 1,045) moved by the base oil -15 = 1,165; the 6 Dec '26 flexibags (1,077 / 1,030 / 1,070 plain) unchanged.
