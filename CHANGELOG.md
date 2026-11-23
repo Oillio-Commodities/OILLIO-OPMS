@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V23NOV2026P — KLK 23 Nov 2026 price list (Dec shipment) loaded
+- All 92 KLK SKUs on the 23 Nov list are loaded (CP6 PET, CP10 jerry cans / tins / BIB / drums / flexibags, RBD Palm Oil 36-39, Palm Stearin, PFAD, 7 shortenings, margarines, butter oil substitute, vegetable ghee), plus the 6 FOB Pasir Gudang Dec '26 flexibag items (CP10 1,087 / Stearin 1,040 / RBD PO 1,080 with heating pad; plain = -10), so they are no longer flagged "not on list". List id 23NOV26; premium/discount balances to the quote at the base oil saved in Oil Base (CP10 1,030, Stearin 985 for 23 Nov), packaging unchanged.
+- Gap check against the system projection (19 Nov price moved by the base oil): all CP10, CP6, ghee, RBD Palm Oil, butter oil substitute lines are about 10.4 BELOW the projection (KLK fell 25.4 list-to-list vs the base-oil move of 15). Shortening 36-39 / 33-36, margarine and 40-42 / 48-52 are within about 5-20 of projection.
+- Needs a check with KLK: Palm Stearin (+77 list-to-list, about +92 vs projection), PFAD (+112 list-to-list, about +127 vs projection), Shortening 52-56 (+77) and Shortening 46-48 (+36) went UP while CP10 went down. Stearin flexibag at Port Klang 1,137.42 vs the Pasir Gudang stearin flexibag at 1,030. Loaded as quoted.
+- Not on the 23 Nov list, so they stay on their last price moving with the base oil and show as "not on list": CP6 1.5L x 12 and 4.5L x 6, CP10 4.5L x 4 and 8L x 2 jerry cans, shortening 48-52 16kg and 36-39 25kg, ghee 14kg, and all Low 3MCPD & GE flexibags (CP10 / CP8 / CP6).
+
+---
+
 ## V23NOV2026O — Compare tab: every supplier product listed, matched against each other (not only against Able)
 - Before: a product only appeared in Compare if it had an Able Perfect equivalent. Others (KLK shortening 52-56, margarine, butter oil substitute, Apical/Wing Agro Hpko/Hpks/CNO/PKO/HPS etc.) were hidden or in a "No Able equivalent" list.
 - Now every supplier product with a price is shown. Same product + same packing from several suppliers are grouped and compared (cheapest = BEST); where Able Perfect has the SKU it is just another supplier in the group. A product nobody else has stands on its own ("only supplier for this SKU"), with its own Quote and + Combined buttons.
