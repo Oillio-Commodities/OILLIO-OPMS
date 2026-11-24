@@ -5,6 +5,10 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026E — List arrival time recorded (24 Nov 2026)
+- Rule agreed with Joel: every supplier list gets the time Joel sends it to be loaded (his message time), for every supplier. The first base-oil update of the day is normally around 1:30-2pm MY; a list that arrives before it is measured against that first update, so the market-move protocol only switches on when a further base-oil update is saved after the list arrived.
+- Today: Apical received 14:04, KLK 15:09 (shown in the admin box); both stay set by hand at CP10 1,010 as Joel asked.
+
 ## V24NOV2026D — Supplier lists stamped with the base oil when they arrived; cleaner market-move layout (24 Nov 2026)
 - Replaces the V24NOV2026C set-up with one rule for every supplier and every day: a supplier list carries the time it arrived (`at`), and the app looks up the CP10 saved in the Daily Oil Base Price at that time (if nothing was saved yet that day, the day's first save). A `base` set by hand still overrides (used today for Apical and KLK: CP10 1,010).
 - On the list day: price shown = supplier quote + CP10 move since the quote, never below the supplier quote. Only CP10-linked bases are stamped (CP10, RBD palm oil, CP6, Indonesia); stearin, PFAD and lauric bases keep the same-day rule. Normal day (no move): nothing changes, no prompt. Next day: prompt gone.
