@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026A — Apical list 24 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (24 Nov 2026)
+- Apical supplier list of 24 Nov 2026 loaded (supplier's own terms ignored; Oillio terms apply). USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,100; Spread Fat 1,250; RCNO 2,100; HCNO 2,165; HPS Flakes 20ft 1,185, 40ft 1,200; Jerry Can CP10 1,290, CP8 1,300. Port Klang: HPKS 2,530; HPKO 38/40 2,075, 40/42 2,080; HPL 41/43 1,955; CBR 1,870; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,155 (also used for 46/48), 48/52 1,155.
+- Movement vs the 23 Nov list, list-to-list at the same base oil (USD/MT): Shortening all five lines UP 5; Spread Fat DOWN 10; RCNO UP 30; HCNO UP 30; HPS Flakes 20ft UP 5, 40ft UP 5; Jerry Can CP10 DOWN 10, CP8 DOWN 10; HPKS, HPKO, HPL unchanged; CBR UP 5; Low GE & 3MCPD Shortening all four lines UP 5.
+- Real move (gap vs projection = 23 Nov price moved by the base oil change 23 -> 24 Nov): each SKU's gap = list-to-list move above minus the CP10 move since 1,030; shown in the app under Gap vs projection and in Log Reference after Save & Log Reference.
+- Tested: list applied at the saved base oil: all 22 rows match (0 differences); admin and staff, no page errors. List id 24NOV26.
+
 ## V23NOV2026W — KLK (Pasir Gudang) 23 Nov evening list + Low 3MCPD & GE Dec '26 (23 Nov 2026)
 - KLK (Pasir Gudang) FOB Dec '26 flexibag, evening update, WITHOUT heating pad (heating pad +10): CP10 1,075 (was 1,077), RBD Palm Stearin 1,030 (unchanged), RBD Palm Oil 1,065 (was 1,070). Quoted price includes Health & Phytosanitary certificates; any other documents at the buyer's cost (note carried on the SKUs).
 - Low 3MCPD & GE, today (replaces the 19 Nov quote of CP10 1,180 / CP8 1,190 / CP6 1,220, MOQ 5 FCL, kept here only as a record): CP10 1,285 plain (heating pad / rail / double pad keep their previous increments); CP8 = +10 = 1,295 and CP6 = +40 = 1,325 by the usual rule (not quoted today, to be confirmed with KLK). Two new SKUs added: Low 3MCPD & GE RBD Palm Stearin 1,541 and RBD Palm Oil 1,260 (plain; heating pad +10 = 1,551 / 1,270), same Dec '26 structure as the other flexibags.
