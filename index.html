@@ -4,7 +4,7 @@
 <script>
 // Force fresh JS load on every version change
 (function(){
-  var _v='V24NOV2026F';
+  var _v='V24NOV2026G';
   var COOLDOWN_KEY='oillio_last_autoreload';
   var lastReload=parseInt(sessionStorage.getItem(COOLDOWN_KEY)||'0');
   var now=Date.now();
@@ -630,12 +630,16 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
     var ov=document.getElementById('authOverlay');
     if(ov) ov.style.display='none';
     try{ var _dv=sessionStorage.getItem('oillio_div'); if(_dv==='dairy'){ (function _od(n){ if(window.openDairies) window.openDairies(); else if(n<40) setTimeout(function(){_od(n+1);},100); })(0); } else if(_dv!=='oil') showDivisions(); }catch(e){ showDivisions(); }
+    /* run after the whole page (all scripts) has loaded: on a slow connection the main script may not be ready yet when an auto-login runs */
+    var _postLogin=function(){
     // Load latest ref prices from Supabase (instant, real-time)
     try { _syncLoad(function(d) { if(d) _syncApply(d); }); } catch(e) {}
     // keep retrying until the saved prices have really been loaded (never silently stay on old figures)
-    (function _retry(n){ setTimeout(function(){ if(window._syncLoadedOnce||n>=10)return; try{ _svSyncStatus(); }catch(e){} _syncLoad(function(d){ if(d){ window._forceApply=true; try{ _syncApply(d); }finally{ window._forceApply=false; } try{ svRenderRefPanel(); }catch(e){} } }); _retry(n+1); }, 3000); })(0);
+    (function _retry(n){ setTimeout(function(){ if(window._syncLoadedOnce||n>=10)return; if(typeof _syncLoad!=='function'){ _retry(n+1); return; } try{ _svSyncStatus(); }catch(e){} try{ _syncLoad(function(d){ if(d){ window._forceApply=true; try{ _syncApply(d); }finally{ window._forceApply=false; } try{ svRenderRefPanel(); }catch(e){} } }); }catch(e){} _retry(n+1); }, 3000); })(0);
     try { _startRealtimeSync(); } catch(e) {}
     try { _loadAllCustomers(_populateCustList); } catch(e) {}
+    };
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',_postLogin);else _postLogin();
 
     var badge=document.getElementById('roleBadge');
     if(badge){
