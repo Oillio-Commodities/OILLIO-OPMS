@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026H — Wing Agro list 24 Nov 2026 (24 Nov 2026)
+- Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,150/MT (FOB Surabaya), received 16:51 MY, after the 2nd base-oil update (CP10 1,025): quoted base = 1,025, so no market move is added and no prompt shows. 25L follows; CP8 1,165; Low MCPD & GE CP10 1,190; Low MCPD & GE CP8 1,205 (20L and 25L).
+- Gap vs projection: yesterday's price 1,150 moved by the base oil (CP10 1,030 -> 1,025 = -5) = 1,145; supplier 1,150 = UP 5 on every Wing Agro SKU (same price as 23 Nov, but the base oil fell 5).
+- Tested: all 8 rows match the list at CP10 1,025 (0 differences); admin and staff, no page errors. List id 24NOV26.
+
+---
+
 ## V24NOV2026G — Fix "_syncLoad is not defined" alert (24 Nov 2026)
 - Cause: after login, the page asked for the saved prices before the rest of the page had finished loading (slow connection / auto-login), so a 3-second retry hit a loader that did not exist yet and showed the JS Error alert. No prices were changed or lost.
 - Fix: the post-login loading now waits until the whole page has loaded, and the retry safely waits instead of failing. Nothing changes in what admin or staff see.
