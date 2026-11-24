@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026C — Supplier quoted at an earlier base oil: price moves with the market, floor and prompts (24 Nov 2026)
+- Situation: Apical and KLK sent their 24 Nov lists when CP10 was 1,010; CP10 was then moved to 1,025 (+15). Per Joel: show the price +15 (room to negotiate) and prompt users to double-check the real costing with the supplier. For a drastic same-day move only (temporary); a list without the new setting behaves exactly as before.
+- Mechanism: a supplier list can carry `base` (the CP10 the supplier quoted on) and `prompt:true`. The list is applied at that base, so shown price = supplier quote + base-oil move since (Apical and KLK Pasir Gudang SKUs: +15 today; KLK stearin unchanged because stearin did not move after the quote). Gap vs projection is measured at the quoted base, so the log stays true.
+- Floor: if the base oil later falls below the quoted base, the price never shows below the supplier's actual quote.
+- Prompts: supplier tab banner (admin sees CP10 quoted vs now and the supplier's actual quote on each SKU; staff see a general prompt with no base-oil numbers), warning in the quote review and the final review screen ("double-check the actual costing with the supplier before sending or agreeing a lower price"). They disappear when the base returns to the quoted level or the next list is loaded without the setting.
+- Visibility change: staff (User 2/3/4) now see the prompt on Apical / KLK tabs and in quotes that contain those items; they do not see the base-oil figures or the supplier's actual quote.
+- List ids bumped to 24NOV26B (Apical, KLK) so the lists re-apply at 1,010: press Save & Log Reference after a hard refresh.
+- Tested: Apical 36/39 shows 1,135 (quote 1,120 + 15), Jerry Can CP10 1,305; KLK CP10 flexibag 1,088 (1,073 + 15), Low CP10 1,163 (1,148 + 15); floor holds at 1,120 when base is set to 1,000; no prompt when base = quoted base; admin and staff, no page errors.
+
 ## V24NOV2026B — KLK (Pasir Gudang) list 24 Nov 2026 (24 Nov 2026)
 - KLK FOB Pasir Gudang flexibag, WITHOUT heating pad (heating pad +10): CP10 1,073; CP8 1,093; CP6 1,133; RBD Palm Oil 1,068; RBD Palm Stearin 1,039. Low 3MCPD & GE: CP10 1,148; CP8 1,158; CP6 1,198; RBD Palm Oil 1,143; RBD Palm Stearin 1,183. Regular CP8 and CP6 are new SKUs (Dec '26 structure). Low CP6 is now CP10 + 50 (was derived as + 40); the existing Low rail / double pad variants keep their increments.
 - Supplier quoted when CP10 was 1,010 (the app base was moved to 1,025 afterwards). Gap vs projection measured at the quoted base (CP10 1,010, i.e. -20 from 1,030 on 23 Nov): CP10 UP 18 (proj 1,055); RBD Palm Oil UP 23 (1,045); RBD Palm Stearin UP 9 (1,030, stearin base assumed unchanged at 985); Low 3MCPD & GE CP10 DOWN 117 (proj 1,265); CP8 DOWN 117 (1,275); CP6 DOWN 107 (1,305); RBD Palm Oil DOWN 97 (1,240); RBD Palm Stearin DOWN 358 (1,541). The 23 Nov Low 3MCPD & GE figures (1,285 / 1,541 / 1,260) look to have been out of line: today's Low CP10 1,148 is back in line with the 19 Nov quote (1,180 at CP10 1,045 = 1,145 at 1,010).
