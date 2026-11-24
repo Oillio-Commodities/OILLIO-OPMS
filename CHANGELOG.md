@@ -5,6 +5,12 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026B — KLK (Pasir Gudang) list 24 Nov 2026 (24 Nov 2026)
+- KLK FOB Pasir Gudang flexibag, WITHOUT heating pad (heating pad +10): CP10 1,073; CP8 1,093; CP6 1,133; RBD Palm Oil 1,068; RBD Palm Stearin 1,039. Low 3MCPD & GE: CP10 1,148; CP8 1,158; CP6 1,198; RBD Palm Oil 1,143; RBD Palm Stearin 1,183. Regular CP8 and CP6 are new SKUs (Dec '26 structure). Low CP6 is now CP10 + 50 (was derived as + 40); the existing Low rail / double pad variants keep their increments.
+- Supplier quoted when CP10 was 1,010 (the app base was moved to 1,025 afterwards). Gap vs projection measured at the quoted base (CP10 1,010, i.e. -20 from 1,030 on 23 Nov): CP10 UP 18 (proj 1,055); RBD Palm Oil UP 23 (1,045); RBD Palm Stearin UP 9 (1,030, stearin base assumed unchanged at 985); Low 3MCPD & GE CP10 DOWN 117 (proj 1,265); CP8 DOWN 117 (1,275); CP6 DOWN 107 (1,305); RBD Palm Oil DOWN 97 (1,240); RBD Palm Stearin DOWN 358 (1,541). The 23 Nov Low 3MCPD & GE figures (1,285 / 1,541 / 1,260) look to have been out of line: today's Low CP10 1,148 is back in line with the 19 Nov quote (1,180 at CP10 1,045 = 1,145 at 1,010).
+- If the list is loaded after the base oil is raised to 1,025 the premium absorbs the 15, so the app shows each gap 15 lower than the figures above.
+- Tested: list applied at the saved base oil: all 26 rows match (0 differences) at base 1,010 and 1,025; admin and staff, no page errors. List id 24NOV26.
+
 ## V24NOV2026A — Apical list 24 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (24 Nov 2026)
 - Apical supplier list of 24 Nov 2026 loaded (supplier's own terms ignored; Oillio terms apply). USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,100; Spread Fat 1,250; RCNO 2,100; HCNO 2,165; HPS Flakes 20ft 1,185, 40ft 1,200; Jerry Can CP10 1,290, CP8 1,300. Port Klang: HPKS 2,530; HPKO 38/40 2,075, 40/42 2,080; HPL 41/43 1,955; CBR 1,870; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,155 (also used for 46/48), 48/52 1,155.
 - Movement vs the 23 Nov list, list-to-list at the same base oil (USD/MT): Shortening all five lines UP 5; Spread Fat DOWN 10; RCNO UP 30; HCNO UP 30; HPS Flakes 20ft UP 5, 40ft UP 5; Jerry Can CP10 DOWN 10, CP8 DOWN 10; HPKS, HPKO, HPL unchanged; CBR UP 5; Low GE & 3MCPD Shortening all four lines UP 5.
