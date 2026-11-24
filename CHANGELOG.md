@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026D — Supplier lists stamped with the base oil when they arrived; cleaner market-move layout (24 Nov 2026)
+- Replaces the V24NOV2026C set-up with one rule for every supplier and every day: a supplier list carries the time it arrived (`at`), and the app looks up the CP10 saved in the Daily Oil Base Price at that time (if nothing was saved yet that day, the day's first save). A `base` set by hand still overrides (used today for Apical and KLK: CP10 1,010).
+- On the list day: price shown = supplier quote + CP10 move since the quote, never below the supplier quote. Only CP10-linked bases are stamped (CP10, RBD palm oil, CP6, Indonesia); stearin, PFAD and lauric bases keep the same-day rule. Normal day (no move): nothing changes, no prompt. Next day: prompt gone.
+- Admin, Daily Oil Base Price panel: new "Today's supplier lists vs market" box: per supplier, list received time, CP10 when quoted, market move added, gap vs projection (tap for each SKU). Phone layout wraps per supplier.
+- Admin, supplier tab: each affected SKU shows "quote 1,120 · market +15"; one-line notice at the top.
+- Staff: one-line notice on the supplier tab (no base-oil figures, no supplier quote); in the confirm-before-copy / PDF screen the affected items are named and marked, and a tick box "I have double-checked the actual cost with the supplier / management" must be ticked before the WhatsApp copy or PDF goes out. Admin is not asked to tick. (Visibility change for User 2/3/4.)
+- Tested at CP10 1,025: Apical 36/39 1,135 (quote 1,120), KLK CP10 flexibag 1,088 (quote 1,073), KLK stearin 1,039 (not stamped); stamp lookup: list at 11:00 -> 1,010 (09:30 save), at 08:00 -> 1,010 (first save of the day), at 16:00 -> 1,025; staff tick blocks the copy until ticked; admin and staff, desktop and phone, no page errors.
+
 ## V24NOV2026C — Supplier quoted at an earlier base oil: price moves with the market, floor and prompts (24 Nov 2026)
 - Situation: Apical and KLK sent their 24 Nov lists when CP10 was 1,010; CP10 was then moved to 1,025 (+15). Per Joel: show the price +15 (room to negotiate) and prompt users to double-check the real costing with the supplier. For a drastic same-day move only (temporary); a list without the new setting behaves exactly as before.
 - Mechanism: a supplier list can carry `base` (the CP10 the supplier quoted on) and `prompt:true`. The list is applied at that base, so shown price = supplier quote + base-oil move since (Apical and KLK Pasir Gudang SKUs: +15 today; KLK stearin unchanged because stearin did not move after the quote). Gap vs projection is measured at the quoted base, so the log stays true.
