@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V24NOV2026F — IOI list 24 Nov 2026 (24 Nov 2026)
+- IOI list of 24 Nov 2026 (FOB; supplier terms ignored), received 16:14 MY, after the 2nd base-oil update (CP10 1,025): quoted base = 1,025, so no market move is added and no prompt shows. Flexibag CP10 1,095 w/o heating pad (1,100 with); CP8 1,105 / 1,110; CP6 1,185 / 1,190 (rules unchanged: CP8 +10, CP6 +90, pad +5). Per unit CP10 / CP8 / CP6: 20L White 21.40 / 21.60 / 23.05; 5L x 4 White 22.40 / 22.55 / 24.00; 25L Yellow 26.15 / 26.40 / 28.20; 20L Yellow 21.00 / 21.15 / 22.60; 20L Green 21.20 / 21.40; 18L Yellow 19.10 / 19.25; 5L x 4 PET 21.70 / 21.90 / 23.30; 20kg BIB 22.45 / 22.65.
+- Gap vs projection (23 Nov price moved by the base oil, CP10 1,030 -> 1,025 = -5), CP10 USD/MT: Flexibag projection 1,055 -> 1,095 UP 40.00; 20L White 1,150.56 -> 1,188.89 UP 38.33; 5L x 4 White 1,203.33 -> 1,244.44 UP 41.11; 25L Yellow 1,121.67 -> 1,162.22 UP 40.56; 20L Yellow 1,125.56 -> 1,166.67 UP 41.11; 20L Green 1,136.67 -> 1,177.78 UP 41.11; 18L Yellow 1,136.98 -> 1,179.01 UP 42.04; 5L x 4 PET 1,164.44 -> 1,205.56 UP 41.11; 20kg BIB 1,082.50 -> 1,122.50 UP 40.00. (List-to-list for reference: +33 to +37.)
+- Tested: all 27 rows match the list at CP10 1,025 (0 differences); quoted base resolved from the arrival time = 1,025, no prompt; admin and staff, no page errors. List id 24NOV26.
+
 ## V24NOV2026E — List arrival time recorded (24 Nov 2026)
 - Rule agreed with Joel: every supplier list gets the time Joel sends it to be loaded (his message time), for every supplier. The first base-oil update of the day is normally around 1:30-2pm MY; a list that arrives before it is measured against that first update, so the market-move protocol only switches on when a further base-oil update is saved after the list arrived.
 - Today: Apical received 14:04, KLK 15:09 (shown in the admin box); both stay set by hand at CP10 1,010 as Joel asked.
