@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V25NOV2026D — KLK (Pasir Gudang) list 25 Nov 2026 (25 Nov 2026)
+- KLK list of 25 Nov 2026 (FOB Pasir Gudang, Dec-26 shipment, 20ft, valid till 18:00 MY today; supplier terms ignored), received 15:07 MY, after Joel's 14:12 base-oil update (CP10 1,040): quoted base = 1,040, so no market move is added and no prompt shows. Flexibag w/o heating pad (pad +10): CP10 1,086; CP8 1,103; CP6 1,140; RBD Palm Oil 1,081; RBD Palm Stearin 1,049. Low 3MCPD & GE: CP10 1,150; CP8 1,160; CP6 1,190; RBD Palm Oil 1,140; RBD Palm Stearin 1,187 (rail / double pad keep their increments).
+- Gap vs projection (24 Nov price as shown at CP10 1,025, i.e. supplier quote + 15 market move, then moved by the base oil +15 = 24 Nov quote + 30), USD/MT: CP10 1,103 -> 1,086 DOWN 17; CP8 1,123 -> 1,103 DOWN 20; CP6 1,163 -> 1,140 DOWN 23; RBD Palm Oil 1,098 -> 1,081 DOWN 17; RBD Palm Stearin 1,069 -> 1,049 DOWN 20; Low CP10 1,178 -> 1,150 DOWN 28; Low CP8 1,188 -> 1,160 DOWN 28; Low CP6 1,228 -> 1,190 DOWN 38; Low RBD Palm Oil 1,173 -> 1,140 DOWN 33; Low RBD Palm Stearin 1,213 -> 1,187 DOWN 26. (List-to-list vs the 24 Nov quote, for reference: CP10 +13, CP8 +10, CP6 +7, RBDPO +13, RBDPS +10; Low CP10 +2, CP8 +2, CP6 -8, RBDPO -3, RBDPS +4.)
+- MOQ on the 12 Low CP10 / CP8 / CP6 rows changed from 5 FCL to 10 FCL (per this list). Regular and other Low rows carry no MOQ in the app, unchanged.
+- Tested: all 26 rows match the list at CP10 1,040 (0 differences); admin and staff, no page errors. List id 25NOV26.
+
+---
+
 ## V25NOV2026C — IOI list 25 Nov 2026 (25 Nov 2026)
 - IOI list of 25 Nov 2026 (FOB; Jan'27 shipment; "subject to reconfirmation"; supplier terms ignored), received 14:59 MY, after Joel's 14:12 base-oil update (CP10 1,040): quoted base = 1,040, so no market move is added and no prompt shows. Flexibag CP10 1,097.50 w/o heating pad (1,102.50 with); CP8 1,107.50 / 1,112.50; CP6 1,187.50 / 1,192.50. Per unit CP10 / CP8 / CP6: 20L White 21.45 / 21.65 / 23.10; 5L x 4 White 22.45 / 22.60 / 24.05; 25L Yellow 26.20 / 26.45 / 28.25; 20L Yellow 21.05 / 21.20 / 22.65; 20L Green 21.25 / 21.40; 18L Yellow 19.10 / 19.30; 5L x 4 PET 21.75 / 21.95 / 23.35; 20kg BIB 22.50 / 22.70.
 - Gap vs projection (24 Nov price moved by the base oil, CP10 1,025 -> 1,040 = +15), CP10 USD/MT: Flexibag 1,110.00 -> 1,097.50 DOWN 12.50; 20L White 1,203.89 -> 1,191.67 DOWN 12.22; 5L x 4 White 1,259.44 -> 1,247.22 DOWN 12.22; 25L Yellow 1,177.22 -> 1,164.44 DOWN 12.78; 20L Yellow 1,181.67 -> 1,169.44 DOWN 12.22; 20L Green 1,192.78 -> 1,180.56 DOWN 12.22; 18L Yellow 1,194.01 -> 1,179.01 DOWN 15.00; 5L x 4 PET 1,220.56 -> 1,208.33 DOWN 12.22; 20kg BIB 1,137.50 -> 1,125.00 DOWN 12.50. CP8 and CP6 Flexibag move the same (DOWN 12.50). (List-to-list for reference: Flexibag +2.50; units +0.05 to +0.10.)
