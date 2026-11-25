@@ -5,6 +5,15 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V25NOV2026A — Apical list 25 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (25 Nov 2026)
+- Apical supplier list of 25 Nov 2026 loaded, received 14:12 MY (supplier's own terms ignored; Oillio terms apply). USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,110; Spread Fat 1,275; RCNO 2,100; HCNO 2,165; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can IV56 (CP10) 1,315, IV58 (CP8) 1,325. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,160 (also used for 46/48), 48/52 1,165.
+- Movement vs the 24 Nov 14:04 list (list-to-list, USD/MT; base oil differs between the two lists): Shortening 48/52 UP 10, other four unchanged; Spread Fat UP 25; RCNO, HCNO unchanged; HPS 20ft UP 10, 40ft UP 10; Jerry Can CP10 UP 25, CP8 UP 25; HPKS DOWN 10; HPKO both DOWN 10; HPL DOWN 10; CBR DOWN 5; Low GE & 3MCPD Shortening 36/39 and 38/42 unchanged, 43/48 UP 5, 46/48 UP 5, 48/52 UP 10.
+- Real move vs projection (yesterday's saved price moved by the base oil) is shown in the app under Gap vs projection and in Log Reference after Save & Log Reference, once the 25 Nov base oil is saved.
+- The 24 Nov evening Apical jerry can re-quote (IV56 20L 1,260 / 25L 1,265 / IV58 20L 1,270) was never loaded; this list replaces it.
+- Tested: list applied: all 22 rows match (0 differences); admin and staff, no page errors. List id 25NOV26.
+
+---
+
 ## V24NOV2026H — Wing Agro list 24 Nov 2026 (24 Nov 2026)
 - Wing Agro CP10 20L Yellow Jerry Can quoted USD 1,150/MT (FOB Surabaya), received 16:51 MY, after the 2nd base-oil update (CP10 1,025): quoted base = 1,025, so no market move is added and no prompt shows. 25L follows; CP8 1,165; Low MCPD & GE CP10 1,190; Low MCPD & GE CP8 1,205 (20L and 25L).
 - Gap vs projection: yesterday's price 1,150 moved by the base oil (CP10 1,030 -> 1,025 = -5) = 1,145; supplier 1,150 = UP 5 on every Wing Agro SKU (same price as 23 Nov, but the base oil fell 5).
