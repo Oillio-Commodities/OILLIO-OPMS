@@ -5,6 +5,11 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V25NOV2026B — Apical 25 Nov arrival time corrected (25 Nov 2026)
+- Per Joel the Apical 25 Nov list came after his 14:12:38 base-oil update (CP10 1,040), so the list is stamped 14:13 MY (was 14:12). Quoted base = 1,040: no market move added, no prompt. Prices unchanged.
+
+---
+
 ## V25NOV2026A — Apical list 25 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (25 Nov 2026)
 - Apical supplier list of 25 Nov 2026 loaded, received 14:12 MY (supplier's own terms ignored; Oillio terms apply). USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,110; Spread Fat 1,275; RCNO 2,100; HCNO 2,165; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can IV56 (CP10) 1,315, IV58 (CP8) 1,325. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,160 (also used for 46/48), 48/52 1,165.
 - Movement vs the 24 Nov 14:04 list (list-to-list, USD/MT; base oil differs between the two lists): Shortening 48/52 UP 10, other four unchanged; Spread Fat UP 25; RCNO, HCNO unchanged; HPS 20ft UP 10, 40ft UP 10; Jerry Can CP10 UP 25, CP8 UP 25; HPKS DOWN 10; HPKO both DOWN 10; HPL DOWN 10; CBR DOWN 5; Low GE & 3MCPD Shortening 36/39 and 38/42 unchanged, 43/48 UP 5, 46/48 UP 5, 48/52 UP 10.
