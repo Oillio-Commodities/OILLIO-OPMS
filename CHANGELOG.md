@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V25NOV2026C — IOI list 25 Nov 2026 (25 Nov 2026)
+- IOI list of 25 Nov 2026 (FOB; Jan'27 shipment; "subject to reconfirmation"; supplier terms ignored), received 14:59 MY, after Joel's 14:12 base-oil update (CP10 1,040): quoted base = 1,040, so no market move is added and no prompt shows. Flexibag CP10 1,097.50 w/o heating pad (1,102.50 with); CP8 1,107.50 / 1,112.50; CP6 1,187.50 / 1,192.50. Per unit CP10 / CP8 / CP6: 20L White 21.45 / 21.65 / 23.10; 5L x 4 White 22.45 / 22.60 / 24.05; 25L Yellow 26.20 / 26.45 / 28.25; 20L Yellow 21.05 / 21.20 / 22.65; 20L Green 21.25 / 21.40; 18L Yellow 19.10 / 19.30; 5L x 4 PET 21.75 / 21.95 / 23.35; 20kg BIB 22.50 / 22.70.
+- Gap vs projection (24 Nov price moved by the base oil, CP10 1,025 -> 1,040 = +15), CP10 USD/MT: Flexibag 1,110.00 -> 1,097.50 DOWN 12.50; 20L White 1,203.89 -> 1,191.67 DOWN 12.22; 5L x 4 White 1,259.44 -> 1,247.22 DOWN 12.22; 25L Yellow 1,177.22 -> 1,164.44 DOWN 12.78; 20L Yellow 1,181.67 -> 1,169.44 DOWN 12.22; 20L Green 1,192.78 -> 1,180.56 DOWN 12.22; 18L Yellow 1,194.01 -> 1,179.01 DOWN 15.00; 5L x 4 PET 1,220.56 -> 1,208.33 DOWN 12.22; 20kg BIB 1,137.50 -> 1,125.00 DOWN 12.50. CP8 and CP6 Flexibag move the same (DOWN 12.50). (List-to-list for reference: Flexibag +2.50; units +0.05 to +0.10.)
+- Tested: all 27 rows match the list at CP10 1,040 (0 differences); quoted base resolved from the arrival time = 1,040, no prompt; admin and staff, no page errors. List id 25NOV26.
+
+---
+
 ## V25NOV2026B — Apical 25 Nov arrival time corrected (25 Nov 2026)
 - Per Joel the Apical 25 Nov list came after his 14:12:38 base-oil update (CP10 1,040), so the list is stamped 14:13 MY (was 14:12). Quoted base = 1,040: no market move added, no prompt. Prices unchanged.
 
