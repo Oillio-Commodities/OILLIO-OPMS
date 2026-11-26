@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V26NOV2026A — Apical list 26 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (26 Nov 2026)
+- Apical supplier list of 26 Nov 2026 loaded, received 14:16 MY (supplier's own terms ignored; Oillio terms apply). Base oil unchanged vs yesterday (CP10 1,040), so the gap vs projection equals the move vs the 25 Nov list. USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,100; Spread Fat 1,270; RCNO 2,120; HCNO 2,185; HPS Flakes 20ft 1,185, 40ft 1,200; Jerry Can IV56 (CP10) 1,310, IV58 (CP8) 1,320. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,155 (also used for 46/48), 48/52 1,155.
+- Move vs 25 Nov (USD/MT): Shortening 48/52 DOWN 10, other four unchanged; Spread Fat DOWN 5; RCNO UP 20; HCNO UP 20; HPS 20ft DOWN 10, 40ft DOWN 10; Jerry Can CP10 DOWN 5, CP8 DOWN 5; HPKS, HPKO, HPL, CBR unchanged; Low GE & 3MCPD Shortening 36/39 and 38/42 unchanged, 43/48 DOWN 5, 46/48 DOWN 5, 48/52 DOWN 10.
+- Tested: all 22 rows match the list (0 differences); admin and staff, no page errors. List id 26NOV26.
+
+---
+
 ## V25NOV2026D — KLK (Pasir Gudang) list 25 Nov 2026 (25 Nov 2026)
 - KLK list of 25 Nov 2026 (FOB Pasir Gudang, Dec-26 shipment, 20ft, valid till 18:00 MY today; supplier terms ignored), received 15:07 MY, after Joel's 14:12 base-oil update (CP10 1,040): quoted base = 1,040, so no market move is added and no prompt shows. Flexibag w/o heating pad (pad +10): CP10 1,086; CP8 1,103; CP6 1,140; RBD Palm Oil 1,081; RBD Palm Stearin 1,049. Low 3MCPD & GE: CP10 1,150; CP8 1,160; CP6 1,190; RBD Palm Oil 1,140; RBD Palm Stearin 1,187 (rail / double pad keep their increments).
 - Gap vs projection (24 Nov price as shown at CP10 1,025, i.e. supplier quote + 15 market move, then moved by the base oil +15 = 24 Nov quote + 30), USD/MT: CP10 1,103 -> 1,086 DOWN 17; CP8 1,123 -> 1,103 DOWN 20; CP6 1,163 -> 1,140 DOWN 23; RBD Palm Oil 1,098 -> 1,081 DOWN 17; RBD Palm Stearin 1,069 -> 1,049 DOWN 20; Low CP10 1,178 -> 1,150 DOWN 28; Low CP8 1,188 -> 1,160 DOWN 28; Low CP6 1,228 -> 1,190 DOWN 38; Low RBD Palm Oil 1,173 -> 1,140 DOWN 33; Low RBD Palm Stearin 1,213 -> 1,187 DOWN 26. (List-to-list vs the 24 Nov quote, for reference: CP10 +13, CP8 +10, CP6 +7, RBDPO +13, RBDPS +10; Low CP10 +2, CP8 +2, CP6 -8, RBDPO -3, RBDPS +4.)
