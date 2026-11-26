@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V26NOV2026B — IOI list 26 Nov 2026 (26 Nov 2026)
+- IOI list of 26 Nov 2026 (FOB; "subject to reconfirmation"; supplier terms ignored), received 20:24 MY. Base oil assumed unchanged at CP10 1,040 (per Joel at 14:16), so quoted base = 1,040: no market move, no prompt. Flexibag CP10 1,090 w/o heating pad (1,095 with); CP8 1,100 / 1,105; CP6 1,180 / 1,185. Per unit CP10 / CP8 / CP6: 20L White 21.30 / 21.50 / 22.95; 5L x 4 White 22.30 / 22.45 / 23.90; 25L Yellow 26.05 / 26.25 / 28.05; 20L Yellow 20.90 / 21.05 / 22.50; 20L Green 21.10 / 21.30; 18L Yellow 19.00 / 19.15; 5L x 4 PET 21.60 / 21.80 / 23.25; 20kg BIB 22.35 / 22.55.
+- Gap vs projection (25 Nov price, base oil unchanged), CP10 USD/MT: Flexibag 1,097.50 -> 1,090.00 DOWN 7.50; 20L White 1,191.67 -> 1,183.33 DOWN 8.33; 5L x 4 White 1,247.22 -> 1,238.89 DOWN 8.33; 25L Yellow 1,164.44 -> 1,157.78 DOWN 6.67; 20L Yellow 1,169.44 -> 1,161.11 DOWN 8.33; 20L Green 1,180.56 -> 1,172.22 DOWN 8.33; 18L Yellow 1,179.01 -> 1,172.84 DOWN 6.17; 5L x 4 PET 1,208.33 -> 1,200.00 DOWN 8.33; 20kg BIB 1,125.00 -> 1,117.50 DOWN 7.50. CP8 and CP6 flexibag move the same (DOWN 7.50).
+- Tested: all 27 rows match the list at CP10 1,040 (0 differences); admin and staff, no page errors. List id 26NOV26.
+
+---
+
 ## V26NOV2026A — Apical list 26 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027) (26 Nov 2026)
 - Apical supplier list of 26 Nov 2026 loaded, received 14:16 MY (supplier's own terms ignored; Oillio terms apply). Base oil unchanged vs yesterday (CP10 1,040), so the gap vs projection equals the move vs the 25 Nov list. USD/MT, Jakarta: Shortening 36/39 1,120; 38/40 & 40/42 1,120; 43/47 1,120; 46/48 1,115; 48/52 1,100; Spread Fat 1,270; RCNO 2,120; HCNO 2,185; HPS Flakes 20ft 1,185, 40ft 1,200; Jerry Can IV56 (CP10) 1,310, IV58 (CP8) 1,320. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,145, 38/42 1,150, 43/48 1,155 (also used for 46/48), 48/52 1,155.
 - Move vs 25 Nov (USD/MT): Shortening 48/52 DOWN 10, other four unchanged; Spread Fat DOWN 5; RCNO UP 20; HCNO UP 20; HPS 20ft DOWN 10, 40ft DOWN 10; Jerry Can CP10 DOWN 5, CP8 DOWN 5; HPKS, HPKO, HPL, CBR unchanged; Low GE & 3MCPD Shortening 36/39 and 38/42 unchanged, 43/48 DOWN 5, 46/48 DOWN 5, 48/52 DOWN 10.
