@@ -5,6 +5,13 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V27NOV2026B — KLK (Pasir Gudang) list 27 Nov 2026 (27 Nov 2026)
+- KLK list (FOB Pasir Gudang, Dec-26 shipment, 20ft, MOQ 10 FCL; supplier terms ignored) loaded as today's list, received 15:07 MY, after Joel's 27 Nov base-oil update (CP10 1,055): quoted base = 1,055, no market move, no prompt. NOTE: the list's own validity line reads "till 9pm 26/11/2026" (yesterday); treated as a stale date on today's list (prices +15 vs 25 Nov match today's base move). Flexibag w/o heating pad (pad +10): CP10 1,102; CP8 1,122; CP6 1,160; RBD Palm Oil 1,097; RBD Palm Stearin 1,053. Low 3MCPD & GE: CP10 1,178; CP8 1,187; CP6 1,218; RBD Palm Oil 1,167; RBD Palm Stearin 1,199 (rail / double pad keep their increments).
+- Gap vs projection (last loaded KLK list = 25 Nov, base unchanged 25 -> 26 Nov, then moved by today's base: CP10 / RBD Malaysia +15, Stearin +25), USD/MT: CP10 1,101 -> 1,102 UP 1; CP8 1,118 -> 1,122 UP 4; CP6 1,155 -> 1,160 UP 5; RBD Palm Oil 1,096 -> 1,097 UP 1; RBD Palm Stearin 1,074 -> 1,053 DOWN 21; Low CP10 1,165 -> 1,178 UP 13; Low CP8 1,175 -> 1,187 UP 12; Low CP6 1,205 -> 1,218 UP 13; Low RBD Palm Oil 1,155 -> 1,167 UP 12; Low RBD Palm Stearin 1,212 -> 1,199 DOWN 13.
+- Tested: all 26 rows match the list at CP10 1,055 (0 differences); admin and staff, no page errors. List id 27NOV26.
+
+---
+
 ## V27NOV2026A — Apical list 27 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027), quoted BEFORE the base-oil update (27 Nov 2026)
 - Apical supplier list of 27 Nov 2026 loaded, received 14:03 MY, before Joel's 27 Nov base-oil update (CP10 1,040 -> 1,055, +15). Quoted base set to 1,040, so the +15 market move is added to the Apical prices shown, with the "market moved, double-check with supplier" banner (admin) / prompt (staff + tick before quoting). Supplier's own terms ignored; Oillio terms apply.
 - Supplier quotes, USD/MT, Jakarta: Shortening 36/39 1,130; 38/40 & 40/42 1,130; 43/47 1,130; 46/48 1,125; 48/52 1,110; Spread Fat 1,285; RCNO 2,140; HCNO 2,205; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can IV56 (CP10) 1,325, IV58 (CP8) 1,335. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,155, 38/42 1,160, 43/48 1,165 (also used for 46/48), 48/52 1,165.
