@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V27NOV2026A — Apical list 27 Nov 2026 (FOB Jakarta / Port Klang, ETD Feb 2027), quoted BEFORE the base-oil update (27 Nov 2026)
+- Apical supplier list of 27 Nov 2026 loaded, received 14:03 MY, before Joel's 27 Nov base-oil update (CP10 1,040 -> 1,055, +15). Quoted base set to 1,040, so the +15 market move is added to the Apical prices shown, with the "market moved, double-check with supplier" banner (admin) / prompt (staff + tick before quoting). Supplier's own terms ignored; Oillio terms apply.
+- Supplier quotes, USD/MT, Jakarta: Shortening 36/39 1,130; 38/40 & 40/42 1,130; 43/47 1,130; 46/48 1,125; 48/52 1,110; Spread Fat 1,285; RCNO 2,140; HCNO 2,205; HPS Flakes 20ft 1,195, 40ft 1,210; Jerry Can IV56 (CP10) 1,325, IV58 (CP8) 1,335. Port Klang: HPKS 2,520; HPKO 38/40 2,065, 40/42 2,070; HPL 1,945; CBR 1,865; Low GE & 3MCPD Shortening 36/39 1,155, 38/42 1,160, 43/48 1,165 (also used for 46/48), 48/52 1,165.
+- Gap vs projection (26 Nov price moved by each product's base oil: CP10 +15, RBD Indonesia +15, RBD Malaysia +15, Stearin +25, PK Olein +5, PKO +5, PK Stearin +15, Coconut 0), USD/MT: Jerry Can CP10 and CP8 0 (as projected); Shortening five lines DOWN 5; Low GE & 3MCPD Shortening all lines DOWN 5; Spread Fat DOWN 10; HPS 20ft and 40ft DOWN 15; RCNO UP 15; HCNO UP 20; HPKS DOWN 15; HPKO both DOWN 5; HPL DOWN 5; CBR DOWN 5. (List-to-list vs 26 Nov: shortening and Low shortening +10, Spread Fat +15, RCNO +20, HCNO +20, HPS +10, Jerry Can +15, Port Klang specialties unchanged.)
+- Tested: list loaded with quoted base 1,040 and CP10 1,055: CP10-linked rows show quote +15 (e.g. Jerry Can CP10 1,340 on a 1,325 quote) with the banner; rows whose base did not move match the quote exactly; admin and staff, no page errors. List id 27NOV26.
+
+---
+
 ## V26NOV2026B — IOI list 26 Nov 2026 (26 Nov 2026)
 - IOI list of 26 Nov 2026 (FOB; "subject to reconfirmation"; supplier terms ignored), received 20:24 MY. Base oil assumed unchanged at CP10 1,040 (per Joel at 14:16), so quoted base = 1,040: no market move, no prompt. Flexibag CP10 1,090 w/o heating pad (1,095 with); CP8 1,100 / 1,105; CP6 1,180 / 1,185. Per unit CP10 / CP8 / CP6: 20L White 21.30 / 21.50 / 22.95; 5L x 4 White 22.30 / 22.45 / 23.90; 25L Yellow 26.05 / 26.25 / 28.05; 20L Yellow 20.90 / 21.05 / 22.50; 20L Green 21.10 / 21.30; 18L Yellow 19.00 / 19.15; 5L x 4 PET 21.60 / 21.80 / 23.25; 20kg BIB 22.35 / 22.55.
 - Gap vs projection (25 Nov price, base oil unchanged), CP10 USD/MT: Flexibag 1,097.50 -> 1,090.00 DOWN 7.50; 20L White 1,191.67 -> 1,183.33 DOWN 8.33; 5L x 4 White 1,247.22 -> 1,238.89 DOWN 8.33; 25L Yellow 1,164.44 -> 1,157.78 DOWN 6.67; 20L Yellow 1,169.44 -> 1,161.11 DOWN 8.33; 20L Green 1,180.56 -> 1,172.22 DOWN 8.33; 18L Yellow 1,179.01 -> 1,172.84 DOWN 6.17; 5L x 4 PET 1,208.33 -> 1,200.00 DOWN 8.33; 20kg BIB 1,125.00 -> 1,117.50 DOWN 7.50. CP8 and CP6 flexibag move the same (DOWN 7.50).
