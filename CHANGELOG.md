@@ -5,6 +5,14 @@ All changes to the GitHub Pages app are recorded here.
 
 ---
 
+## V27NOV2026E — KLK MOQ note on the KLK (Pasir Gudang) tab (27 Nov 2026)
+- New standing note at the top of the KLK tab (everyone, admin and staff): "MOQ (KLK requirement, per 27 Nov list): regular flexibag (CP10 / CP8 / CP6 / RBD Palm Oil / RBD Palm Stearin) 5 FCL; Low 3MCPD & GE flexibag 10 FCL. Dec-26 shipment, 20ft, FOB Pasir Gudang." The text sits in one place in the code (SUP_NOTES) so it can be updated when KLK changes its requirement; other suppliers can get a note the same way.
+- KLK Alami: the 27 Nov list loaded in V27NOV2026C stays as is (confirmed by Joel as the latest).
+- Also: the KLK list tag was shortened to "27 Nov 2026" (it was a long label that pushed the KLK tab wider than a phone screen, so text was cut off on the right).
+- Tested: note shows on the KLK tab only (not Apical / KLK Alami), admin and staff, page width fits a 390px phone, no page errors.
+
+---
+
 ## V27NOV2026D — KLK (Pasir Gudang) 27 Nov list; earlier list corrected to 26 Nov (27 Nov 2026)
 - Correction per Joel: the KLK Pasir Gudang list loaded in V27NOV2026B (validity "till 9pm 26/11/2026", CP10 1,102) was the 26 Nov price, not 27 Nov. It is replaced by the real 27 Nov list (FOB Pasir Gudang, Dec-26 shipment, valid 18:00 27 Nov, received about 16:05 MY, after the 14:04 base-oil update CP10 1,055: quoted base 1,055, no market move, no prompt). Flexibag w/o heating pad (pad +10), regular MOQ 5 FCL: CP10 1,112; CP8 1,130; CP6 1,170; RBD Palm Oil 1,105; RBD Palm Stearin 1,072. Low 3MCPD & GE (MOQ 10 FCL): CP10 1,179; CP8 1,189; CP6 1,219; RBD Palm Oil 1,169; RBD Palm Stearin 1,208 (rail / double pad keep their increments).
 - Gap vs projection (26 Nov price moved by the base oil 26 -> 27 Nov: CP10 / RBD PO +15, Stearin +25), USD/MT: CP10 1,117 -> 1,112 DOWN 5; CP8 1,137 -> 1,130 DOWN 7; CP6 1,175 -> 1,170 DOWN 5; RBD Palm Oil 1,112 -> 1,105 DOWN 7; RBD Palm Stearin 1,078 -> 1,072 DOWN 6; Low CP10 1,193 -> 1,179 DOWN 14; Low CP8 1,202 -> 1,189 DOWN 13; Low CP6 1,233 -> 1,219 DOWN 14; Low RBD Palm Oil 1,182 -> 1,169 DOWN 13; Low RBD Palm Stearin 1,224 -> 1,208 DOWN 16. (26 Nov list for reference: CP10 1,102 / CP8 1,122 / CP6 1,160 / RBDPO 1,097 / RBDPS 1,053; Low 1,178 / 1,187 / 1,218 / 1,167 / 1,199, quoted at base 1,040.)
